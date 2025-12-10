@@ -31,18 +31,20 @@ export const calculateEcommerceMetrics = (data) => {
 
     // === Charts Data ===
 
-    // Top Productos (top 8)
-    const topProductosChart = topProductos.slice(0, 8).map(p => ({
+    // Top Productos (top 6 by Quantity)
+    const topProductosChart = topProductos.slice(0, 6).map(p => ({
         name: p.descripcion || p.codigo,
-        value: p.total,
-        cantidad: p.cantidad
+        value: p.cantidad, // Showing Quantity
+        totalVenta: p.total
     }));
 
-    // Venta por Ciudad (pie chart)
+    // Venta por Ciudad (pie chart) - Exclude 'OTROS'
     const ventaPorCiudad = {};
     pedidosConsolidado.forEach(row => {
-        const ciudad = String(row['Ciudad'] || 'Otros').trim().toUpperCase();
-        ventaPorCiudad[ciudad] = (ventaPorCiudad[ciudad] || 0) + (parseFloat(row['Venta RMS']) || 0);
+        const ciudad = String(row['Ciudad'] || 'OTROS').trim().toUpperCase();
+        if (ciudad !== 'OTROS') {
+            ventaPorCiudad[ciudad] = (ventaPorCiudad[ciudad] || 0) + (parseFloat(row['Venta RMS']) || 0);
+        }
     });
 
     const ciudadData = Object.entries(ventaPorCiudad)

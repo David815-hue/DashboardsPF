@@ -55,9 +55,34 @@ export const processEcommerceData = async (files) => {
     });
 
     // === 2. Analyze cancellation reasons ===
-    const motivoColumn = Object.keys(albatrossData[0] || {}).find(col =>
-        col.toLowerCase().includes('motivo') && col.toLowerCase().includes('anula')
-    );
+    // === 2. Analyze cancellation reasons ===
+    // Find the column name by checking keys of the first cancelled order or any row
+    let motivoColumn = null;
+
+    // Helper to find key in an object - IMPROVED
+    // Busca columnas que contengan "motivo" (ignorando tildes/case)
+    const findMotivoKey = (obj) => Object.keys(obj || {}).find(col => {
+        const c = col.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, ""); // Remove accents
+        return c.includes('motivo');
+    });
+
+    // Try finding in the first cancelled order (most likely to have it)
+    if (canceladosUnicos.length > 0) {
+        motivoColumn = findMotivoKey(canceladosUnicos[0]);
+    }
+
+    // If not found, try the first row of raw data
+    if (!motivoColumn && albatrossData.length > 0) {
+        motivoColumn = findMotivoKey(albatrossData[0]);
+    }
+
+    // If still not found, try to scan a few rows
+    if (!motivoColumn) {
+        for (let i = 0; i < Math.min(albatrossData.length, 50); i++) {
+            motivoColumn = findMotivoKey(albatrossData[i]);
+            if (motivoColumn) break;
+        }
+    }
 
     const motivosAnulacion = {};
     canceladosUnicos.forEach(row => {
@@ -130,7 +155,7 @@ export const processEcommerceData = async (files) => {
     });
 
     const topProductos = Object.values(productosMap)
-        .sort((a, b) => b.total - a.total);
+        .sort((a, b) => b.cantidad - a.cantidad);
 
     return {
         pedidosConsolidado,

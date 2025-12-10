@@ -90,7 +90,7 @@ const EcommerceDashboard = ({ metrics }) => {
                                     <Tooltip content={<CustomTooltip />} />
                                     <Bar dataKey="value" radius={[4, 4, 0, 0]}>
                                         {charts.topProductos.map((entry, index) => (
-                                            <Cell key={`cell-${index}`} fill="#0ea5e9" />
+                                            <Cell key={`cell-${index}`} fill="#FE0000" />
                                         ))}
                                     </Bar>
                                 </BarChart>
