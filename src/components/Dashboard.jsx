@@ -10,7 +10,10 @@ import { processData } from '../utils/excelProcessor';
 import { calculateMetrics } from '../utils/metricsCalculator';
 import { processEcommerceData } from '../utils/ecommerceProcessor';
 import { calculateEcommerceMetrics } from '../utils/ecommerceMetrics';
-import { saveSnapshot, loadSnapshot, getSnapshotsByMonth, deleteSnapshot, calculateMonthlyAggregate } from '../firebase/snapshotService';
+import {
+    saveSnapshot, loadSnapshot, getSnapshotsByMonth, deleteSnapshot, calculateMonthlyAggregate,
+    saveEcommerceSnapshot, loadEcommerceSnapshot, getEcommerceSnapshotsByMonth, deleteEcommerceSnapshot, calculateEcommerceMonthlyAggregate
+} from '../firebase/snapshotService';
 import './Dashboard.css';
 
 const Logo = () => (
@@ -50,6 +53,7 @@ const Dashboard = () => {
     // Snapshot management
     const [snapshotDate, setSnapshotDate] = useState(getCurrentWeekMonday());
     const [snapshotsByMonth, setSnapshotsByMonth] = useState({});
+    const [ecommerceSnapshotsByMonth, setEcommerceSnapshotsByMonth] = useState({});
 
     // Hierarchical selection
     const [selectedMonth, setSelectedMonth] = useState(null);
@@ -74,9 +78,15 @@ const Dashboard = () => {
     }, []);
 
     const loadAvailableSnapshots = async () => {
+        // Load Venta Meta snapshots
         const result = await getSnapshotsByMonth();
         if (result.success) {
             setSnapshotsByMonth(result.data);
+        }
+        // Load E-commerce snapshots
+        const ecomResult = await getEcommerceSnapshotsByMonth();
+        if (ecomResult.success) {
+            setEcommerceSnapshotsByMonth(ecomResult.data);
         }
     };
 
@@ -109,31 +119,50 @@ const Dashboard = () => {
     };
 
     const handleSaveSnapshot = async () => {
-        if (!data || !metrics) {
-            setError('No hay datos para guardar');
-            return;
+        // Check for data based on active tab
+        if (activeTab === 'ecommerce') {
+            if (!ecommerceData || !ecommerceMetrics) {
+                setError('No hay datos de E-commerce para guardar');
+                return;
+            }
+        } else {
+            if (!data || !metrics) {
+                setError('No hay datos para guardar');
+                return;
+            }
         }
 
         setIsSaving(true);
         setError(null);
 
         try {
-            const snapshotData = {
-                config,
-                metrics: {
-                    totalVenta: metrics.totalVenta,
-                    cantidadPedidos: metrics.cantidadPedidos,
-                    ventaTGU: metrics.ventaTGU,
-                    ventaSPS: metrics.ventaSPS,
-                    ticketPromedio: metrics.ticketPromedio,
-                    tasaConversion: metrics.tasaConversion,
-                    roas: metrics.roas,
-                    topProducts: metrics.topProducts,
-                    embudoData: metrics.embudoData
-                }
-            };
+            let result;
 
-            const result = await saveSnapshot(snapshotDate, snapshotData);
+            if (activeTab === 'ecommerce') {
+                // Save E-commerce snapshot
+                const snapshotData = {
+                    metrics: ecommerceMetrics.kpis,
+                    charts: ecommerceMetrics.charts
+                };
+                result = await saveEcommerceSnapshot(snapshotDate, snapshotData);
+            } else {
+                // Save Venta Meta snapshot
+                const snapshotData = {
+                    config,
+                    metrics: {
+                        totalVenta: metrics.totalVenta,
+                        cantidadPedidos: metrics.cantidadPedidos,
+                        ventaTGU: metrics.ventaTGU,
+                        ventaSPS: metrics.ventaSPS,
+                        ticketPromedio: metrics.ticketPromedio,
+                        tasaConversion: metrics.tasaConversion,
+                        roas: metrics.roas,
+                        topProducts: metrics.topProducts,
+                        embudoData: metrics.embudoData
+                    }
+                };
+                result = await saveSnapshot(snapshotDate, snapshotData);
+            }
 
             if (result.success) {
                 setSuccessMessage(`Guardado: Semana del ${snapshotDate}`);
@@ -164,12 +193,22 @@ const Dashboard = () => {
         if (weekId === 'aggregate') {
             setSelectedWeek(null);
         } else {
-            const result = await loadSnapshot(weekId);
+            // Use correct load function based on activeTab
+            const loadFn = activeTab === 'ecommerce' ? loadEcommerceSnapshot : loadSnapshot;
+            const result = await loadFn(weekId);
             if (result.success) {
-                setData({
-                    _isSnapshot: true,
-                    _snapshotMetrics: result.data.metrics
-                });
+                if (activeTab === 'ecommerce') {
+                    // For E-commerce, set ecommerceData with snapshot flag
+                    setEcommerceData({
+                        _isSnapshot: true,
+                        _snapshotMetrics: result.data
+                    });
+                } else {
+                    setData({
+                        _isSnapshot: true,
+                        _snapshotMetrics: result.data.metrics
+                    });
+                }
                 setSelectedWeek(weekId);
             } else {
                 setError('Error al cargar: ' + result.error);
@@ -181,7 +220,9 @@ const Dashboard = () => {
     const handleDeleteSnapshot = async (snapshotId, e) => {
         e.stopPropagation();
         if (confirm(`¿Eliminar snapshot del ${snapshotId}?`)) {
-            await deleteSnapshot(snapshotId);
+            // Use correct delete function based on activeTab
+            const deleteFn = activeTab === 'ecommerce' ? deleteEcommerceSnapshot : deleteSnapshot;
+            await deleteFn(snapshotId);
             loadAvailableSnapshots();
             if (selectedWeek === snapshotId) {
                 setSelectedWeek(null);
@@ -216,9 +257,24 @@ const Dashboard = () => {
 
     // E-commerce metrics calculation
     const ecommerceMetrics = useMemo(() => {
+        // Loaded E-commerce snapshot (specific week)
+        if (ecommerceData && ecommerceData._isSnapshot) {
+            const snap = ecommerceData._snapshotMetrics;
+            return {
+                kpis: snap.metrics,
+                charts: snap.charts
+            };
+        }
+
+        // E-commerce month aggregate
+        if (activeTab === 'ecommerce' && selectedMonth && !selectedWeek && ecommerceSnapshotsByMonth[selectedMonth]) {
+            return calculateEcommerceMonthlyAggregate(ecommerceSnapshotsByMonth[selectedMonth]);
+        }
+
+        // Fresh E-commerce data
         if (!ecommerceData) return null;
         return calculateEcommerceMetrics(ecommerceData);
-    }, [ecommerceData]);
+    }, [ecommerceData, activeTab, selectedMonth, selectedWeek, ecommerceSnapshotsByMonth]);
 
     const formatMonthLabel = (monthKey) => {
         const [year, month] = monthKey.split('-');
@@ -230,7 +286,9 @@ const Dashboard = () => {
         return `Semana ${date.getDate()} ${MONTH_NAMES[String(date.getMonth() + 1).padStart(2, '0')]}`;
     };
 
-    const availableMonths = Object.keys(snapshotsByMonth).sort().reverse();
+    // Get available months from correct collection based on activeTab
+    const currentSnapshotsByMonth = activeTab === 'ecommerce' ? ecommerceSnapshotsByMonth : snapshotsByMonth;
+    const availableMonths = Object.keys(currentSnapshotsByMonth).sort().reverse();
 
     return (
         <div className="dashboard">
@@ -290,7 +348,7 @@ const Dashboard = () => {
                                     onClick={() => handleSelectMonth(monthKey)}
                                 >
                                     📆 {formatMonthLabel(monthKey)}
-                                    <span className="week-count">{snapshotsByMonth[monthKey].length} sem</span>
+                                    <span className="week-count">{currentSnapshotsByMonth[monthKey].length} sem</span>
                                 </div>
                             ))}
                         </div>
@@ -298,7 +356,7 @@ const Dashboard = () => {
                 </div>
 
                 {/* Week Selector (only visible when month is selected) */}
-                {selectedMonth && snapshotsByMonth[selectedMonth] && (
+                {selectedMonth && currentSnapshotsByMonth[selectedMonth] && (
                     <div className="selector-group">
                         <button
                             className="selector-btn week-btn"
@@ -317,7 +375,7 @@ const Dashboard = () => {
                                     📊 Acumulado Mensual
                                 </div>
                                 <div className="selector-divider"></div>
-                                {snapshotsByMonth[selectedMonth].map(snap => (
+                                {currentSnapshotsByMonth[selectedMonth].map(snap => (
                                     <div
                                         key={snap.id}
                                         className={`selector-option ${selectedWeek === snap.id ? 'active' : ''}`}
@@ -377,7 +435,12 @@ const Dashboard = () => {
                                     <button
                                         className="save-snapshot-btn"
                                         onClick={handleSaveSnapshot}
-                                        disabled={isSaving || !data || data._isSnapshot}
+                                        disabled={isSaving ||
+                                            (activeTab === 'ecommerce'
+                                                ? (!ecommerceData || ecommerceData._isSnapshot)
+                                                : (!data || data._isSnapshot)
+                                            )
+                                        }
                                     >
                                         {isSaving ? 'Guardando...' : 'Guardar'}
                                     </button>
