@@ -48,10 +48,21 @@ const Dashboard = () => {
     const [snapshotsByMonth, setSnapshotsByMonth] = useState({});
 
     // Hierarchical selection
-    const [selectedMonth, setSelectedMonth] = useState(null); // null = current data, YYYY-MM = month
-    const [selectedWeek, setSelectedWeek] = useState(null); // null = month aggregate, YYYY-MM-DD = specific week
+    const [selectedMonth, setSelectedMonth] = useState(null);
+    const [selectedWeek, setSelectedWeek] = useState(null);
     const [isMonthDropdownOpen, setIsMonthDropdownOpen] = useState(false);
     const [isWeekDropdownOpen, setIsWeekDropdownOpen] = useState(false);
+
+    // Dashboard tabs
+    const [activeTab, setActiveTab] = useState('venta-meta');
+    const [isDashboardDropdownOpen, setIsDashboardDropdownOpen] = useState(false);
+    const DASHBOARD_TABS = [
+        { id: 'venta-meta', label: 'Venta Meta', icon: '📊' },
+        { id: 'agregadores', label: 'Agregadores', icon: '🛒' },
+        { id: 'rms', label: 'RMS', icon: '📈' }
+    ];
+
+    const currentDashboard = DASHBOARD_TABS.find(t => t.id === activeTab);
 
     // Load available snapshots on mount
     useEffect(() => {
@@ -206,7 +217,34 @@ const Dashboard = () => {
 
     return (
         <div className="dashboard">
-            {/* Hierarchical Selectors */}
+            {/* Dashboard Selector - Top Left */}
+            <div className="dashboard-selector">
+                <button
+                    className="dashboard-selector-btn"
+                    onClick={() => setIsDashboardDropdownOpen(!isDashboardDropdownOpen)}
+                >
+                    <span className="tab-icon">{currentDashboard?.icon}</span>
+                    {currentDashboard?.label || 'Dashboard'}
+                    <ChevronDown size={16} />
+                </button>
+
+                {isDashboardDropdownOpen && (
+                    <div className="dashboard-dropdown">
+                        {DASHBOARD_TABS.map(tab => (
+                            <div
+                                key={tab.id}
+                                className={`dashboard-option ${activeTab === tab.id ? 'active' : ''}`}
+                                onClick={() => { setActiveTab(tab.id); setIsDashboardDropdownOpen(false); }}
+                            >
+                                <span className="tab-icon">{tab.icon}</span>
+                                {tab.label}
+                            </div>
+                        ))}
+                    </div>
+                )}
+            </div>
+
+            {/* Period Selectors - Bottom Left */}
             <div className="period-selectors">
                 {/* Month Selector */}
                 <div className="selector-group">
