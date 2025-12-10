@@ -530,3 +530,170 @@ body {
   font-weight: 600;
   border: 1px solid #fca5a5;
 }
+
+/* ======================= */
+/* SNAPSHOT SELECTOR */
+/* ======================= */
+
+.snapshot-selector {
+  position: absolute;
+  top: 15px;
+  left: 30px;
+  z-index: 100;
+}
+
+.snapshot-selector-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #333;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.snapshot-selector-btn:hover {
+  border-color: var(--primary-red);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+}
+
+.snapshot-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  min-width: 250px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+  overflow: hidden;
+  animation: dropdownSlide 0.2s ease;
+}
+
+@keyframes dropdownSlide {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.snapshot-option {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.snapshot-option:hover {
+  background: #f5f5f5;
+}
+
+.snapshot-option.active {
+  background: #fee2e2;
+  color: var(--primary-red);
+  font-weight: 600;
+}
+
+.snapshot-delete-btn {
+  background: transparent;
+  border: none;
+  color: #999;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.snapshot-delete-btn:hover {
+  background: #fee2e2;
+  color: var(--primary-red);
+}
+
+.snapshot-divider {
+  height: 1px;
+  background: #eee;
+  margin: 4px 0;
+}
+
+/* Save Snapshot Section in Modal */
+.snapshot-section {
+  background: #fff;
+  padding: 20px;
+  border-radius: 12px;
+  border: 1px solid #eee;
+}
+
+.snapshot-save-row {
+  display: flex;
+  gap: 12px;
+  align-items: flex-end;
+}
+
+.save-snapshot-btn {
+  padding: 12px 24px;
+  background: linear-gradient(135deg, #22c55e, #16a34a);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
+  white-space: nowrap;
+}
+
+.save-snapshot-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(34, 197, 94, 0.4);
+}
+
+.save-snapshot-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+/* Success Toast */
+.success-toast {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: linear-gradient(135deg, #22c55e, #16a34a);
+  color: white;
+  padding: 14px 28px;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 0.95rem;
+  box-shadow: 0 8px 30px rgba(34, 197, 94, 0.4);
+  z-index: 2000;
+  animation: toastIn 0.3s ease;
+}
+
+@keyframes toastIn {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
