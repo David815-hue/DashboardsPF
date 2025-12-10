@@ -1,44 +1,52 @@
 import React from 'react';
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, LabelList } from 'recharts';
 
 const FunnelChart = ({ data }) => {
-    // Calculate percentages relative to the first item (Clicks)
-    const maxVal = data[0]?.value || 1;
-    const processedData = data.map(d => ({
-        ...d,
-        percentage: ((d.value / maxVal) * 100).toFixed(2) + ' %'
-    }));
+    // Find absolute max value to normalize bar widths
+    // The first item (Clics) is usually the largest in a funnel
+    const maxVal = Math.max(...data.map(d => d.value)) || 1;
 
     return (
-        <div className="chart-container">
-            {/* <h3>Conversion Funnel</h3> */}
-            <div style={{ width: '100%', height: 200 }}>
-                <ResponsiveContainer width="100%" height="100%">
-                    <BarChart
-                        layout="vertical"
-                        data={processedData}
-                        margin={{ top: 10, right: 30, left: 40, bottom: 10 }}
-                        barCategoryGap={5}
-                    >
-                        <XAxis type="number" hide />
-                        <YAxis
-                            dataKey="name"
-                            type="category"
-                            tick={{ fontSize: 12, fill: '#666' }}
-                            width={100}
-                        />
-                        <Tooltip
-                            cursor={{ fill: 'transparent' }}
-                            contentStyle={{ backgroundColor: '#242424', borderRadius: '5px', border: 'none', color: '#fff' }}
-                        />
-                        <Bar dataKey="value" radius={[0, 5, 5, 0]} barSize={30}>
-                            {processedData.map((entry, index) => (
-                                <Cell key={`cell-${index}`} fill={entry.fill} />
-                            ))}
-                            <LabelList dataKey="percentage" position="right" fill="#fff" fontSize={12} offset={10} />
-                        </Bar>
-                    </BarChart>
-                </ResponsiveContainer>
+        <div className="funnel-container">
+            <div className="funnel-bars-centered">
+                {data.map((item, index) => {
+                    // Calculate relative percentage for width of the bar
+                    const widthPercent = Math.max((item.value / maxVal) * 100, 1); // Min 1% visibility
+                    const percentageLabel = ((item.value / data[0].value) * 100).toFixed(2) + ' %';
+
+                    return (
+                        <div key={index} className="funnel-row-centered">
+                            {/* Label: Clics, Conversaciones, etc */}
+                            <div className="funnel-label-col">{item.name}</div>
+
+                            {/* Bar Area: Centered */}
+                            <div className="funnel-bar-wrapper">
+                                <div
+                                    className="funnel-bar-centered"
+                                    style={{
+                                        width: `${widthPercent}%`,
+                                        backgroundColor: item.fill || '#06b6d4',
+                                        // Dynamic opacity for cleaner look? Or solid colors from data.
+                                    }}
+                                    title={`${item.name}: ${item.value}`}
+                                >
+                                    {/* Optional: Value inside bar if it clears width */}
+                                    {/* <span className="bar-value-text">{item.value}</span> */}
+                                </div>
+                            </div>
+
+                            {/* Percentage Label on right */}
+                            <div style={{
+                                width: '70px',
+                                paddingLeft: '10px',
+                                fontSize: '0.8rem',
+                                color: '#555',
+                                fontWeight: '600'
+                            }}>
+                                {percentageLabel}
+                            </div>
+                        </div>
+                    );
+                })}
             </div>
         </div>
     );

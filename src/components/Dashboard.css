@@ -235,13 +235,17 @@ body {
   flex-shrink: 0;
 }
 
+
 .funnel-bar-wrapper {
   flex: 1;
   display: flex;
+  justify-content: center;
+  /* Center the bars */
 }
 
 .funnel-bar-centered {
-  height: 100%;
+  height: 24px;
+  /* Fixed height to prevents collapse */
   display: flex;
   align-items: center;
   justify-content: flex-end;
