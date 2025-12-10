@@ -1,6 +1,6 @@
 export const calculateMetrics = (data, inputs) => {
     const { pedidos, simlaFiltradoCount, simlaFiltrado } = data;
-    const { inversionUSD, clics } = inputs;
+    const { inversionUSD, clics, topProductsCount = 5 } = inputs;
     const TIPO_CAMBIO = 26.42;
 
     // 1. Total Venta
@@ -46,7 +46,7 @@ export const calculateMetrics = (data, inputs) => {
     const topProducts = Object.entries(productCounts)
         .map(([name, count]) => ({ name, count }))
         .sort((a, b) => b.count - a.count)
-        .slice(0, 5);
+        .slice(0, topProductsCount);
 
     // Funnel
     // Clics (Manual) -> Conversaciones (Simla Filtrado) -> Ventas (Pedidos Matcheados)

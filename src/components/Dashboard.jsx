@@ -24,7 +24,7 @@ const Dashboard = () => {
     const [isProcessing, setIsProcessing] = useState(false);
     const [error, setError] = useState(null);
     const [data, setData] = useState(null);
-    const [config, setConfig] = useState({ inversionUSD: 25.52, tipoCambio: 26.42, clics: 7796 });
+    const [config, setConfig] = useState({ inversionUSD: 25.52, tipoCambio: 26.42, clics: 7796, topProductsCount: 5 });
 
     const handleFileChange = (key, file) => {
         setFiles(prev => ({ ...prev, [key]: file }));

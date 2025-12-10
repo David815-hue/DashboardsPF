@@ -43,6 +43,17 @@ const ManualInputs = ({ config, onConfigChange }) => {
                         onChange={(e) => handleChange('clics', e.target.value)}
                     />
                 </div>
+
+                <div className="input-group">
+                    <label>Top Productos</label>
+                    <input
+                        type="number"
+                        min="1"
+                        max="20"
+                        value={config.topProductsCount}
+                        onChange={(e) => handleChange('topProductsCount', e.target.value)}
+                    />
+                </div>
             </div>
         </div>
     );
