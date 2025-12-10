@@ -5,8 +5,11 @@ import TopProductsChart from './TopProductsChart';
 import FunnelChart from './FunnelChart';
 import FileUploader from './FileUploader';
 import ManualInputs from './ManualInputs';
+import EcommerceDashboard from './EcommerceDashboard';
 import { processData } from '../utils/excelProcessor';
 import { calculateMetrics } from '../utils/metricsCalculator';
+import { processEcommerceData } from '../utils/ecommerceProcessor';
+import { calculateEcommerceMetrics } from '../utils/ecommerceMetrics';
 import { saveSnapshot, loadSnapshot, getSnapshotsByMonth, deleteSnapshot, calculateMonthlyAggregate } from '../firebase/snapshotService';
 import './Dashboard.css';
 
@@ -41,6 +44,7 @@ const Dashboard = () => {
     const [error, setError] = useState(null);
     const [successMessage, setSuccessMessage] = useState(null);
     const [data, setData] = useState(null);
+    const [ecommerceData, setEcommerceData] = useState(null);
     const [config, setConfig] = useState({ inversionUSD: 25.52, tipoCambio: 26.42, clics: 7796, topProductsCount: 5 });
 
     // Snapshot management
@@ -58,7 +62,7 @@ const Dashboard = () => {
     const [isDashboardDropdownOpen, setIsDashboardDropdownOpen] = useState(false);
     const DASHBOARD_TABS = [
         { id: 'venta-meta', label: 'Venta Meta', icon: '📊' },
-        { id: 'agregadores', label: 'Agregadores', icon: '🛒' },
+        { id: 'ecommerce', label: 'Venta E-commerce', icon: '🛒' },
         { id: 'rms', label: 'RMS', icon: '📈' }
     ];
 
@@ -85,8 +89,15 @@ const Dashboard = () => {
         setIsProcessing(true);
         setError(null);
         try {
-            const result = await processData(files);
-            setData(result);
+            if (activeTab === 'ecommerce') {
+                // E-commerce processing (Albatross + RMS only)
+                const result = await processEcommerceData(files);
+                setEcommerceData(result);
+            } else {
+                // Venta Meta processing (Albatross + RMS + SIMLA)
+                const result = await processData(files);
+                setData(result);
+            }
             setSelectedMonth(null);
             setSelectedWeek(null);
             setIsConfigOpen(false);
@@ -202,6 +213,12 @@ const Dashboard = () => {
 
         return null;
     }, [data, config, selectedMonth, selectedWeek, snapshotsByMonth]);
+
+    // E-commerce metrics calculation
+    const ecommerceMetrics = useMemo(() => {
+        if (!ecommerceData) return null;
+        return calculateEcommerceMetrics(ecommerceData);
+    }, [ecommerceData]);
 
     const formatMonthLabel = (monthKey) => {
         const [year, month] = monthKey.split('-');
@@ -338,7 +355,7 @@ const Dashboard = () => {
                             <button className="close-btn" onClick={() => setIsConfigOpen(false)}><X size={20} /></button>
                         </div>
                         <div className="config-modal-content">
-                            <FileUploader files={files} onFileChange={handleFileChange} onProcess={handleProcess} isProcessing={isProcessing} />
+                            <FileUploader files={files} onFileChange={handleFileChange} onProcess={handleProcess} isProcessing={isProcessing} dashboardType={activeTab} />
                             <div className="divider"></div>
                             <ManualInputs config={config} onConfigChange={setConfig} />
                             <div className="divider"></div>
@@ -377,38 +394,54 @@ const Dashboard = () => {
                 <Logo />
             </header>
 
-            {metrics ? (
-                <div className="dashboard-content">
-                    <div className="dashboard-layout">
-                        <div className="left-column">
-                            <div className="kpi-grid-container">
-                                <KPICard title="Total Venta" value={metrics.totalVenta} format="currency" suffix=" mil" />
-                                <KPICard title="Cantidad de Pedidos" value={metrics.cantidadPedidos} format="number" />
-                                <KPICard title="Venta TGU" value={metrics.ventaTGU} format="currency" />
-                                <KPICard title="Ticket Promedio" value={metrics.ticketPromedio} format="currency" />
-                                <KPICard title="Venta SPS" value={metrics.ventaSPS} format="currency" suffix=" mil" />
-                                <KPICard title="Tasa de Conversion" value={metrics.tasaConversion} format="percent" suffix="%" />
-                                <div className="kpi-centered-row">
-                                    <KPICard title="ROAS" value={typeof metrics.roas === 'number' ? metrics.roas.toFixed(2) : metrics.roas} format="decimal" />
+            {/* Dashboard Content - Switch based on active tab */}
+            {activeTab === 'ecommerce' ? (
+                ecommerceMetrics ? (
+                    <EcommerceDashboard metrics={ecommerceMetrics} />
+                ) : (
+                    <div className="empty-state">
+                        <p>⚠️ No hay datos de E-commerce cargados</p>
+                        <button className="process-btn" onClick={() => setIsConfigOpen(true)}>Configurar Dashboard</button>
+                    </div>
+                )
+            ) : activeTab === 'venta-meta' ? (
+                metrics ? (
+                    <div className="dashboard-content">
+                        <div className="dashboard-layout">
+                            <div className="left-column">
+                                <div className="kpi-grid-container">
+                                    <KPICard title="Total Venta" value={metrics.totalVenta} format="currency" suffix=" mil" />
+                                    <KPICard title="Cantidad de Pedidos" value={metrics.cantidadPedidos} format="number" />
+                                    <KPICard title="Venta TGU" value={metrics.ventaTGU} format="currency" />
+                                    <KPICard title="Ticket Promedio" value={metrics.ticketPromedio} format="currency" />
+                                    <KPICard title="Venta SPS" value={metrics.ventaSPS} format="currency" suffix=" mil" />
+                                    <KPICard title="Tasa de Conversion" value={metrics.tasaConversion} format="percent" suffix="%" />
+                                    <div className="kpi-centered-row">
+                                        <KPICard title="ROAS" value={typeof metrics.roas === 'number' ? metrics.roas.toFixed(2) : metrics.roas} format="decimal" />
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="right-column">
+                                <div className="chart-wrapper">
+                                    <h3 className="chart-title">Top Productos</h3>
+                                    <TopProductsChart data={metrics.topProducts} />
+                                </div>
+                                <div className="chart-wrapper">
+                                    <FunnelChart data={metrics.embudoData} />
                                 </div>
                             </div>
                         </div>
-
-                        <div className="right-column">
-                            <div className="chart-wrapper">
-                                <h3 className="chart-title">Top Productos</h3>
-                                <TopProductsChart data={metrics.topProducts} />
-                            </div>
-                            <div className="chart-wrapper">
-                                <FunnelChart data={metrics.embudoData} />
-                            </div>
-                        </div>
                     </div>
-                </div>
+                ) : (
+                    <div className="empty-state">
+                        <p>⚠️ No hay datos cargados</p>
+                        <button className="process-btn" onClick={() => setIsConfigOpen(true)}>Configurar Dashboard</button>
+                    </div>
+                )
             ) : (
                 <div className="empty-state">
-                    <p>⚠️ No hay datos cargados</p>
-                    <button className="process-btn" onClick={() => setIsConfigOpen(true)}>Configurar Dashboard</button>
+                    <p>🚧 Dashboard RMS en construcción</p>
                 </div>
             )}
         </div>

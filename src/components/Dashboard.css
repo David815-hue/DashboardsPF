@@ -855,3 +855,47 @@ body {
     transform: translateX(-50%) translateY(0);
   }
 }
+
+/* ======================= */
+/* E-COMMERCE DASHBOARD */
+/* ======================= */
+
+.ecommerce-layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 25px;
+  height: 100%;
+  width: 100%;
+  padding: 10px 0;
+}
+
+.ecommerce-left {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  overflow: hidden;
+}
+
+.ecommerce-right {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  overflow: hidden;
+}
+
+.ecommerce-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+.motivos-chart {
+  flex: 1;
+  min-height: 200px;
+}
+
+.pie-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
