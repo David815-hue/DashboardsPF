@@ -108,3 +108,75 @@ export const getSnapshotsByMonth = async () => {
 
     return { success: true, data: grouped };
 };
+
+/**
+ * Calculate aggregated metrics for a month (sum of all weeks)
+ * @param {Array} weeklySnapshots - Array of weekly snapshots for the month
+ */
+export const calculateMonthlyAggregate = (weeklySnapshots) => {
+    if (!weeklySnapshots || weeklySnapshots.length === 0) return null;
+
+    let totalVenta = 0;
+    let cantidadPedidos = 0;
+    let ventaTGU = 0;
+    let ventaSPS = 0;
+    let totalClics = 0;
+    let totalConversaciones = 0;
+    let totalInversion = 0;
+
+    const productCountsMap = {};
+
+    weeklySnapshots.forEach(snap => {
+        const m = snap.metrics;
+        if (m) {
+            totalVenta += m.totalVenta || 0;
+            cantidadPedidos += m.cantidadPedidos || 0;
+            ventaTGU += m.ventaTGU || 0;
+            ventaSPS += m.ventaSPS || 0;
+
+            if (m.embudoData) {
+                m.embudoData.forEach(item => {
+                    if (item.name === 'Clics') totalClics += item.value || 0;
+                    if (item.name === 'Conversaciones') totalConversaciones += item.value || 0;
+                });
+            }
+
+            if (m.topProducts) {
+                m.topProducts.forEach(p => {
+                    productCountsMap[p.name] = (productCountsMap[p.name] || 0) + p.count;
+                });
+            }
+        }
+
+        if (snap.config) {
+            totalInversion += snap.config.inversionUSD || 0;
+        }
+    });
+
+    const ticketPromedio = cantidadPedidos > 0 ? totalVenta / cantidadPedidos : 0;
+    const tasaConversion = totalConversaciones > 0 ? (cantidadPedidos / totalConversaciones) * 100 : 0;
+    const roas = totalInversion > 0 ? (totalVenta / 26.42) / totalInversion : 0;
+
+    const topProducts = Object.entries(productCountsMap)
+        .map(([name, count]) => ({ name, count }))
+        .sort((a, b) => b.count - a.count)
+        .slice(0, 5);
+
+    const embudoData = [
+        { name: 'Clics', value: totalClics, fill: '#67e8f9' },
+        { name: 'Conversaciones', value: totalConversaciones, fill: '#22d3ee' },
+        { name: 'Ventas', value: cantidadPedidos, fill: '#06b6d4' }
+    ];
+
+    return {
+        totalVenta,
+        cantidadPedidos,
+        ventaTGU,
+        ventaSPS,
+        ticketPromedio,
+        tasaConversion,
+        roas,
+        topProducts,
+        embudoData
+    };
+};

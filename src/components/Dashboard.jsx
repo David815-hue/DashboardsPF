@@ -7,7 +7,7 @@ import FileUploader from './FileUploader';
 import ManualInputs from './ManualInputs';
 import { processData } from '../utils/excelProcessor';
 import { calculateMetrics } from '../utils/metricsCalculator';
-import { saveSnapshot, loadSnapshot, getAllSnapshots, deleteSnapshot } from '../firebase/snapshotService';
+import { saveSnapshot, loadSnapshot, getSnapshotsByMonth, deleteSnapshot, calculateMonthlyAggregate } from '../firebase/snapshotService';
 import './Dashboard.css';
 
 const Logo = () => (
@@ -19,13 +19,18 @@ const Logo = () => (
     </div>
 );
 
-// Get current week's Monday date
 const getCurrentWeekMonday = () => {
     const now = new Date();
     const day = now.getDay();
     const diff = now.getDate() - day + (day === 0 ? -6 : 1);
     const monday = new Date(now.setDate(diff));
     return monday.toISOString().split('T')[0];
+};
+
+const MONTH_NAMES = {
+    '01': 'Enero', '02': 'Febrero', '03': 'Marzo', '04': 'Abril',
+    '05': 'Mayo', '06': 'Junio', '07': 'Julio', '08': 'Agosto',
+    '09': 'Septiembre', '10': 'Octubre', '11': 'Noviembre', '12': 'Diciembre'
 };
 
 const Dashboard = () => {
@@ -40,9 +45,13 @@ const Dashboard = () => {
 
     // Snapshot management
     const [snapshotDate, setSnapshotDate] = useState(getCurrentWeekMonday());
-    const [savedSnapshots, setSavedSnapshots] = useState([]);
-    const [selectedSnapshot, setSelectedSnapshot] = useState('current');
-    const [isSnapshotDropdownOpen, setIsSnapshotDropdownOpen] = useState(false);
+    const [snapshotsByMonth, setSnapshotsByMonth] = useState({});
+
+    // Hierarchical selection
+    const [selectedMonth, setSelectedMonth] = useState(null); // null = current data, YYYY-MM = month
+    const [selectedWeek, setSelectedWeek] = useState(null); // null = month aggregate, YYYY-MM-DD = specific week
+    const [isMonthDropdownOpen, setIsMonthDropdownOpen] = useState(false);
+    const [isWeekDropdownOpen, setIsWeekDropdownOpen] = useState(false);
 
     // Load available snapshots on mount
     useEffect(() => {
@@ -50,9 +59,9 @@ const Dashboard = () => {
     }, []);
 
     const loadAvailableSnapshots = async () => {
-        const result = await getAllSnapshots();
+        const result = await getSnapshotsByMonth();
         if (result.success) {
-            setSavedSnapshots(result.data);
+            setSnapshotsByMonth(result.data);
         }
     };
 
@@ -67,7 +76,8 @@ const Dashboard = () => {
         try {
             const result = await processData(files);
             setData(result);
-            setSelectedSnapshot('current');
+            setSelectedMonth(null);
+            setSelectedWeek(null);
             setIsConfigOpen(false);
         } catch (err) {
             setError('Error al procesar: ' + err.message);
@@ -117,26 +127,33 @@ const Dashboard = () => {
         }
     };
 
-    const handleLoadSnapshot = async (snapshotId) => {
-        if (snapshotId === 'current') {
-            setSelectedSnapshot('current');
-            setIsSnapshotDropdownOpen(false);
-            return;
-        }
-
-        const result = await loadSnapshot(snapshotId);
-        if (result.success) {
-            setConfig(result.data.config);
-            // Create a fake data object that will make metrics return the saved values
-            setData({
-                _isSnapshot: true,
-                _snapshotMetrics: result.data.metrics
-            });
-            setSelectedSnapshot(snapshotId);
+    const handleSelectMonth = (monthKey) => {
+        if (monthKey === 'current') {
+            setSelectedMonth(null);
+            setSelectedWeek(null);
         } else {
-            setError('Error al cargar: ' + result.error);
+            setSelectedMonth(monthKey);
+            setSelectedWeek(null); // Show aggregate by default
         }
-        setIsSnapshotDropdownOpen(false);
+        setIsMonthDropdownOpen(false);
+    };
+
+    const handleSelectWeek = async (weekId) => {
+        if (weekId === 'aggregate') {
+            setSelectedWeek(null);
+        } else {
+            const result = await loadSnapshot(weekId);
+            if (result.success) {
+                setData({
+                    _isSnapshot: true,
+                    _snapshotMetrics: result.data.metrics
+                });
+                setSelectedWeek(weekId);
+            } else {
+                setError('Error al cargar: ' + result.error);
+            }
+        }
+        setIsWeekDropdownOpen(false);
     };
 
     const handleDeleteSnapshot = async (snapshotId, e) => {
@@ -144,75 +161,127 @@ const Dashboard = () => {
         if (confirm(`¿Eliminar snapshot del ${snapshotId}?`)) {
             await deleteSnapshot(snapshotId);
             loadAvailableSnapshots();
-            if (selectedSnapshot === snapshotId) {
-                setSelectedSnapshot('current');
+            if (selectedWeek === snapshotId) {
+                setSelectedWeek(null);
             }
         }
     };
 
+    // Calculate metrics based on selection
     const metrics = useMemo(() => {
-        if (!data) return null;
+        // Current data (freshly processed)
+        if (!selectedMonth && data && !data._isSnapshot) {
+            const metricsResult = calculateMetrics(data, config);
+            return {
+                ...metricsResult.kpis,
+                embudoData: metricsResult.charts.funnelData,
+                topProducts: metricsResult.charts.topProducts
+            };
+        }
 
-        // If loaded from snapshot, return the saved metrics directly
-        if (data._isSnapshot) {
+        // Loaded snapshot (specific week)
+        if (data && data._isSnapshot) {
             return data._snapshotMetrics;
         }
 
-        const metricsResult = calculateMetrics(data, config);
-        return {
-            ...metricsResult.kpis,
-            embudoData: metricsResult.charts.funnelData,
-            topProducts: metricsResult.charts.topProducts
-        };
-    }, [data, config]);
+        // Month aggregate
+        if (selectedMonth && !selectedWeek && snapshotsByMonth[selectedMonth]) {
+            return calculateMonthlyAggregate(snapshotsByMonth[selectedMonth]);
+        }
 
-    const formatSnapshotLabel = (dateId) => {
-        const date = new Date(dateId + 'T00:00:00');
-        return `Semana ${date.toLocaleDateString('es-HN', { day: '2-digit', month: 'short', year: 'numeric' })}`;
+        return null;
+    }, [data, config, selectedMonth, selectedWeek, snapshotsByMonth]);
+
+    const formatMonthLabel = (monthKey) => {
+        const [year, month] = monthKey.split('-');
+        return `${MONTH_NAMES[month]} ${year}`;
     };
+
+    const formatWeekLabel = (dateId) => {
+        const date = new Date(dateId + 'T00:00:00');
+        return `Semana ${date.getDate()} ${MONTH_NAMES[String(date.getMonth() + 1).padStart(2, '0')]}`;
+    };
+
+    const availableMonths = Object.keys(snapshotsByMonth).sort().reverse();
 
     return (
         <div className="dashboard">
-            {/* Snapshot Selector - Top Left */}
-            {savedSnapshots.length > 0 && (
-                <div className="snapshot-selector">
+            {/* Hierarchical Selectors */}
+            <div className="period-selectors">
+                {/* Month Selector */}
+                <div className="selector-group">
                     <button
-                        className="snapshot-selector-btn"
-                        onClick={() => setIsSnapshotDropdownOpen(!isSnapshotDropdownOpen)}
+                        className="selector-btn"
+                        onClick={() => { setIsMonthDropdownOpen(!isMonthDropdownOpen); setIsWeekDropdownOpen(false); }}
                     >
                         <Calendar size={16} />
-                        {selectedSnapshot === 'current' ? 'Datos Actuales' : formatSnapshotLabel(selectedSnapshot)}
+                        {selectedMonth ? formatMonthLabel(selectedMonth) : 'Datos Actuales'}
                         <ChevronDown size={16} />
                     </button>
 
-                    {isSnapshotDropdownOpen && (
-                        <div className="snapshot-dropdown">
+                    {isMonthDropdownOpen && (
+                        <div className="selector-dropdown">
                             <div
-                                className={`snapshot-option ${selectedSnapshot === 'current' ? 'active' : ''}`}
-                                onClick={() => handleLoadSnapshot('current')}
+                                className={`selector-option ${!selectedMonth ? 'active' : ''}`}
+                                onClick={() => handleSelectMonth('current')}
                             >
                                 📊 Datos Actuales
                             </div>
-                            <div className="snapshot-divider"></div>
-                            {savedSnapshots.map(snap => (
+                            {availableMonths.length > 0 && <div className="selector-divider"></div>}
+                            {availableMonths.map(monthKey => (
                                 <div
-                                    key={snap.id}
-                                    className={`snapshot-option ${selectedSnapshot === snap.id ? 'active' : ''}`}
-                                    onClick={() => handleLoadSnapshot(snap.id)}
+                                    key={monthKey}
+                                    className={`selector-option ${selectedMonth === monthKey ? 'active' : ''}`}
+                                    onClick={() => handleSelectMonth(monthKey)}
                                 >
-                                    <span>📅 {formatSnapshotLabel(snap.id)}</span>
-                                    <button
-                                        className="snapshot-delete-btn"
-                                        onClick={(e) => handleDeleteSnapshot(snap.id, e)}
-                                    >
-                                        <Trash2 size={14} />
-                                    </button>
+                                    📆 {formatMonthLabel(monthKey)}
+                                    <span className="week-count">{snapshotsByMonth[monthKey].length} sem</span>
                                 </div>
                             ))}
                         </div>
                     )}
                 </div>
-            )}
+
+                {/* Week Selector (only visible when month is selected) */}
+                {selectedMonth && snapshotsByMonth[selectedMonth] && (
+                    <div className="selector-group">
+                        <button
+                            className="selector-btn week-btn"
+                            onClick={() => { setIsWeekDropdownOpen(!isWeekDropdownOpen); setIsMonthDropdownOpen(false); }}
+                        >
+                            {selectedWeek ? formatWeekLabel(selectedWeek) : 'Acumulado Mensual'}
+                            <ChevronDown size={16} />
+                        </button>
+
+                        {isWeekDropdownOpen && (
+                            <div className="selector-dropdown">
+                                <div
+                                    className={`selector-option ${!selectedWeek ? 'active' : ''}`}
+                                    onClick={() => handleSelectWeek('aggregate')}
+                                >
+                                    📊 Acumulado Mensual
+                                </div>
+                                <div className="selector-divider"></div>
+                                {snapshotsByMonth[selectedMonth].map(snap => (
+                                    <div
+                                        key={snap.id}
+                                        className={`selector-option ${selectedWeek === snap.id ? 'active' : ''}`}
+                                        onClick={() => handleSelectWeek(snap.id)}
+                                    >
+                                        <span>📅 {formatWeekLabel(snap.id)}</span>
+                                        <button
+                                            className="snapshot-delete-btn"
+                                            onClick={(e) => handleDeleteSnapshot(snap.id, e)}
+                                        >
+                                            <Trash2 size={14} />
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                )}
+            </div>
 
             {/* Config Toggle Button */}
             <button className="config-toggle-btn" onClick={() => setIsConfigOpen(true)} title="Configuración">
@@ -220,9 +289,7 @@ const Dashboard = () => {
             </button>
 
             {/* Success Toast */}
-            {successMessage && (
-                <div className="success-toast">{successMessage}</div>
-            )}
+            {successMessage && <div className="success-toast">{successMessage}</div>}
 
             {/* Config Modal */}
             {isConfigOpen && (
@@ -238,7 +305,6 @@ const Dashboard = () => {
                             <ManualInputs config={config} onConfigChange={setConfig} />
                             <div className="divider"></div>
 
-                            {/* Save Snapshot Section */}
                             <div className="snapshot-section">
                                 <h3 className="inputs-title">
                                     <Save size={20} />
@@ -256,7 +322,7 @@ const Dashboard = () => {
                                     <button
                                         className="save-snapshot-btn"
                                         onClick={handleSaveSnapshot}
-                                        disabled={isSaving || !data}
+                                        disabled={isSaving || !data || data._isSnapshot}
                                     >
                                         {isSaving ? 'Guardando...' : 'Guardar'}
                                     </button>
@@ -276,7 +342,6 @@ const Dashboard = () => {
             {metrics ? (
                 <div className="dashboard-content">
                     <div className="dashboard-layout">
-                        {/* Left: KPIs */}
                         <div className="left-column">
                             <div className="kpi-grid-container">
                                 <KPICard title="Total Venta" value={metrics.totalVenta} format="currency" suffix=" mil" />
@@ -291,7 +356,6 @@ const Dashboard = () => {
                             </div>
                         </div>
 
-                        {/* Right: Charts */}
                         <div className="right-column">
                             <div className="chart-wrapper">
                                 <h3 className="chart-title">Top Productos</h3>
