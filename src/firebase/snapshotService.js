@@ -372,12 +372,14 @@ const WHATSAPP_COLLECTION = 'snapshots-whatsapp';
  */
 export const saveWhatsAppSnapshot = async (dateId, data) => {
     try {
+        console.log('Saving WhatsApp snapshot:', { dateId, data });
         const docRef = doc(db, WHATSAPP_COLLECTION, dateId);
         await setDoc(docRef, {
             ...data,
             savedAt: new Date().toISOString(),
             dateId
         });
+        console.log('WhatsApp snapshot saved successfully');
         return { success: true };
     } catch (error) {
         console.error('Error saving WhatsApp snapshot:', error);

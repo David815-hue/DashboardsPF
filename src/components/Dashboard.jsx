@@ -219,12 +219,23 @@ const Dashboard = () => {
             setSelectedWeek(null);
         } else {
             // Use correct load function based on activeTab
-            const loadFn = activeTab === 'ecommerce' ? loadEcommerceSnapshot : loadSnapshot;
+            let loadFn;
+            if (activeTab === 'ecommerce') {
+                loadFn = loadEcommerceSnapshot;
+            } else if (activeTab === 'whatsapp') {
+                loadFn = loadWhatsAppSnapshot;
+            } else {
+                loadFn = loadSnapshot;
+            }
             const result = await loadFn(weekId);
             if (result.success) {
                 if (activeTab === 'ecommerce') {
-                    // For E-commerce, set ecommerceData with snapshot flag
                     setEcommerceData({
+                        _isSnapshot: true,
+                        _snapshotMetrics: result.data
+                    });
+                } else if (activeTab === 'whatsapp') {
+                    setWhatsappData({
                         _isSnapshot: true,
                         _snapshotMetrics: result.data
                     });
@@ -246,7 +257,14 @@ const Dashboard = () => {
         e.stopPropagation();
         if (confirm(`¿Eliminar snapshot del ${snapshotId}?`)) {
             // Use correct delete function based on activeTab
-            const deleteFn = activeTab === 'ecommerce' ? deleteEcommerceSnapshot : deleteSnapshot;
+            let deleteFn;
+            if (activeTab === 'ecommerce') {
+                deleteFn = deleteEcommerceSnapshot;
+            } else if (activeTab === 'whatsapp') {
+                deleteFn = deleteWhatsAppSnapshot;
+            } else {
+                deleteFn = deleteSnapshot;
+            }
             await deleteFn(snapshotId);
             loadAvailableSnapshots();
             if (selectedWeek === snapshotId) {
@@ -303,9 +321,29 @@ const Dashboard = () => {
 
     // WhatsApp Marketing metrics calculation
     const whatsappMetrics = useMemo(() => {
+        // If snapshot is loaded, use snapshot metrics
+        if (whatsappData?._isSnapshot && whatsappData._snapshotMetrics) {
+            return {
+                page1: {
+                    kpis: whatsappData._snapshotMetrics.kpis,
+                    charts: whatsappData._snapshotMetrics.charts
+                },
+                page2: {
+                    tablaAsesores: [],
+                    ventaPorPalabraClave: []
+                }
+            };
+        }
+
+        // Month aggregate for WhatsApp
+        if (activeTab === 'whatsapp' && selectedMonth && !selectedWeek && whatsappSnapshotsByMonth[selectedMonth]) {
+            return calculateWhatsAppMonthlyAggregate(whatsappSnapshotsByMonth[selectedMonth]);
+        }
+
+        // Fresh WhatsApp data
         if (!whatsappData) return null;
         return calculateWhatsAppMetrics(whatsappData, config);
-    }, [whatsappData, config]);
+    }, [whatsappData, config, activeTab, selectedMonth, selectedWeek, whatsappSnapshotsByMonth]);
 
     const formatMonthLabel = (monthKey) => {
         const [year, month] = monthKey.split('-');
@@ -318,7 +356,11 @@ const Dashboard = () => {
     };
 
     // Get available months from correct collection based on activeTab
-    const currentSnapshotsByMonth = activeTab === 'ecommerce' ? ecommerceSnapshotsByMonth : snapshotsByMonth;
+    const currentSnapshotsByMonth = activeTab === 'ecommerce'
+        ? ecommerceSnapshotsByMonth
+        : activeTab === 'whatsapp'
+            ? whatsappSnapshotsByMonth
+            : snapshotsByMonth;
     const availableMonths = Object.keys(currentSnapshotsByMonth).sort().reverse();
 
     return (
