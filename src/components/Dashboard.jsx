@@ -6,10 +6,13 @@ import FunnelChart from './FunnelChart';
 import FileUploader from './FileUploader';
 import ManualInputs from './ManualInputs';
 import EcommerceDashboard from './EcommerceDashboard';
+import WhatsAppDashboard from './WhatsAppDashboard';
 import { processData } from '../utils/excelProcessor';
 import { calculateMetrics } from '../utils/metricsCalculator';
 import { processEcommerceData } from '../utils/ecommerceProcessor';
 import { calculateEcommerceMetrics } from '../utils/ecommerceMetrics';
+import { processWhatsAppMarketingData } from '../utils/whatsappProcessor';
+import { calculateWhatsAppMetrics } from '../utils/whatsappMetrics';
 import {
     saveSnapshot, loadSnapshot, getSnapshotsByMonth, deleteSnapshot, calculateMonthlyAggregate,
     saveEcommerceSnapshot, loadEcommerceSnapshot, getEcommerceSnapshotsByMonth, deleteEcommerceSnapshot, calculateEcommerceMonthlyAggregate
@@ -48,7 +51,8 @@ const Dashboard = () => {
     const [successMessage, setSuccessMessage] = useState(null);
     const [data, setData] = useState(null);
     const [ecommerceData, setEcommerceData] = useState(null);
-    const [config, setConfig] = useState({ inversionUSD: 25.52, tipoCambio: 26.42, clics: 7796, topProductsCount: 5 });
+    const [whatsappData, setWhatsappData] = useState(null);
+    const [config, setConfig] = useState({ inversionUSD: 25.52, tipoCambio: 26.42, clics: 7796, topProductsCount: 5, totalEnvios: 94, enviosTGU: 74, enviosSPS: 20, costoEnvioLps: 2.11 });
 
     // Snapshot management
     const [snapshotDate, setSnapshotDate] = useState(getCurrentWeekMonday());
@@ -67,7 +71,7 @@ const Dashboard = () => {
     const DASHBOARD_TABS = [
         { id: 'venta-meta', label: 'Venta Meta', icon: '📊' },
         { id: 'ecommerce', label: 'Venta E-commerce', icon: '🛒' },
-        { id: 'rms', label: 'RMS', icon: '📈' }
+        { id: 'whatsapp', label: 'WhatsApp Marketing', icon: '💬' }
     ];
 
     const currentDashboard = DASHBOARD_TABS.find(t => t.id === activeTab);
@@ -103,6 +107,10 @@ const Dashboard = () => {
                 // E-commerce processing (Albatross + RMS only)
                 const result = await processEcommerceData(files);
                 setEcommerceData(result);
+            } else if (activeTab === 'whatsapp') {
+                // WhatsApp Marketing processing (Albatross + RMS + SIMLA)
+                const result = await processWhatsAppMarketingData(files);
+                setWhatsappData(result);
             } else {
                 // Venta Meta processing (Albatross + RMS + SIMLA)
                 const result = await processData(files);
@@ -275,6 +283,12 @@ const Dashboard = () => {
         if (!ecommerceData) return null;
         return calculateEcommerceMetrics(ecommerceData);
     }, [ecommerceData, activeTab, selectedMonth, selectedWeek, ecommerceSnapshotsByMonth]);
+
+    // WhatsApp Marketing metrics calculation
+    const whatsappMetrics = useMemo(() => {
+        if (!whatsappData) return null;
+        return calculateWhatsAppMetrics(whatsappData, config);
+    }, [whatsappData, config]);
 
     const formatMonthLabel = (monthKey) => {
         const [year, month] = monthKey.split('-');
@@ -502,9 +516,18 @@ const Dashboard = () => {
                         <button className="process-btn" onClick={() => setIsConfigOpen(true)}>Configurar Dashboard</button>
                     </div>
                 )
+            ) : activeTab === 'whatsapp' ? (
+                whatsappMetrics ? (
+                    <WhatsAppDashboard metrics={whatsappMetrics} />
+                ) : (
+                    <div className="empty-state">
+                        <p>⚠️ No hay datos de WhatsApp Marketing cargados</p>
+                        <button className="process-btn" onClick={() => setIsConfigOpen(true)}>Configurar Dashboard</button>
+                    </div>
+                )
             ) : (
                 <div className="empty-state">
-                    <p>🚧 Dashboard RMS en construcción</p>
+                    <p>⚠️ Selecciona un dashboard</p>
                 </div>
             )}
         </div>
