@@ -217,6 +217,16 @@ const WhatsAppDashboard = ({ metrics, topProductsCount = 5, keywordCount = 5 }) 
                             <h3 className="chart-title-right">Venta por Ciudad</h3>
                             <ResponsiveContainer width="100%" height="100%">
                                 <PieChart>
+                                    <defs>
+                                        <linearGradient id="grad-teal" x1="0" y1="0" x2="0" y2="1">
+                                            <stop offset="0%" stopColor="#22d3ee" stopOpacity={1} />
+                                            <stop offset="100%" stopColor="#0891b2" stopOpacity={1} />
+                                        </linearGradient>
+                                        <linearGradient id="grad-dark" x1="0" y1="0" x2="0" y2="1">
+                                            <stop offset="0%" stopColor="#374151" stopOpacity={1} />
+                                            <stop offset="100%" stopColor="#111827" stopOpacity={1} />
+                                        </linearGradient>
+                                    </defs>
                                     <Pie
                                         data={pieCiudad}
                                         cx="50%"
@@ -229,7 +239,7 @@ const WhatsAppDashboard = ({ metrics, topProductsCount = 5, keywordCount = 5 }) 
                                         labelLine={true}
                                     >
                                         {pieCiudad.map((entry, index) => (
-                                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                            <Cell key={`cell-${index}`} fill={`url(#grad-${index % 2 === 0 ? 'teal' : 'dark'})`} stroke="none" />
                                         ))}
                                     </Pie>
                                     <Tooltip content={<CustomTooltip />} />
@@ -243,6 +253,16 @@ const WhatsAppDashboard = ({ metrics, topProductsCount = 5, keywordCount = 5 }) 
                             <h3 className="chart-title-right">Venta por Campaña</h3>
                             <ResponsiveContainer width="100%" height="100%">
                                 <PieChart>
+                                    <defs>
+                                        <linearGradient id="grad-teal-2" x1="0" y1="0" x2="0" y2="1">
+                                            <stop offset="0%" stopColor="#22d3ee" stopOpacity={1} />
+                                            <stop offset="100%" stopColor="#0891b2" stopOpacity={1} />
+                                        </linearGradient>
+                                        <linearGradient id="grad-dark-2" x1="0" y1="0" x2="0" y2="1">
+                                            <stop offset="0%" stopColor="#374151" stopOpacity={1} />
+                                            <stop offset="100%" stopColor="#111827" stopOpacity={1} />
+                                        </linearGradient>
+                                    </defs>
                                     <Pie
                                         data={pieCampana}
                                         cx="50%"
@@ -255,7 +275,7 @@ const WhatsAppDashboard = ({ metrics, topProductsCount = 5, keywordCount = 5 }) 
                                         labelLine={true}
                                     >
                                         {pieCampana.map((entry, index) => (
-                                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                            <Cell key={`cell-${index}`} fill={`url(#grad-${index % 2 === 0 ? 'teal-2' : 'dark-2'})`} stroke="none" />
                                         ))}
                                     </Pie>
                                     <Tooltip content={<CustomTooltip />} />

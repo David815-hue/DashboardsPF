@@ -121,6 +121,33 @@ const EcommerceDashboard = ({ metrics, topProductsCount = 6 }) => {
                         <div className="chart-container pie-container">
                             <ResponsiveContainer width="100%" height="100%">
                                 <PieChart>
+                                    <defs>
+                                        {/* Gradients for Pie Chart Slices */}
+                                        <linearGradient id="grad-0" x1="0" y1="0" x2="0" y2="1">
+                                            <stop offset="0%" stopColor="#ff4d4d" stopOpacity={1} />
+                                            <stop offset="100%" stopColor="#990000" stopOpacity={1} />
+                                        </linearGradient>
+                                        <linearGradient id="grad-1" x1="0" y1="0" x2="0" y2="1">
+                                            <stop offset="0%" stopColor="#38bdf8" stopOpacity={1} />
+                                            <stop offset="100%" stopColor="#0284c7" stopOpacity={1} />
+                                        </linearGradient>
+                                        <linearGradient id="grad-2" x1="0" y1="0" x2="0" y2="1">
+                                            <stop offset="0%" stopColor="#4ade80" stopOpacity={1} />
+                                            <stop offset="100%" stopColor="#16a34a" stopOpacity={1} />
+                                        </linearGradient>
+                                        <linearGradient id="grad-3" x1="0" y1="0" x2="0" y2="1">
+                                            <stop offset="0%" stopColor="#fbbf24" stopOpacity={1} />
+                                            <stop offset="100%" stopColor="#d97706" stopOpacity={1} />
+                                        </linearGradient>
+                                        <linearGradient id="grad-4" x1="0" y1="0" x2="0" y2="1">
+                                            <stop offset="0%" stopColor="#a78bfa" stopOpacity={1} />
+                                            <stop offset="100%" stopColor="#7c3aed" stopOpacity={1} />
+                                        </linearGradient>
+                                        <linearGradient id="grad-5" x1="0" y1="0" x2="0" y2="1">
+                                            <stop offset="0%" stopColor="#f472b6" stopOpacity={1} />
+                                            <stop offset="100%" stopColor="#db2777" stopOpacity={1} />
+                                        </linearGradient>
+                                    </defs>
                                     <Pie
                                         data={charts.ventaPorCiudad}
                                         cx="50%"
@@ -133,7 +160,7 @@ const EcommerceDashboard = ({ metrics, topProductsCount = 6 }) => {
                                         labelLine={false}
                                     >
                                         {charts.ventaPorCiudad.map((entry, index) => (
-                                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                            <Cell key={`cell-${index}`} fill={`url(#grad-${index % 6})`} stroke="none" />
                                         ))}
                                     </Pie>
                                     <Legend
