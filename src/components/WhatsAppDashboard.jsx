@@ -178,8 +178,14 @@ const WhatsAppDashboard = ({ metrics }) => {
                             </div>
                             <div className="wa-bottom-chart">
                                 <h3 className="chart-title-center">Top Productos</h3>
-                                <ResponsiveContainer width="100%" height={180}>
+                                <ResponsiveContainer width="100%" height="100%">
                                     <BarChart data={page1.charts.topProductos} margin={{ top: 20, right: 10, left: 10, bottom: 0 }}>
+                                        <defs>
+                                            <linearGradient id="whatsappBarGradient" x1="0" y1="0" x2="0" y2="1">
+                                                <stop offset="0%" stopColor="#22d3ee" stopOpacity={1} />
+                                                <stop offset="100%" stopColor="#0891b2" stopOpacity={1} />
+                                            </linearGradient>
+                                        </defs>
                                         <XAxis
                                             dataKey="name"
                                             tick={{ fontSize: 9, fill: '#666' }}
@@ -187,9 +193,9 @@ const WhatsAppDashboard = ({ metrics }) => {
                                             tickFormatter={(val) => val.length > 10 ? val.substring(0, 10) + '...' : val}
                                         />
                                         <Tooltip content={<CustomTooltip />} cursor={{ fill: 'transparent' }} />
-                                        <Bar dataKey="value">
+                                        <Bar dataKey="value" fill="url(#whatsappBarGradient)">
                                             {page1.charts.topProductos.map((entry, index) => (
-                                                <Cell key={`cell-${index}`} fill="#67e8f9" />
+                                                <Cell key={`cell-${index}`} fill="url(#whatsappBarGradient)" />
                                             ))}
                                         </Bar>
                                     </BarChart>
@@ -205,14 +211,14 @@ const WhatsAppDashboard = ({ metrics }) => {
                         {/* Pie 1: Ciudad */}
                         <div className="wa-pie-wrapper">
                             <h3 className="chart-title-right">Venta por Ciudad</h3>
-                            <ResponsiveContainer width="100%" height={220}>
+                            <ResponsiveContainer width="100%" height="100%">
                                 <PieChart>
                                     <Pie
                                         data={pieCiudad}
                                         cx="50%"
                                         cy="50%"
                                         innerRadius={0}
-                                        outerRadius={70}
+                                        outerRadius={65}
                                         paddingAngle={0}
                                         dataKey="value"
                                         label={renderCustomizedLabel}
@@ -231,14 +237,14 @@ const WhatsAppDashboard = ({ metrics }) => {
                         {/* Pie 2: Campaña */}
                         <div className="wa-pie-wrapper">
                             <h3 className="chart-title-right">Venta por Campaña</h3>
-                            <ResponsiveContainer width="100%" height={220}>
+                            <ResponsiveContainer width="100%" height="100%">
                                 <PieChart>
                                     <Pie
                                         data={pieCampana}
                                         cx="50%"
                                         cy="50%"
                                         innerRadius={0}
-                                        outerRadius={70}
+                                        outerRadius={65}
                                         paddingAngle={0}
                                         dataKey="value"
                                         label={renderCustomizedLabel}
@@ -305,7 +311,7 @@ const WhatsAppDashboard = ({ metrics }) => {
                                     <Tooltip content={<CustomTooltip />} />
                                     <Bar dataKey="value" radius={[4, 4, 0, 0]}>
                                         {page2.ventaPorPalabraClave.slice(0, 10).map((entry, index) => (
-                                            <Cell key={`cell-${index}`} fill="#374151" />
+                                            <Cell key={`cell-${index}`} fill={['#0891b2', '#06b6d4', '#22d3ee', '#38bdf8', '#60a5fa', '#3b82f6', '#2563eb', '#1d4ed8', '#1e40af', '#1e3a8a'][index % 10]} />
                                         ))}
                                     </Bar>
                                 </BarChart>

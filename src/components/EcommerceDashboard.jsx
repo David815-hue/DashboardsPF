@@ -31,11 +31,10 @@ const EcommerceDashboard = ({ metrics }) => {
 
     return (
         <div className="dashboard-content">
-            <div className="ecommerce-layout">
-                {/* Left Column: KPIs + Motivos */}
-                <div className="ecommerce-left">
-                    {/* KPIs Grid */}
-                    <div className="ecommerce-kpi-grid">
+            <div className="ecommerce-grid-layout">
+                {/* Quadrant 1 (Top-Left): KPIs */}
+                <div className="ecommerce-quadrant">
+                    <div className="ecommerce-kpi-grid-quadrant">
                         <KPICard title="Venta Total" value={kpis.ventaTotal} format="currency" suffix=" mil" />
                         <KPICard title="Cantidad de Pedidos" value={kpis.cantidadPedidos} format="number" />
                         <KPICard title="Venta APP" value={kpis.ventaAPP} format="currency" suffix=" mil" />
@@ -43,13 +42,56 @@ const EcommerceDashboard = ({ metrics }) => {
                         <KPICard title="Venta Ecommerce" value={kpis.ventaEcommerce} format="currency" suffix=" mil" />
                         <KPICard title="Pedidos Cancelados" value={kpis.pedidosCancelados} format="number" />
                     </div>
+                </div>
 
-                    {/* Motivos de Cancelación Chart */}
-                    <div className="chart-wrapper motivos-chart">
+                {/* Quadrant 2 (Top-Right): Top Productos */}
+                <div className="ecommerce-quadrant">
+                    <div className="chart-wrapper">
+                        <h3 className="chart-title">Top Productos</h3>
+                        <div className="chart-container">
+                            <ResponsiveContainer width="100%" height="100%">
+                                <BarChart data={charts.topProductos} margin={{ top: 10, right: 20, left: 10, bottom: 60 }}>
+                                    <defs>
+                                        <linearGradient id="ecommerceBarGradient" x1="0" y1="0" x2="0" y2="1">
+                                            <stop offset="0%" stopColor="#FE0000" stopOpacity={1} />
+                                            <stop offset="100%" stopColor="#990000" stopOpacity={1} />
+                                        </linearGradient>
+                                    </defs>
+                                    <XAxis
+                                        dataKey="name"
+                                        tick={{ fontSize: 9, fill: '#666' }}
+                                        angle={0}
+                                        textAnchor="middle"
+                                        interval={0}
+                                        height={60}
+                                        tickFormatter={(val) => val.length > 8 ? val.substring(0, 8) + '...' : val}
+                                    />
+                                    <YAxis tick={{ fontSize: 10, fill: '#666' }} />
+                                    <Tooltip content={<CustomTooltip />} />
+                                    <Bar dataKey="value" radius={[4, 4, 0, 0]} fill="url(#ecommerceBarGradient)">
+                                        {charts.topProductos.map((entry, index) => (
+                                            <Cell key={`cell-${index}`} fill="url(#ecommerceBarGradient)" />
+                                        ))}
+                                    </Bar>
+                                </BarChart>
+                            </ResponsiveContainer>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Quadrant 3 (Bottom-Left): Motivo de Cancelación */}
+                <div className="ecommerce-quadrant">
+                    <div className="chart-wrapper">
                         <h3 className="chart-title">Motivo de Cancelación</h3>
                         <div className="chart-container">
-                            <ResponsiveContainer width="100%" height={180}>
+                            <ResponsiveContainer width="100%" height="100%">
                                 <BarChart data={charts.motivosCancelacion} margin={{ top: 10, right: 20, left: 10, bottom: 40 }}>
+                                    <defs>
+                                        <linearGradient id="ecommerceBarGradient" x1="0" y1="0" x2="0" y2="1">
+                                            <stop offset="0%" stopColor="#FE0000" stopOpacity={1} />
+                                            <stop offset="100%" stopColor="#990000" stopOpacity={1} />
+                                        </linearGradient>
+                                    </defs>
                                     <XAxis
                                         dataKey="name"
                                         tick={{ fontSize: 9, fill: '#666' }}
@@ -59,9 +101,9 @@ const EcommerceDashboard = ({ metrics }) => {
                                     />
                                     <YAxis tick={{ fontSize: 10, fill: '#666' }} />
                                     <Tooltip content={<CustomTooltip />} />
-                                    <Bar dataKey="value" radius={[4, 4, 0, 0]}>
+                                    <Bar dataKey="value" radius={[4, 4, 0, 0]} fill="url(#ecommerceBarGradient)">
                                         {charts.motivosCancelacion.map((entry, index) => (
-                                            <Cell key={`cell-${index}`} fill="#FE0000" />
+                                            <Cell key={`cell-${index}`} fill="url(#ecommerceBarGradient)" />
                                         ))}
                                     </Bar>
                                 </BarChart>
@@ -70,39 +112,12 @@ const EcommerceDashboard = ({ metrics }) => {
                     </div>
                 </div>
 
-                {/* Right Column: Charts */}
-                <div className="ecommerce-right">
-                    {/* Top Productos */}
-                    <div className="chart-wrapper">
-                        <h3 className="chart-title">Top Productos</h3>
-                        <div className="chart-container">
-                            <ResponsiveContainer width="100%" height={200}>
-                                <BarChart data={charts.topProductos} margin={{ top: 10, right: 20, left: 10, bottom: 60 }}>
-                                    <XAxis
-                                        dataKey="name"
-                                        tick={{ fontSize: 8, fill: '#666' }}
-                                        angle={-45}
-                                        textAnchor="end"
-                                        interval={0}
-                                        height={80}
-                                    />
-                                    <YAxis tick={{ fontSize: 10, fill: '#666' }} />
-                                    <Tooltip content={<CustomTooltip />} />
-                                    <Bar dataKey="value" radius={[4, 4, 0, 0]}>
-                                        {charts.topProductos.map((entry, index) => (
-                                            <Cell key={`cell-${index}`} fill="#FE0000" />
-                                        ))}
-                                    </Bar>
-                                </BarChart>
-                            </ResponsiveContainer>
-                        </div>
-                    </div>
-
-                    {/* Venta por Ciudad - Pie Chart */}
+                {/* Quadrant 4 (Bottom-Right): Venta por Ciudad */}
+                <div className="ecommerce-quadrant">
                     <div className="chart-wrapper">
                         <h3 className="chart-title">Venta por Ciudad</h3>
                         <div className="chart-container pie-container">
-                            <ResponsiveContainer width="100%" height={200}>
+                            <ResponsiveContainer width="100%" height="100%">
                                 <PieChart>
                                     <Pie
                                         data={charts.ventaPorCiudad}
