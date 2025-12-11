@@ -1061,6 +1061,8 @@ body {
   display: flex;
   flex-direction: column;
   gap: 15px;
+  padding-left: 45px;
+  /* Added space for tags */
 }
 
 .wa-right-col {
@@ -1077,13 +1079,19 @@ body {
 }
 
 .wa-row-city {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
   gap: 15px;
-  align-items: stretch;
+  position: relative;
+  /* Anchor for absolute tag */
 }
 
 /* City Tags (ZC / ZN) */
 .city-tag {
+  position: absolute;
+  left: -45px;
+  top: 0;
+  bottom: 0;
   width: 30px;
   display: flex;
   align-items: center;
@@ -1096,6 +1104,7 @@ body {
   text-orientation: upright;
   letter-spacing: 2px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  z-index: 10;
 }
 
 .city-tag span {
