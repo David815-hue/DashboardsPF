@@ -1,21 +1,63 @@
 import React, { useState } from 'react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, PieChart, Pie, Legend } from 'recharts';
-import KPICard from './KPICard';
 
-const COLORS = ['#0891b2', '#22d3ee', '#67e8f9', '#a5f3fc'];
+const COLORS = ['#22d3ee', '#374151']; // Teal and Dark Gray for Pie
+const BAR_COLOR = '#22d3ee'; // Teal for bars
 
 const CustomTooltip = ({ active, payload, label }) => {
     if (active && payload && payload.length) {
         return (
-            <div style={{ backgroundColor: '#242424', padding: '10px', borderRadius: '5px', color: '#fff' }}>
+            <div style={{ backgroundColor: '#242424', padding: '10px', borderRadius: '5px', color: '#fff', border: 'none' }}>
                 <p style={{ margin: 0, fontSize: '0.8rem' }}>{label || payload[0]?.name}</p>
                 <p style={{ margin: 0, fontWeight: 'bold' }}>
-                    {payload[0]?.value?.toLocaleString('es-HN', { minimumFractionDigits: 2 })}
+                    {payload[0]?.value?.toLocaleString('es-HN', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}
                 </p>
+                {payload[0]?.payload?.percent && (
+                    <p style={{ margin: 0, fontSize: '0.7rem', opacity: 0.8 }}>
+                        {payload[0].payload.percent}
+                    </p>
+                )}
             </div>
         );
     }
     return null;
+};
+
+// Custom Card Component to match the design (Value Top, Title Bottom)
+const StatCard = ({ title, value, subValue, format = 'number', suffix = '', variant = 'white' }) => {
+    let displayValue = value;
+
+    if (format === 'currency') {
+        const val = parseFloat(value) || 0;
+        if (Math.abs(val) >= 1000000) {
+            displayValue = (val / 1000000).toFixed(2) + ' M';
+        } else if (Math.abs(val) >= 1000) {
+            // Check if suffix is 'mil' to avoid double suffix
+            if (suffix.includes('mil')) {
+                displayValue = (val / 1000).toFixed(2);
+            } else {
+                displayValue = (val / 1000).toFixed(2) + ' k';
+            }
+        } else {
+            displayValue = val.toFixed(2);
+        }
+    } else if (format === 'percent') {
+        displayValue = (parseFloat(value) || 0).toFixed(2);
+    } else if (format === 'decimal') {
+        displayValue = (parseFloat(value) || 0).toFixed(2);
+    }
+
+    const cardClass = `wa-stat-card ${variant}`;
+
+    return (
+        <div className={cardClass}>
+            <div className="wa-stat-value">
+                {displayValue} <span className="wa-stat-suffix">{suffix}</span>
+            </div>
+            <div className="wa-stat-title">{title}</div>
+            {subValue && <div className="wa-stat-sub">{subValue}</div>}
+        </div>
+    );
 };
 
 const WhatsAppDashboard = ({ metrics }) => {
@@ -30,6 +72,39 @@ const WhatsAppDashboard = ({ metrics }) => {
     }
 
     const { page1, page2 } = metrics;
+
+    // Prepare Pie Data with percentages for labels
+    const preparePieData = (data) => {
+        const total = data.reduce((sum, item) => sum + item.value, 0);
+        return data.map(item => ({
+            ...item,
+            percent: total > 0 ? `${((item.value / total) * 100).toFixed(2)}%` : '0%'
+        }));
+    };
+
+    const pieCiudad = preparePieData(page1.charts.ventaPorCiudad);
+    const pieCampana = preparePieData(page1.charts.ventaPorCampana);
+
+    // Custom Label for Pie Chart
+    const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent, value, name, percentStr }) => {
+        const RADIAN = Math.PI / 180;
+        const radius = outerRadius * 1.2;
+        const x = cx + radius * Math.cos(-midAngle * RADIAN);
+        const y = cy + radius * Math.sin(-midAngle * RADIAN);
+        const textAnchor = x > cx ? 'start' : 'end';
+
+        // Shorten name if too long
+        const shortName = name.length > 15 ? name.substring(0, 12) + '...' : name;
+
+        return (
+            <text x={x} y={y} fill="#666" textAnchor={textAnchor} dominantBaseline="central" fontSize="0.7rem">
+                {`${shortName}`}
+                <tspan x={x} dy="1.2em" fontSize="0.65rem" fill="#999">
+                    {`(${(percent * 100).toFixed(1)}%)`}
+                </tspan>
+            </text>
+        );
+    };
 
     return (
         <div className="dashboard-content">
@@ -50,126 +125,122 @@ const WhatsAppDashboard = ({ metrics }) => {
             </div>
 
             {currentPage === 1 ? (
-                <div className="whatsapp-layout">
-                    {/* Left Column: KPIs */}
-                    <div className="whatsapp-kpis">
-                        {/* Row 1: General */}
-                        <div className="whatsapp-kpi-row">
-                            <KPICard title="Total Venta" value={page1.kpis.totalVenta} format="currency" suffix=" mil" />
-                            <KPICard title="Tasa Conversión" value={page1.kpis.tasaConversion} format="percent" suffix="%" />
-                            <KPICard title="Ticket Promedio" value={page1.kpis.ticketPromedio} format="currency" suffix=" mil" />
-                            <KPICard title="ROAS" value={page1.kpis.roas.toFixed(2)} format="decimal" />
+                <div className="wa-main-grid">
+                    {/* Left Main Column */}
+                    <div className="wa-left-col">
+
+                        {/* Row 1: Main KPIs */}
+                        <div className="wa-row-main">
+                            <StatCard title="Total Venta" value={page1.kpis.totalVenta} format="currency" suffix="mil" />
+                            <StatCard title="Tasa Conversion" value={page1.kpis.tasaConversion} format="percent" suffix="%" />
+                            <StatCard title="Ticket Promedio" value={page1.kpis.ticketPromedio} format="currency" suffix="mil" />
+                            <StatCard title="ROAS" value={page1.kpis.roas} format="decimal" />
                         </div>
 
                         {/* Row 2: TGU */}
-                        <div className="whatsapp-kpi-row tgu-row">
-                            <div className="city-label">TGU</div>
-                            <KPICard title="Total Venta TGU" value={page1.kpis.totalVentaTGU} format="currency" suffix=" mil" variant="teal" />
-                            <KPICard title="Tasa Conversión TGU" value={page1.kpis.tasaConversionTGU} format="percent" suffix="%" variant="teal" />
-                            <KPICard title="Ticket Promedio TGU" value={page1.kpis.ticketPromedioTGU} format="currency" suffix=" mil" variant="teal" />
-                            <KPICard title="Cantidad Venta" value={page1.kpis.cantidadVenta} format="number" />
+                        <div className="wa-row-city">
+                            <div className="city-tag tgu">
+                                <span>ZC</span>
+                            </div>
+                            <StatCard title="Total Venta TGU" value={page1.kpis.totalVentaTGU} format="currency" suffix="mil" variant="teal" />
+                            <StatCard title="Tasa Conversión TGU" value={page1.kpis.tasaConversionTGU} format="percent" suffix="%" variant="teal" />
+                            <StatCard title="Ticket Promedio TGU" value={page1.kpis.ticketPromedioTGU} format="currency" suffix="mil" variant="teal" />
+                            <StatCard title="Cantidad Venta" value={page1.kpis.cantidadVenta} format="number" />
                         </div>
 
                         {/* Row 3: SPS */}
-                        <div className="whatsapp-kpi-row sps-row">
-                            <div className="city-label">SPS</div>
-                            <KPICard title="Total Venta SPS" value={page1.kpis.totalVentaSPS} format="currency" suffix=" mil" variant="teal" />
-                            <KPICard title="Tasa Conversión SPS" value={page1.kpis.tasaConversionSPS} format="percent" suffix="%" variant="teal" />
-                            <KPICard title="Ticket Promedio SPS" value={page1.kpis.ticketPromedioSPS} format="currency" suffix=" mil" variant="teal" />
-                            <KPICard title="Tasa de Respuesta" value={page1.kpis.tasaRespuesta} format="percent" suffix="%" />
+                        <div className="wa-row-city">
+                            <div className="city-tag sps">
+                                <span>ZN</span>
+                            </div>
+                            <StatCard title="Total Venta SPS" value={page1.kpis.totalVentaSPS} format="currency" suffix="mil" variant="teal" />
+                            <StatCard title="Tasa Conversión SPS" value={page1.kpis.tasaConversionSPS} format="percent" suffix="%" variant="teal" />
+                            <StatCard title="Ticket Promedio SPS" value={page1.kpis.ticketPromedioSPS} format="currency" suffix="mil" variant="teal" />
+                            <StatCard title="Tasa de Respuesta" value={page1.kpis.tasaRespuesta} format="percent" suffix="%" />
                         </div>
 
-                        {/* Top Productos Chart */}
-                        <div className="chart-wrapper whatsapp-products-chart">
-                            <h3 className="chart-title">Top Productos</h3>
-                            <div className="chart-container">
-                                <ResponsiveContainer width="100%" height={160}>
-                                    <BarChart data={page1.charts.topProductos} margin={{ top: 10, right: 20, left: 10, bottom: 50 }}>
+                        {/* Row 4: Bottom (Logo + Chart) */}
+                        <div className="wa-bottom-row">
+                            <div className="wa-brand-area">
+                                <h2 className="wa-title">WhatsApp Marketing</h2>
+                                <img src="/DomiciliosPF.png" alt="Domicilios" className="wa-logo" />
+                            </div>
+                            <div className="wa-bottom-chart">
+                                <h3 className="chart-title-center">Top Productos</h3>
+                                <ResponsiveContainer width="100%" height={180}>
+                                    <BarChart data={page1.charts.topProductos} margin={{ top: 20, right: 10, left: 10, bottom: 0 }}>
                                         <XAxis
                                             dataKey="name"
-                                            tick={{ fontSize: 8, fill: '#666' }}
-                                            angle={-30}
-                                            textAnchor="end"
+                                            tick={{ fontSize: 9, fill: '#666' }}
                                             interval={0}
+                                            tickFormatter={(val) => val.length > 10 ? val.substring(0, 10) + '...' : val}
                                         />
-                                        <YAxis tick={{ fontSize: 10, fill: '#666' }} />
-                                        <Tooltip content={<CustomTooltip />} />
-                                        <Bar dataKey="value" radius={[4, 4, 0, 0]}>
+                                        <Tooltip content={<CustomTooltip />} cursor={{ fill: 'transparent' }} />
+                                        <Bar dataKey="value">
                                             {page1.charts.topProductos.map((entry, index) => (
-                                                <Cell key={`cell-${index}`} fill="#0891b2" />
+                                                <Cell key={`cell-${index}`} fill="#67e8f9" />
                                             ))}
                                         </Bar>
                                     </BarChart>
                                 </ResponsiveContainer>
                             </div>
                         </div>
+
                     </div>
 
                     {/* Right Column: Pie Charts */}
-                    <div className="whatsapp-charts">
-                        {/* Venta por Ciudad */}
-                        <div className="chart-wrapper">
-                            <h3 className="chart-title">Venta por Ciudad</h3>
-                            <div className="chart-container pie-container">
-                                <ResponsiveContainer width="100%" height={180}>
-                                    <PieChart>
-                                        <Pie
-                                            data={page1.charts.ventaPorCiudad}
-                                            cx="45%"
-                                            cy="50%"
-                                            outerRadius={65}
-                                            dataKey="value"
-                                            label={({ percent }) => `${(percent * 100).toFixed(1)}%`}
-                                            labelLine={false}
-                                        >
-                                            {page1.charts.ventaPorCiudad.map((entry, index) => (
-                                                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                                            ))}
-                                        </Pie>
-                                        <Legend
-                                            verticalAlign="middle"
-                                            align="right"
-                                            layout="vertical"
-                                            iconType="circle"
-                                            formatter={(value) => <span style={{ fontSize: '0.7rem', color: '#333' }}>{value}</span>}
-                                        />
-                                        <Tooltip content={<CustomTooltip />} />
-                                    </PieChart>
-                                </ResponsiveContainer>
-                            </div>
+                    <div className="wa-right-col">
+
+                        {/* Pie 1: Ciudad */}
+                        <div className="wa-pie-wrapper">
+                            <h3 className="chart-title-right">Venta por Ciudad</h3>
+                            <ResponsiveContainer width="100%" height={220}>
+                                <PieChart>
+                                    <Pie
+                                        data={pieCiudad}
+                                        cx="50%"
+                                        cy="50%"
+                                        innerRadius={0}
+                                        outerRadius={70}
+                                        paddingAngle={0}
+                                        dataKey="value"
+                                        label={renderCustomizedLabel}
+                                        labelLine={true}
+                                    >
+                                        {pieCiudad.map((entry, index) => (
+                                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                        ))}
+                                    </Pie>
+                                    <Legend verticalAlign="middle" align="right" layout="vertical" iconType="circle" wrapperStyle={{ fontSize: '0.7rem', right: 0 }} />
+                                </PieChart>
+                            </ResponsiveContainer>
                         </div>
 
-                        {/* Venta por Campaña */}
-                        <div className="chart-wrapper">
-                            <h3 className="chart-title">Venta por Campaña</h3>
-                            <div className="chart-container pie-container">
-                                <ResponsiveContainer width="100%" height={180}>
-                                    <PieChart>
-                                        <Pie
-                                            data={page1.charts.ventaPorCampana}
-                                            cx="45%"
-                                            cy="50%"
-                                            outerRadius={65}
-                                            dataKey="value"
-                                            label={({ percent }) => `${(percent * 100).toFixed(1)}%`}
-                                            labelLine={false}
-                                        >
-                                            {page1.charts.ventaPorCampana.map((entry, index) => (
-                                                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                                            ))}
-                                        </Pie>
-                                        <Legend
-                                            verticalAlign="middle"
-                                            align="right"
-                                            layout="vertical"
-                                            iconType="circle"
-                                            formatter={(value) => <span style={{ fontSize: '0.65rem', color: '#333' }}>{value}</span>}
-                                        />
-                                        <Tooltip content={<CustomTooltip />} />
-                                    </PieChart>
-                                </ResponsiveContainer>
-                            </div>
+                        {/* Pie 2: Campaña */}
+                        <div className="wa-pie-wrapper">
+                            <h3 className="chart-title-right">Venta por Campaña</h3>
+                            <ResponsiveContainer width="100%" height={220}>
+                                <PieChart>
+                                    <Pie
+                                        data={pieCampana}
+                                        cx="50%"
+                                        cy="50%"
+                                        innerRadius={0}
+                                        outerRadius={70}
+                                        paddingAngle={0}
+                                        dataKey="value"
+                                        label={renderCustomizedLabel}
+                                        labelLine={true}
+                                    >
+                                        {pieCampana.map((entry, index) => (
+                                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                        ))}
+                                    </Pie>
+                                    <Legend verticalAlign="middle" align="right" layout="vertical" iconType="circle" wrapperStyle={{ fontSize: '0.7rem', right: 0 }} />
+                                </PieChart>
+                            </ResponsiveContainer>
                         </div>
+
                     </div>
                 </div>
             ) : (

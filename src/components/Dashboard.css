@@ -1044,3 +1044,210 @@ body {
 .kpi-card.teal .kpi-value {
   color: #0891b2;
 }
+
+/* ======================= */
+/* WHATSAPP MARKETING DASHBOARD REDESIGN */
+/* ======================= */
+
+.wa-main-grid {
+  display: grid;
+  grid-template-columns: 3fr 1fr;
+  gap: 20px;
+  height: calc(100% - 50px);
+  padding-top: 10px;
+}
+
+.wa-left-col {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.wa-right-col {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+/* Rows */
+.wa-row-main {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 15px;
+}
+
+.wa-row-city {
+  display: flex;
+  gap: 15px;
+  align-items: stretch;
+}
+
+/* City Tags (ZC / ZN) */
+.city-tag {
+  width: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 0.75rem;
+  color: white;
+  writing-mode: vertical-rl;
+  text-orientation: upright;
+  letter-spacing: 2px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.city-tag span {
+  transform: rotate(0deg);
+  /* No rotation needed for upright text */
+}
+
+.city-tag.tgu {
+  background: #67e8f9;
+  /* Cyan 300 to match image light teal */
+}
+
+.city-tag.sps {
+  background: #0ea5e9;
+  /* Sky 500 darker blue-teal */
+}
+
+/* Stat Cards */
+.wa-stat-card {
+  background: white;
+  border-radius: 12px;
+  padding: 15px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+  transition: transform 0.2s;
+  min-height: 90px;
+  flex: 1;
+  /* Distribute equal width in flex rows */
+}
+
+.wa-stat-card:hover {
+  transform: translateY(-2px);
+}
+
+/* White Variant */
+.wa-stat-card.white {
+  background: white;
+}
+
+.wa-stat-card.white .wa-stat-value {
+  font-size: 1.8rem;
+  font-weight: 500;
+  color: #333;
+}
+
+.wa-stat-card.white .wa-stat-title {
+  font-size: 0.75rem;
+  color: #666;
+  margin-top: 5px;
+}
+
+/* Teal Variant */
+.wa-stat-card.teal {
+  background: #67e8f9;
+  /* Cyan 300 - Matching the light blue/teal from image */
+  box-shadow: 0 4px 10px rgba(34, 211, 238, 0.2);
+}
+
+/* Specific override for SPS teal to match image */
+.wa-row-city:nth-of-type(3) .wa-stat-card.teal {
+  background: #0ea5e9;
+}
+
+/* Override SPS row tag color to match its cards */
+.city-tag.sps {
+  background: #0ea5e9;
+}
+
+
+.wa-stat-card.teal .wa-stat-value {
+  font-size: 1.6rem;
+  font-weight: 500;
+  color: #1f2937;
+  /* Dark gray text on light teal */
+}
+
+.wa-stat-card.teal .wa-stat-title {
+  font-size: 0.75rem;
+  color: #374151;
+  margin-top: 5px;
+  font-weight: 500;
+}
+
+.wa-stat-suffix {
+  font-size: 0.9rem;
+  font-weight: 400;
+  opacity: 0.8;
+}
+
+/* Bottom Row (Logo + Chart) */
+.wa-bottom-row {
+  display: flex;
+  gap: 20px;
+  flex: 1;
+  min-height: 0;
+}
+
+.wa-brand-area {
+  width: 200px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  padding-left: 10px;
+}
+
+.wa-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #fe0000;
+  margin-bottom: 10px;
+  line-height: 1.2;
+}
+
+.wa-logo {
+  max-width: 180px;
+  height: auto;
+}
+
+.wa-bottom-chart {
+  flex: 1;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+}
+
+.chart-title-center {
+  text-align: center;
+  font-size: 0.9rem;
+  color: #4b5563;
+  margin-bottom: 10px;
+}
+
+.chart-title-right {
+  text-align: right;
+  font-size: 0.9rem;
+  color: #4b5563;
+  margin-bottom: 5px;
+  padding-right: 20px;
+}
+
+/* Right Column Charts */
+.wa-pie-wrapper {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Page 2 reuse */
+.whatsapp-page2 .wa-stat-card {
+  min-height: auto;
+}
