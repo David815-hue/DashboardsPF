@@ -48,6 +48,7 @@ const Dashboard = () => {
     const [files, setFiles] = useState({ albatross: null, rms: null, simla: null });
     const [isProcessing, setIsProcessing] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
+    const [isLoading, setIsLoading] = useState(true); // Initial loading state
     const [error, setError] = useState(null);
     const [successMessage, setSuccessMessage] = useState(null);
     const [data, setData] = useState(null);
@@ -84,30 +85,37 @@ const Dashboard = () => {
     }, []);
 
     const loadAvailableSnapshots = async () => {
-        // Load Venta Meta snapshots
-        const result = await getSnapshotsByMonth();
-        if (result.success) {
-            setSnapshotsByMonth(result.data);
-        }
-        // Load E-commerce snapshots
-        const ecomResult = await getEcommerceSnapshotsByMonth();
-        if (ecomResult.success) {
-            setEcommerceSnapshotsByMonth(ecomResult.data);
-        }
-        // Load WhatsApp snapshots
-        const waResult = await getWhatsAppSnapshotsByMonth();
-        setWhatsappSnapshotsByMonth(waResult);
+        setIsLoading(true);
+        try {
+            // Load Venta Meta snapshots
+            const result = await getSnapshotsByMonth();
+            if (result.success) {
+                setSnapshotsByMonth(result.data);
+            }
+            // Load E-commerce snapshots
+            const ecomResult = await getEcommerceSnapshotsByMonth();
+            if (ecomResult.success) {
+                setEcommerceSnapshotsByMonth(ecomResult.data);
+            }
+            // Load WhatsApp snapshots
+            const waResult = await getWhatsAppSnapshotsByMonth();
+            setWhatsappSnapshotsByMonth(waResult);
 
-        // Auto-select current month if available
-        const now = new Date();
-        const currentMonthKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+            // Auto-select current month if available
+            const now = new Date();
+            const currentMonthKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
 
-        const hasData = (result.success && result.data[currentMonthKey]) ||
-            (ecomResult.success && ecomResult.data[currentMonthKey]) ||
-            (waResult && waResult[currentMonthKey]);
+            const hasData = (result.success && result.data[currentMonthKey]) ||
+                (ecomResult.success && ecomResult.data[currentMonthKey]) ||
+                (waResult && waResult[currentMonthKey]);
 
-        if (hasData) {
-            setSelectedMonth(currentMonthKey);
+            if (hasData) {
+                setSelectedMonth(currentMonthKey);
+            }
+        } catch (err) {
+            console.error("Error loading snapshots:", err);
+        } finally {
+            setIsLoading(false);
         }
     };
 
@@ -557,7 +565,12 @@ const Dashboard = () => {
             </header>
 
             {/* Dashboard Content - Switch based on active tab */}
-            {activeTab === 'ecommerce' ? (
+            {isLoading ? (
+                <div className="loading-state">
+                    <div className="spinner"></div>
+                    <p>Cargando datos...</p>
+                </div>
+            ) : activeTab === 'ecommerce' ? (
                 ecommerceMetrics ? (
                     <EcommerceDashboard metrics={ecommerceMetrics} />
                 ) : (
