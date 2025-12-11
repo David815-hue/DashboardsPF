@@ -1,38 +1,48 @@
 import React from 'react';
+import { useCountUp } from '../hooks/useCountUp';
+import { TrendingUp, TrendingDown } from 'lucide-react';
 
-const KPICard = ({ title, value, format = 'number', suffix = '' }) => {
+const KPICard = ({ title, value, format = 'number', suffix = '', trend = null }) => {
+    const numericValue = parseFloat(value) || 0;
+
+    // Count-up animation
+    const animatedValue = useCountUp(numericValue, 1200);
+
+    // Format the animated value
     let displayValue;
-
-    // Formatting logic simplified for clarity
     if (format === 'currency') {
-        const val = parseFloat(value) || 0;
-        // Check for millions/thousands logic if needed
-        if (Math.abs(val) >= 1000000) {
-            displayValue = (val / 1000000).toFixed(2); // suffix 'mil' usually passed from parent or handled here
-        } else if (Math.abs(val) >= 1000) {
-            // If 'mil' suffix is expected for thousands:
-            if (suffix.trim() === 'mil') {
-                displayValue = (val / 1000).toFixed(2);
-            } else {
-                displayValue = val.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-            }
+        if (Math.abs(animatedValue) >= 1000000) {
+            displayValue = (animatedValue / 1000000).toFixed(2);
+        } else if (Math.abs(animatedValue) >= 1000 && suffix.trim() === 'mil') {
+            displayValue = (animatedValue / 1000).toFixed(2);
         } else {
-            displayValue = val.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            displayValue = animatedValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
         }
     } else if (format === 'percent') {
-        displayValue = (parseFloat(value) || 0).toFixed(2);
+        displayValue = animatedValue.toFixed(2);
+    } else if (format === 'decimal') {
+        displayValue = animatedValue.toFixed(2);
     } else {
-        displayValue = value;
+        displayValue = Math.round(animatedValue).toLocaleString();
     }
 
     return (
         <div className="kpi-card">
             <div className="kpi-title">{title}</div>
-            <div className="kpi-value">
-                {displayValue} {suffix}
+            <div className="kpi-value-row">
+                <div className="kpi-value">
+                    {displayValue} {suffix}
+                </div>
+                {trend !== null && (
+                    <div className={`kpi-trend ${trend >= 0 ? 'positive' : 'negative'}`}>
+                        {trend >= 0 ? <TrendingUp size={16} /> : <TrendingDown size={16} />}
+                        <span>{Math.abs(trend).toFixed(1)}%</span>
+                    </div>
+                )}
             </div>
         </div>
     );
 };
 
 export default KPICard;
+

@@ -33,20 +33,46 @@ export const calculateMetrics = (data, inputs) => {
 
     // --- Charts Data ---
 
-    // Top Products
-    const productCounts = {};
+    // Top Products with detailed breakdown
+    const productDetails = {};
     pedidos.forEach(row => {
-        // Exclude 'RECARGO SERVICIO A DOMICILIO' per python script
         const desc = String(row['Descripcion'] || '');
         if (!desc.toLowerCase().includes('recargo servicio a domicilio')) {
-            productCounts[desc] = (productCounts[desc] || 0) + 1;
+            const city = String(row['Ciudad'] || '').toUpperCase();
+            const total = parseFloat(row['Total']) || 0;
+            
+            if (!productDetails[desc]) {
+                productDetails[desc] = {
+                    name: desc,
+                    count: 0,
+                    totalAmount: 0,
+                    ordersTGU: 0,
+                    ordersSPS: 0,
+                    amountTGU: 0,
+                    amountSPS: 0
+                };
+            }
+            
+            productDetails[desc].count += 1;
+            productDetails[desc].totalAmount += total;
+            
+            if (city === 'TEGUCIGALPA D.C.') {
+                productDetails[desc].ordersTGU += 1;
+                productDetails[desc].amountTGU += total;
+            } else if (city === 'SAN PEDRO SULA') {
+                productDetails[desc].ordersSPS += 1;
+                productDetails[desc].amountSPS += total;
+            }
         }
     });
 
-    const topProducts = Object.entries(productCounts)
-        .map(([name, count]) => ({ name, count }))
+    const topProducts = Object.values(productDetails)
         .sort((a, b) => b.count - a.count)
-        .slice(0, topProductsCount);
+        .slice(0, topProductsCount)
+        .map(p => ({
+            ...p,
+            avgTicket: p.count > 0 ? p.totalAmount / p.count : 0
+        }));
 
     // Funnel
     // Clics (Manual) -> Conversaciones (Simla Filtrado) -> Ventas (Pedidos Matcheados)
