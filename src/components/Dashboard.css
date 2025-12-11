@@ -68,18 +68,20 @@ body {
   position: absolute;
   top: 15px;
   right: 15px;
-  background: white;
-  border: none;
+  background: rgba(255, 255, 255, 0.25);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.4);
   border-radius: 50%;
-  width: 36px;
-  height: 36px;
+  width: 40px;
+  height: 40px;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
   cursor: pointer;
   z-index: 100;
-  color: #555;
+  color: #333;
   transition: var(--transition);
 }
 
@@ -98,6 +100,92 @@ body {
   height: 60px;
   /* Smaller header */
   margin-bottom: 10px;
+}
+
+/* Dashboard Selector - Glassmorphism */
+.dashboard-selector {
+  position: absolute;
+  top: 15px;
+  left: 15px;
+  z-index: 100;
+}
+
+.dashboard-selector-btn {
+  background: rgba(255, 255, 255, 0.15);
+  /* More transparent */
+  backdrop-filter: blur(20px);
+  /* Stronger blur */
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1);
+  color: #333;
+  padding: 8px 16px;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.dashboard-selector-btn:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+  border-color: rgba(255, 255, 255, 0.8);
+}
+
+.tab-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dashboard-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  margin-top: 12px;
+  background: rgba(255, 255, 255, 0.65);
+  /* More glassy */
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  border-radius: 16px;
+  padding: 8px;
+  min-width: 220px;
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1);
+  animation: fadeInScale 0.2s ease-out;
+}
+
+.dashboard-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-weight: 500;
+  color: #444;
+  font-size: 0.9rem;
+}
+
+.dashboard-option:hover {
+  background: rgba(255, 255, 255, 0.5);
+  color: #000;
+  /* Removed red */
+  transform: translateX(4px);
+}
+
+.dashboard-option.active {
+  background: rgba(255, 255, 255, 0.8);
+  color: #000;
+  /* Removed red */
+  font-weight: 700;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
 
 .logo {
@@ -644,71 +732,7 @@ body {
   gap: 10px;
 }
 
-/* Dashboard Selector - Top Left */
-.dashboard-selector {
-  position: absolute;
-  top: 15px;
-  left: 30px;
-  z-index: 100;
-}
 
-.dashboard-selector-btn {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 12px 20px;
-  background: linear-gradient(135deg, var(--primary-red), #ff4444);
-  border: none;
-  border-radius: 12px;
-  font-size: 0.9rem;
-  font-weight: 700;
-  color: white;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  box-shadow: 0 4px 15px rgba(254, 0, 0, 0.3);
-}
-
-.dashboard-selector-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(254, 0, 0, 0.4);
-}
-
-.dashboard-dropdown {
-  position: absolute;
-  top: calc(100% + 8px);
-  left: 0;
-  min-width: 180px;
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
-  overflow: hidden;
-  animation: dropdownSlide 0.2s ease;
-}
-
-.dashboard-option {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 14px 18px;
-  font-size: 0.9rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background 0.15s;
-  color: #333;
-}
-
-.dashboard-option:hover {
-  background: #f5f5f5;
-}
-
-.dashboard-option.active {
-  background: #fee2e2;
-  color: var(--primary-red);
-}
-
-.tab-icon {
-  font-size: 1.1rem;
-}
 
 .selector-group {
   position: relative;
@@ -719,25 +743,31 @@ body {
   align-items: center;
   gap: 8px;
   padding: 10px 16px;
-  background: white;
-  border: 1px solid #ddd;
-  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.15);
+  /* Glassmorphism */
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  border-radius: 12px;
   font-size: 0.85rem;
   font-weight: 600;
   color: #333;
   cursor: pointer;
   transition: all 0.2s ease;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 4px 15px rgba(31, 38, 135, 0.1);
 }
 
 .selector-btn:hover {
-  border-color: var(--primary-red);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+  background: rgba(255, 255, 255, 0.3);
+  border-color: rgba(255, 255, 255, 0.8);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(31, 38, 135, 0.15);
 }
 
 .selector-btn.week-btn {
-  background: linear-gradient(135deg, #f0f9ff, #e0f2fe);
-  border-color: #0ea5e9;
+  /* Removed blue gradient to match global glass style */
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.5);
 }
 
 .selector-dropdown {
@@ -745,9 +775,13 @@ body {
   bottom: calc(100% + 8px);
   left: 0;
   min-width: 220px;
-  background: white;
+  background: rgba(255, 255, 255, 0.65);
+  /* Glass dropdown */
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.4);
   border-radius: 12px;
-  box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 -10px 40px rgba(31, 38, 135, 0.15);
   overflow: hidden;
   animation: dropdownSlideUp 0.2s ease;
   max-height: 300px;
@@ -777,13 +811,15 @@ body {
 }
 
 .selector-option:hover {
-  background: #f5f5f5;
+  background: rgba(255, 255, 255, 0.5);
+  color: #000;
 }
 
 .selector-option.active {
-  background: #fee2e2;
-  color: var(--primary-red);
-  font-weight: 600;
+  background: rgba(255, 255, 255, 0.8);
+  color: #000;
+  font-weight: 700;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
 
 .selector-divider {
@@ -805,20 +841,25 @@ body {
   align-items: center;
   gap: 8px;
   padding: 10px 16px;
-  background: white;
-  border: 1px solid #ddd;
+  background: rgba(255, 255, 255, 0.15);
+  /* Glassmorphism */
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.5);
   border-radius: 10px;
   font-size: 0.85rem;
   font-weight: 600;
   color: #333;
   cursor: pointer;
   transition: all 0.2s ease;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 4px 15px rgba(31, 38, 135, 0.1);
 }
 
 .snapshot-selector-btn:hover {
-  border-color: var(--primary-red);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+  background: rgba(255, 255, 255, 0.3);
+  border-color: rgba(255, 255, 255, 0.8);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(31, 38, 135, 0.15);
 }
 
 .snapshot-dropdown {
@@ -826,9 +867,13 @@ body {
   top: calc(100% + 8px);
   left: 0;
   min-width: 250px;
-  background: white;
+  background: rgba(255, 255, 255, 0.65);
+  /* Glass dropdown */
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.4);
   border-radius: 12px;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 10px 40px rgba(31, 38, 135, 0.15);
   overflow: hidden;
   animation: dropdownSlide 0.2s ease;
 }
@@ -856,12 +901,12 @@ body {
 }
 
 .snapshot-option:hover {
-  background: #f5f5f5;
+  background: rgba(255, 255, 255, 0.5);
 }
 
 .snapshot-option.active {
-  background: #fee2e2;
-  color: var(--primary-red);
+  background: rgba(255, 255, 255, 0.8);
+  color: #000;
   font-weight: 600;
 }
 
@@ -879,7 +924,7 @@ body {
 }
 
 .snapshot-delete-btn:hover {
-  background: #fee2e2;
+  background: rgba(254, 226, 226, 0.6);
   color: var(--primary-red);
 }
 
