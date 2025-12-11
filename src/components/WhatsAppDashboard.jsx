@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, PieChart, Pie, Legend } from 'recharts';
+import { ChevronRight, ChevronLeft } from 'lucide-react';
 
 const COLORS = ['#22d3ee', '#374151']; // Teal and Dark Gray for Pie
 const BAR_COLOR = '#22d3ee'; // Teal for bars
@@ -112,22 +113,27 @@ const WhatsAppDashboard = ({ metrics }) => {
     };
 
     return (
-        <div className="dashboard-content">
-            {/* Page Navigation */}
-            <div className="whatsapp-page-nav">
+        <div className="dashboard-content whatsapp-dashboard">
+            {/* Navigation Buttons (Floating) */}
+            {currentPage === 1 && (
                 <button
-                    className={`page-btn ${currentPage === 1 ? 'active' : ''}`}
-                    onClick={() => setCurrentPage(1)}
-                >
-                    📊 Resumen General
-                </button>
-                <button
-                    className={`page-btn ${currentPage === 2 ? 'active' : ''}`}
+                    className="wa-nav-btn next"
                     onClick={() => setCurrentPage(2)}
+                    title="Ver Por Asesor"
                 >
-                    👥 Por Asesor
+                    <ChevronRight size={24} />
                 </button>
-            </div>
+            )}
+
+            {currentPage === 2 && (
+                <button
+                    className="wa-nav-btn prev"
+                    onClick={() => setCurrentPage(1)}
+                    title="Volver a Resumen"
+                >
+                    <ChevronLeft size={24} />
+                </button>
+            )}
 
             {currentPage === 1 ? (
                 <div className="wa-main-grid">
