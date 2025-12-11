@@ -97,6 +97,18 @@ const Dashboard = () => {
         // Load WhatsApp snapshots
         const waResult = await getWhatsAppSnapshotsByMonth();
         setWhatsappSnapshotsByMonth(waResult);
+
+        // Auto-select current month if available
+        const now = new Date();
+        const currentMonthKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+
+        const hasData = (result.success && result.data[currentMonthKey]) ||
+            (ecomResult.success && ecomResult.data[currentMonthKey]) ||
+            (waResult && waResult[currentMonthKey]);
+
+        if (hasData) {
+            setSelectedMonth(currentMonthKey);
+        }
     };
 
     const handleFileChange = (key, file) => {
