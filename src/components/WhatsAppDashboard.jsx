@@ -216,6 +216,7 @@ const WhatsAppDashboard = ({ metrics }) => {
                                             <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                                         ))}
                                     </Pie>
+                                    <Tooltip content={<CustomTooltip />} />
                                     <Legend verticalAlign="middle" align="right" layout="vertical" iconType="circle" wrapperStyle={{ fontSize: '0.7rem', right: 0 }} />
                                 </PieChart>
                             </ResponsiveContainer>
@@ -241,6 +242,7 @@ const WhatsAppDashboard = ({ metrics }) => {
                                             <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                                         ))}
                                     </Pie>
+                                    <Tooltip content={<CustomTooltip />} />
                                     <Legend verticalAlign="middle" align="right" layout="vertical" iconType="circle" wrapperStyle={{ fontSize: '0.7rem', right: 0 }} />
                                 </PieChart>
                             </ResponsiveContainer>
