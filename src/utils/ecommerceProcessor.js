@@ -137,10 +137,21 @@ export const processEcommerceData = async (files) => {
         }
     });
 
-    // === 7. Calculate top products (exclude delivery charge) ===
+    // === 7. Calculate top products (only from confirmed APP/Ecommerce orders found in RMS) ===
+    // Get valid order numbers from confirmed orders (orders found in both Albatross and RMS)
+    // Matches Python: pedidos_app_ecommerce = pedidos_en_rms["NumeroPedidoLimpio"].unique()
+    const validOrderIds = new Set(pedidosConsolidado.map(row => row['NumeroPedidoLimpio']));
+
     const productosMap = {};
     rmsData.forEach(row => {
+        const pedidoId = row['PedidoLimpio'];
+
+        // Strict Filter: Only include products belonging to confirmed APP/Ecommerce orders
+        // Verify ID is not empty and exists in our confirmed list
+        if (!pedidoId || pedidoId === '' || !validOrderIds.has(pedidoId)) return;
+
         if (row['Codigo'] === '20000025') return; // Skip delivery
+
         const key = `${row['Codigo']}_${row['Descripcion']}`;
         if (!productosMap[key]) {
             productosMap[key] = {
@@ -154,8 +165,12 @@ export const processEcommerceData = async (files) => {
         productosMap[key].total += row['Total'];
     });
 
+    // Sort by Quantity (Units) to match Excel list expectation
     const topProductos = Object.values(productosMap)
         .sort((a, b) => b.cantidad - a.cantidad);
+
+    console.log(`[Ecommerce Debug] Pedidos APP/Eco encontrados en RMS: ${validOrderIds.size}`);
+    console.log(`[Ecommerce Debug] Top 3 Productos:`, topProductos.slice(0, 3));
 
     return {
         pedidosConsolidado,

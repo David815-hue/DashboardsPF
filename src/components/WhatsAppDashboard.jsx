@@ -61,7 +61,7 @@ const StatCard = ({ title, value, subValue, format = 'number', suffix = '', vari
     );
 };
 
-const WhatsAppDashboard = ({ metrics }) => {
+const WhatsAppDashboard = ({ metrics, topProductsCount = 5, keywordCount = 5 }) => {
     const [currentPage, setCurrentPage] = useState(1);
 
     if (!metrics) {
@@ -73,6 +73,10 @@ const WhatsAppDashboard = ({ metrics }) => {
     }
 
     const { page1, page2 } = metrics;
+
+    // Slice data based on config
+    const topProductosData = page1.charts.topProductos?.slice(0, topProductsCount) || [];
+    const keywordData = page2.ventaPorPalabraClave?.slice(0, keywordCount) || [];
 
     // Prepare Pie Data with percentages for labels
     const preparePieData = (data) => {
@@ -179,7 +183,7 @@ const WhatsAppDashboard = ({ metrics }) => {
                             <div className="wa-bottom-chart">
                                 <h3 className="chart-title-center">Top Productos</h3>
                                 <ResponsiveContainer width="100%" height="100%">
-                                    <BarChart data={page1.charts.topProductos} margin={{ top: 20, right: 10, left: 10, bottom: 0 }}>
+                                    <BarChart data={topProductosData} margin={{ top: 20, right: 10, left: 10, bottom: 0 }}>
                                         <defs>
                                             <linearGradient id="whatsappBarGradient" x1="0" y1="0" x2="0" y2="1">
                                                 <stop offset="0%" stopColor="#22d3ee" stopOpacity={1} />
@@ -194,7 +198,7 @@ const WhatsAppDashboard = ({ metrics }) => {
                                         />
                                         <Tooltip content={<CustomTooltip />} cursor={{ fill: 'transparent' }} />
                                         <Bar dataKey="value" fill="url(#whatsappBarGradient)">
-                                            {page1.charts.topProductos.map((entry, index) => (
+                                            {topProductosData.map((entry, index) => (
                                                 <Cell key={`cell-${index}`} fill="url(#whatsappBarGradient)" />
                                             ))}
                                         </Bar>
@@ -299,7 +303,7 @@ const WhatsAppDashboard = ({ metrics }) => {
                         <h3 className="chart-title">Venta por Palabra Clave</h3>
                         <div className="chart-container">
                             <ResponsiveContainer width="100%" height={200}>
-                                <BarChart data={page2.ventaPorPalabraClave.slice(0, 10)} margin={{ top: 10, right: 20, left: 10, bottom: 60 }}>
+                                <BarChart data={keywordData} margin={{ top: 10, right: 20, left: 10, bottom: 60 }}>
                                     <XAxis
                                         dataKey="name"
                                         tick={{ fontSize: 8, fill: '#666' }}
@@ -309,8 +313,8 @@ const WhatsAppDashboard = ({ metrics }) => {
                                     />
                                     <YAxis tick={{ fontSize: 10, fill: '#666' }} />
                                     <Tooltip content={<CustomTooltip />} />
-                                    <Bar dataKey="value" radius={[4, 4, 0, 0]}>
-                                        {page2.ventaPorPalabraClave.slice(0, 10).map((entry, index) => (
+                                    <Bar dataKey="value" radius={[8, 8, 0, 0]}>
+                                        {keywordData.map((entry, index) => (
                                             <Cell key={`cell-${index}`} fill={['#0891b2', '#06b6d4', '#22d3ee', '#38bdf8', '#60a5fa', '#3b82f6', '#2563eb', '#1d4ed8', '#1e40af', '#1e3a8a'][index % 10]} />
                                         ))}
                                     </Bar>

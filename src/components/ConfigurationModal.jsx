@@ -1,13 +1,19 @@
 import React, { useState } from 'react';
 import { Upload, X, Save } from 'lucide-react';
 
-const ConfigurationModal = ({ isOpen, onClose, onProcess, currentInputs }) => {
+const ConfigurationModal = ({ isOpen, onClose, onProcess, currentInputs, currentTopConfig }) => {
     const [files, setFiles] = useState({
         albatross: null,
         rms: null,
         simla: null
     });
     const [inputs, setInputs] = useState(currentInputs);
+    const [topConfig, setTopConfig] = useState(currentTopConfig || {
+        ventaMetaTopProductos: 5,
+        ecommerceTopProductos: 6,
+        whatsappTopProductos: 5,
+        whatsappPalabraClave: 5
+    });
 
     if (!isOpen) return null;
 
@@ -19,9 +25,12 @@ const ConfigurationModal = ({ isOpen, onClose, onProcess, currentInputs }) => {
         setInputs({ ...inputs, [key]: parseFloat(e.target.value) || 0 });
     };
 
+    const handleTopConfigChange = (e, key) => {
+        setTopConfig({ ...topConfig, [key]: parseInt(e.target.value) || 5 });
+    };
+
     const handleProcess = () => {
-        onProcess(files, inputs);
-        // onClose(); // Let parent close after success or keep open for loading state
+        onProcess(files, inputs, topConfig);
     };
 
     return (
@@ -68,6 +77,50 @@ const ConfigurationModal = ({ isOpen, onClose, onProcess, currentInputs }) => {
                             />
                         </div>
                     </section>
+
+                    <section className="section">
+                        <h3>📊 Top Productos (Cantidad a mostrar)</h3>
+                        <div className="input-group">
+                            <label>Venta Meta - Top Productos</label>
+                            <input
+                                type="number"
+                                min="1"
+                                max="20"
+                                value={topConfig.ventaMetaTopProductos}
+                                onChange={(e) => handleTopConfigChange(e, 'ventaMetaTopProductos')}
+                            />
+                        </div>
+                        <div className="input-group">
+                            <label>E-commerce - Top Productos</label>
+                            <input
+                                type="number"
+                                min="1"
+                                max="20"
+                                value={topConfig.ecommerceTopProductos}
+                                onChange={(e) => handleTopConfigChange(e, 'ecommerceTopProductos')}
+                            />
+                        </div>
+                        <div className="input-group">
+                            <label>WhatsApp - Top Productos</label>
+                            <input
+                                type="number"
+                                min="1"
+                                max="20"
+                                value={topConfig.whatsappTopProductos}
+                                onChange={(e) => handleTopConfigChange(e, 'whatsappTopProductos')}
+                            />
+                        </div>
+                        <div className="input-group">
+                            <label>WhatsApp - Palabra Clave</label>
+                            <input
+                                type="number"
+                                min="1"
+                                max="20"
+                                value={topConfig.whatsappPalabraClave}
+                                onChange={(e) => handleTopConfigChange(e, 'whatsappPalabraClave')}
+                            />
+                        </div>
+                    </section>
                 </div>
 
                 <div className="modal-footer">
@@ -82,3 +135,4 @@ const ConfigurationModal = ({ isOpen, onClose, onProcess, currentInputs }) => {
 };
 
 export default ConfigurationModal;
+

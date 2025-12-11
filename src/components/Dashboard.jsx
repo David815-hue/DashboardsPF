@@ -55,6 +55,12 @@ const Dashboard = () => {
     const [ecommerceData, setEcommerceData] = useState(null);
     const [whatsappData, setWhatsappData] = useState(null);
     const [config, setConfig] = useState({ inversionUSD: 25.52, tipoCambio: 26.42, clics: 7796, topProductsCount: 5, totalEnvios: 94, enviosTGU: 74, enviosSPS: 20, costoEnvioLps: 2.11 });
+    const [topProductsConfig, setTopProductsConfig] = useState({
+        ventaMetaTopProductos: 5,
+        ecommerceTopProductos: 6,
+        whatsappTopProductos: 5,
+        whatsappPalabraClave: 5
+    });
 
     // Snapshot management
     const [snapshotDate, setSnapshotDate] = useState(getCurrentWeekMonday());
@@ -517,6 +523,54 @@ const Dashboard = () => {
                             <ManualInputs config={config} onConfigChange={setConfig} />
                             <div className="divider"></div>
 
+                            {/* Top Products Config */}
+                            <div className="snapshot-section">
+                                <h3 className="inputs-title">📊 Top Productos</h3>
+                                <div className="input-row" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                                    <div className="input-group">
+                                        <label>Venta Meta</label>
+                                        <input
+                                            type="number"
+                                            min="1"
+                                            max="20"
+                                            value={topProductsConfig.ventaMetaTopProductos}
+                                            onChange={(e) => setTopProductsConfig({ ...topProductsConfig, ventaMetaTopProductos: parseInt(e.target.value) || 5 })}
+                                        />
+                                    </div>
+                                    <div className="input-group">
+                                        <label>E-commerce</label>
+                                        <input
+                                            type="number"
+                                            min="1"
+                                            max="20"
+                                            value={topProductsConfig.ecommerceTopProductos}
+                                            onChange={(e) => setTopProductsConfig({ ...topProductsConfig, ecommerceTopProductos: parseInt(e.target.value) || 6 })}
+                                        />
+                                    </div>
+                                    <div className="input-group">
+                                        <label>WhatsApp - Productos</label>
+                                        <input
+                                            type="number"
+                                            min="1"
+                                            max="20"
+                                            value={topProductsConfig.whatsappTopProductos}
+                                            onChange={(e) => setTopProductsConfig({ ...topProductsConfig, whatsappTopProductos: parseInt(e.target.value) || 5 })}
+                                        />
+                                    </div>
+                                    <div className="input-group">
+                                        <label>WhatsApp - Palabras</label>
+                                        <input
+                                            type="number"
+                                            min="1"
+                                            max="20"
+                                            value={topProductsConfig.whatsappPalabraClave}
+                                            onChange={(e) => setTopProductsConfig({ ...topProductsConfig, whatsappPalabraClave: parseInt(e.target.value) || 5 })}
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="divider"></div>
+
                             <div className="snapshot-section">
                                 <h3 className="inputs-title">
                                     <Save size={20} />
@@ -572,7 +626,7 @@ const Dashboard = () => {
                 </div>
             ) : activeTab === 'ecommerce' ? (
                 ecommerceMetrics ? (
-                    <EcommerceDashboard metrics={ecommerceMetrics} />
+                    <EcommerceDashboard metrics={ecommerceMetrics} topProductsCount={topProductsConfig.ecommerceTopProductos} />
                 ) : (
                     <div className="empty-state">
                         <p>⚠️ No hay datos de E-commerce cargados</p>
@@ -600,7 +654,7 @@ const Dashboard = () => {
                             <div className="right-column">
                                 <div className="chart-wrapper">
                                     <h3 className="chart-title">Top Productos</h3>
-                                    <TopProductsChart data={metrics.topProducts} />
+                                    <TopProductsChart data={metrics.topProducts?.slice(0, topProductsConfig.ventaMetaTopProductos)} />
                                 </div>
                                 <div className="chart-wrapper">
                                     <FunnelChart data={metrics.embudoData} />
@@ -616,7 +670,7 @@ const Dashboard = () => {
                 )
             ) : activeTab === 'whatsapp' ? (
                 whatsappMetrics ? (
-                    <WhatsAppDashboard metrics={whatsappMetrics} />
+                    <WhatsAppDashboard metrics={whatsappMetrics} topProductsCount={topProductsConfig.whatsappTopProductos} keywordCount={topProductsConfig.whatsappPalabraClave} />
                 ) : (
                     <div className="empty-state">
                         <p>⚠️ No hay datos de WhatsApp Marketing cargados</p>

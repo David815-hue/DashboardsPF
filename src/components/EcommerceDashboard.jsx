@@ -18,7 +18,7 @@ const CustomTooltip = ({ active, payload, label }) => {
     return null;
 };
 
-const EcommerceDashboard = ({ metrics }) => {
+const EcommerceDashboard = ({ metrics, topProductsCount = 6 }) => {
     if (!metrics) {
         return (
             <div className="empty-state">
@@ -28,6 +28,7 @@ const EcommerceDashboard = ({ metrics }) => {
     }
 
     const { kpis, charts } = metrics;
+    const topProductosData = charts.topProductos?.slice(0, topProductsCount) || [];
 
     return (
         <div className="dashboard-content">
@@ -50,7 +51,7 @@ const EcommerceDashboard = ({ metrics }) => {
                         <h3 className="chart-title">Top Productos</h3>
                         <div className="chart-container">
                             <ResponsiveContainer width="100%" height="100%">
-                                <BarChart data={charts.topProductos} margin={{ top: 10, right: 20, left: 10, bottom: 60 }}>
+                                <BarChart data={topProductosData} margin={{ top: 10, right: 20, left: 10, bottom: 60 }}>
                                     <defs>
                                         <linearGradient id="ecommerceBarGradient" x1="0" y1="0" x2="0" y2="1">
                                             <stop offset="0%" stopColor="#FE0000" stopOpacity={1} />
@@ -68,8 +69,8 @@ const EcommerceDashboard = ({ metrics }) => {
                                     />
                                     <YAxis tick={{ fontSize: 10, fill: '#666' }} />
                                     <Tooltip content={<CustomTooltip />} />
-                                    <Bar dataKey="value" radius={[4, 4, 0, 0]} fill="url(#ecommerceBarGradient)">
-                                        {charts.topProductos.map((entry, index) => (
+                                    <Bar dataKey="value" radius={[8, 8, 0, 0]} fill="url(#ecommerceBarGradient)">
+                                        {topProductosData.map((entry, index) => (
                                             <Cell key={`cell-${index}`} fill="url(#ecommerceBarGradient)" />
                                         ))}
                                     </Bar>
@@ -102,7 +103,7 @@ const EcommerceDashboard = ({ metrics }) => {
                                     />
                                     <YAxis tick={{ fontSize: 10, fill: '#666' }} />
                                     <Tooltip content={<CustomTooltip />} />
-                                    <Bar dataKey="value" radius={[4, 4, 0, 0]} fill="url(#ecommerceBarGradient)">
+                                    <Bar dataKey="value" radius={[8, 8, 0, 0]} fill="url(#ecommerceBarGradient)">
                                         {charts.motivosCancelacion.map((entry, index) => (
                                             <Cell key={`cell-${index}`} fill="url(#ecommerceBarGradient)" />
                                         ))}
