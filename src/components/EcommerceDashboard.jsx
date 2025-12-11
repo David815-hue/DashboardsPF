@@ -60,11 +60,11 @@ const EcommerceDashboard = ({ metrics }) => {
                                     <XAxis
                                         dataKey="name"
                                         tick={{ fontSize: 9, fill: '#666' }}
-                                        angle={0}
-                                        textAnchor="middle"
+                                        angle={-45}
+                                        textAnchor="end"
                                         interval={0}
-                                        height={60}
-                                        tickFormatter={(val) => val.length > 8 ? val.substring(0, 8) + '...' : val}
+                                        height={80}
+                                        tickFormatter={(val) => val.length > 20 ? val.substring(0, 20) + '...' : val}
                                     />
                                     <YAxis tick={{ fontSize: 10, fill: '#666' }} />
                                     <Tooltip content={<CustomTooltip />} />
@@ -80,12 +80,12 @@ const EcommerceDashboard = ({ metrics }) => {
                 </div>
 
                 {/* Quadrant 3 (Bottom-Left): Motivo de Cancelación */}
-                <div className="ecommerce-quadrant">
-                    <div className="chart-wrapper">
+                <div className="ecommerce-quadrant" style={{ overflow: 'hidden' }}>
+                    <div className="chart-wrapper" style={{ maxHeight: '100%', overflow: 'hidden' }}>
                         <h3 className="chart-title">Motivo de Cancelación</h3>
-                        <div className="chart-container">
+                        <div className="chart-container" style={{ height: 200, marginTop: '10px' }}>
                             <ResponsiveContainer width="100%" height="100%">
-                                <BarChart data={charts.motivosCancelacion} margin={{ top: 10, right: 20, left: 10, bottom: 40 }}>
+                                <BarChart data={charts.motivosCancelacion} margin={{ top: 20, right: 20, left: 10, bottom: 20 }}>
                                     <defs>
                                         <linearGradient id="ecommerceBarGradient" x1="0" y1="0" x2="0" y2="1">
                                             <stop offset="0%" stopColor="#FE0000" stopOpacity={1} />
@@ -95,9 +95,10 @@ const EcommerceDashboard = ({ metrics }) => {
                                     <XAxis
                                         dataKey="name"
                                         tick={{ fontSize: 9, fill: '#666' }}
-                                        angle={-25}
-                                        textAnchor="end"
+                                        angle={0}
+                                        textAnchor="middle"
                                         interval={0}
+                                        tickFormatter={(val) => val.length > 10 ? val.substring(0, 10) + '...' : val}
                                     />
                                     <YAxis tick={{ fontSize: 10, fill: '#666' }} />
                                     <Tooltip content={<CustomTooltip />} />

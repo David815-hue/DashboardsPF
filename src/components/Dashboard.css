@@ -1446,6 +1446,7 @@ body {
   font-weight: 600;
   font-size: 1.1rem;
 }
+
 /* ======================= */
 /* E-COMMERCE DASHBOARD REDESIGN */
 /* ======================= */
@@ -1453,9 +1454,9 @@ body {
 .ecommerce-grid-layout {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  grid-template-rows: 1fr 1fr;
+  grid-template-rows: 1.5fr 1fr;
   gap: 20px;
-  height: 100%;
+  height: calc(100% - 50px);
   width: 100%;
   padding-bottom: 10px;
 }
@@ -1464,20 +1465,24 @@ body {
 .ecommerce-quadrant {
   display: flex;
   flex-direction: column;
-  min-height: 0; /* Crucial for scrolling/flex within grid */
+  min-height: 0;
+  /* Crucial for scrolling/flex within grid */
   overflow: hidden;
 }
 
 /* KPI Grid Customization for Quadrant */
 .ecommerce-kpi-grid-quadrant {
   display: grid;
-  grid-template-columns: 1fr 1fr; /* 2 Columns */
-  grid-template-rows: repeat(3, 1fr); /* 3 Rows */
+  grid-template-columns: 1fr 1fr;
+  /* 2 Columns */
+  grid-template-rows: repeat(3, 1fr);
+  /* 3 Rows */
   gap: 12px;
   height: 100%;
 }
 
 .ecommerce-kpi-grid-quadrant .kpi-card {
-  height: 100%; /* Fill the grid cell */
+  height: 100%;
+  /* Fill the grid cell */
   min-height: auto;
 }
