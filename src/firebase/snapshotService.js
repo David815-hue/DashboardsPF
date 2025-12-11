@@ -455,43 +455,132 @@ export const calculateWhatsAppMonthlyAggregate = (snapshots) => {
 
     let totalVenta = 0;
     let cantidadVenta = 0;
+
+    // Weighted Average Denominators/Numerators
+    let totalEnvios = 0;
+    let totalEnviosTGU = 0;
+    let totalEnviosSPS = 0;
+    let totalInversionUSD = 0;
+
+    // Regional Totals
     let totalVentaTGU = 0;
     let totalVentaSPS = 0;
+    let cantidadVentaTGU = 0;
+    let cantidadVentaSPS = 0;
+    let totalConversaciones = 0; // For response rate if tracked
 
+    // Merged Tables
+    const asesorMap = {};
+    const palabraClaveMap = {};
     const productCounts = {};
     const ciudadTotals = {};
     const campanaTotals = {};
 
     snapshots.forEach(snap => {
-        const kpis = snap.kpis;
-        if (kpis) {
-            totalVenta += kpis.totalVenta || 0;
-            cantidadVenta += kpis.cantidadVenta || 0;
-            totalVentaTGU += kpis.totalVentaTGU || 0;
-            totalVentaSPS += kpis.totalVentaSPS || 0;
+        // --- 1. Accumulate Config Inputs (for Rates) ---
+        const config = snap.config || {};
+        totalEnvios += config.totalEnvios || 0;
+        totalEnviosTGU += config.enviosTGU || 0;
+        totalEnviosSPS += config.enviosSPS || 0;
+        totalInversionUSD += config.inversionUSD || 0;
+
+        // --- 2. Accumulate KPIs ---
+        const kpis = snap.kpis || {};
+        totalVenta += kpis.totalVenta || 0;
+        cantidadVenta += kpis.cantidadVenta || 0;
+
+        totalVentaTGU += kpis.totalVentaTGU || 0;
+        totalVentaSPS += kpis.totalVentaSPS || 0;
+
+        // Approximate counts based on snapshot data if specific counts aren't saved
+        // (Assuming conversion rates were correct, we can back-calculate or just use what we have)
+        // Ideally we would save cantidadVentaTGU/SPS in snapshot. If not available, we can't perfectly calc weighted avg for TGU/SPS ticket
+        // But we can try to infer or just sum what we can. 
+        // NOTE: Standard KPIs don't have 'cantidadVentaTGU', so we might have to rely on ticket avg * count? 
+        // Actually, if we have ticket and value, count = value / ticket.
+        if (kpis.ticketPromedioTGU > 0) cantidadVentaTGU += Math.round(kpis.totalVentaTGU / kpis.ticketPromedioTGU);
+        if (kpis.ticketPromedioSPS > 0) cantidadVentaSPS += Math.round(kpis.totalVentaSPS / kpis.ticketPromedioSPS);
+
+        // --- 3. Merge Charts ---
+        const charts = snap.charts || {};
+        if (charts.topProductos) {
+            charts.topProductos.forEach(p => {
+                productCounts[p.name] = (productCounts[p.name] || 0) + p.value;
+            });
+        }
+        if (charts.ventaPorCiudad) {
+            charts.ventaPorCiudad.forEach(c => {
+                ciudadTotals[c.name] = (ciudadTotals[c.name] || 0) + c.value;
+            });
+        }
+        if (charts.ventaPorCampana) {
+            charts.ventaPorCampana.forEach(c => {
+                campanaTotals[c.name] = (campanaTotals[c.name] || 0) + c.value;
+            });
         }
 
-        const charts = snap.charts;
-        if (charts) {
-            if (charts.topProductos) {
-                charts.topProductos.forEach(p => {
-                    productCounts[p.name] = (productCounts[p.name] || 0) + p.value;
-                });
-            }
-            if (charts.ventaPorCiudad) {
-                charts.ventaPorCiudad.forEach(c => {
-                    ciudadTotals[c.name] = (ciudadTotals[c.name] || 0) + c.value;
-                });
-            }
-            if (charts.ventaPorCampana) {
-                charts.ventaPorCampana.forEach(c => {
-                    campanaTotals[c.name] = (campanaTotals[c.name] || 0) + c.value;
-                });
-            }
+        // --- 4. Merge Page 2 Tables ---
+        const page2 = snap.page2 || {};
+
+        // Asesores
+        if (page2.tablaAsesores) {
+            page2.tablaAsesores.forEach(row => {
+                const asesor = row.asesor;
+                if (!asesorMap[asesor]) {
+                    asesorMap[asesor] = {
+                        pedidosMkt: 0,
+                        ventaMkt: 0,
+                        pedidosFarma: 0,
+                        ventaFarma: 0,
+                        totalVenta: 0,
+                        pedidos: 0 // derived for ticket
+                    };
+                }
+                asesorMap[asesor].pedidosMkt += row.pedidosMkt || 0;
+                asesorMap[asesor].ventaMkt += row.ventaMkt || 0;
+                asesorMap[asesor].pedidosFarma += row.pedidosFarma || 0;
+                asesorMap[asesor].ventaFarma += row.ventaFarma || 0;
+                asesorMap[asesor].totalVenta += row.totalVenta || 0;
+                // row.ticketPromedio is average, so we need to reconstruct count to re-average
+                // Count = TotalVenta / Ticket. Or just sum pedidosMkt + pedidosFarma if those are accurate counts
+                const totalPedidosRow = (row.pedidosMkt || 0) + (row.pedidosFarma || 0);
+                asesorMap[asesor].pedidos += totalPedidosRow;
+            });
+        }
+
+        // Palabras Clave
+        if (page2.ventaPorPalabraClave) {
+            page2.ventaPorPalabraClave.forEach(item => {
+                palabraClaveMap[item.name] = (palabraClaveMap[item.name] || 0) + item.value;
+            });
         }
     });
 
+    // --- 5. Calculate Weighted Averages ---
+
+    // Main Rates
     const ticketPromedio = cantidadVenta > 0 ? totalVenta / cantidadVenta : 0;
+    const tasaConversion = totalEnvios > 0 ? (cantidadVenta / totalEnvios) * 100 : 0;
+
+    // ROAS = Total Venta (USD) / Inversion (USD)
+    // Assuming totalVenta is Lps, we need exchange rate. 
+    // We can use an average exchange rate or just take the sum of (Venta/TipoCambio) from each week?
+    // Simpler: use the last week's exchange rate or an average? 
+    // Better: We track Inversion USD directly. We need Venta USD.
+    // Let's approximate Venta USD using a fixed rate or the one from the last snapshot?
+    // Precise way: Snapshots should ideally store 'TotalVentaUSD'.
+    // Failure fallback: Use 26.41 as standard if not available.
+    const exchangeRate = 26.41;
+    const totalVentaUSD = totalVenta / exchangeRate;
+    const roas = totalInversionUSD > 0 ? totalVentaUSD / totalInversionUSD : 0;
+
+    // Regional Rates
+    const ticketPromedioTGU = cantidadVentaTGU > 0 ? totalVentaTGU / cantidadVentaTGU : 0;
+    const ticketPromedioSPS = cantidadVentaSPS > 0 ? totalVentaSPS / cantidadVentaSPS : 0;
+    const tasaConversionTGU = totalEnviosTGU > 0 ? (cantidadVentaTGU / totalEnviosTGU) * 100 : 0;
+    const tasaConversionSPS = totalEnviosSPS > 0 ? (cantidadVentaSPS / totalEnviosSPS) * 100 : 0;
+
+    // --- 6. Format Collections ---
 
     const topProductos = Object.entries(productCounts)
         .map(([name, value]) => ({ name, value }))
@@ -506,22 +595,37 @@ export const calculateWhatsAppMonthlyAggregate = (snapshots) => {
         .map(([name, value]) => ({ name, value }))
         .sort((a, b) => b.value - a.value);
 
+    const tablaAsesores = Object.entries(asesorMap)
+        .map(([asesor, data]) => ({
+            asesor,
+            pedidosMkt: data.pedidosMkt,
+            ventaMkt: data.ventaMkt,
+            pedidosFarma: data.pedidosFarma,
+            ventaFarma: data.ventaFarma,
+            totalVenta: data.totalVenta,
+            ticketPromedio: data.pedidos > 0 ? data.totalVenta / data.pedidos : 0
+        }))
+        .sort((a, b) => b.totalVenta - a.totalVenta);
+
+    const ventaPorPalabraClave = Object.entries(palabraClaveMap)
+        .map(([name, value]) => ({ name, value }))
+        .sort((a, b) => b.value - a.value);
+
     return {
         page1: {
             kpis: {
                 totalVenta,
                 cantidadVenta,
                 ticketPromedio,
+                roas,
+                tasaConversion,
                 totalVentaTGU,
                 totalVentaSPS,
-                // These would need more complex aggregation
-                tasaConversion: 0,
-                roas: 0,
-                tasaRespuesta: 0,
-                tasaConversionTGU: 0,
-                tasaConversionSPS: 0,
-                ticketPromedioTGU: cantidadVenta > 0 ? totalVentaTGU / cantidadVenta : 0,
-                ticketPromedioSPS: cantidadVenta > 0 ? totalVentaSPS / cantidadVenta : 0
+                ticketPromedioTGU,
+                ticketPromedioSPS,
+                tasaConversionTGU,
+                tasaConversionSPS,
+                tasaRespuesta: 0 // Difficult to calc without explicit conversation counts per week
             },
             charts: {
                 topProductos,
@@ -530,8 +634,8 @@ export const calculateWhatsAppMonthlyAggregate = (snapshots) => {
             }
         },
         page2: {
-            tablaAsesores: [],
-            ventaPorPalabraClave: []
+            tablaAsesores,
+            ventaPorPalabraClave
         }
     };
 };

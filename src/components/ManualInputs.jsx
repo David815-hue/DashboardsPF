@@ -45,6 +45,42 @@ const ManualInputs = ({ config, onConfigChange }) => {
                 </div>
 
                 <div className="input-group">
+                    <label>Total Envíos</label>
+                    <input
+                        type="number"
+                        value={config.totalEnvios}
+                        onChange={(e) => handleChange('totalEnvios', e.target.value)}
+                    />
+                </div>
+
+                <div className="input-group">
+                    <label>Envíos TGU</label>
+                    <input
+                        type="number"
+                        value={config.enviosTGU}
+                        onChange={(e) => handleChange('enviosTGU', e.target.value)}
+                    />
+                </div>
+
+                <div className="input-group">
+                    <label>Envíos SPS</label>
+                    <input
+                        type="number"
+                        value={config.enviosSPS}
+                        onChange={(e) => handleChange('enviosSPS', e.target.value)}
+                    />
+                </div>
+
+                <div className="input-group">
+                    <label>Costo Envío (Lps)</label>
+                    <input
+                        type="number"
+                        value={config.costoEnvioLps}
+                        onChange={(e) => handleChange('costoEnvioLps', e.target.value)}
+                    />
+                </div>
+
+                <div className="input-group">
                     <label>Top Productos</label>
                     <input
                         type="number"

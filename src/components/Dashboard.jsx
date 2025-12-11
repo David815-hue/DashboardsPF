@@ -164,10 +164,15 @@ const Dashboard = () => {
                 };
                 result = await saveEcommerceSnapshot(snapshotDate, snapshotData);
             } else if (activeTab === 'whatsapp') {
-                // Save WhatsApp Marketing snapshot
+                // Save WhatsApp Marketing snapshot (both pages)
                 const snapshotData = {
+                    config, // Save config for reference or future recalculations
                     kpis: whatsappMetrics.page1.kpis,
-                    charts: whatsappMetrics.page1.charts
+                    charts: whatsappMetrics.page1.charts,
+                    page2: {
+                        tablaAsesores: whatsappMetrics.page2?.tablaAsesores || [],
+                        ventaPorPalabraClave: whatsappMetrics.page2?.ventaPorPalabraClave || []
+                    }
                 };
                 result = await saveWhatsAppSnapshot(snapshotDate, snapshotData);
             } else {
@@ -323,14 +328,15 @@ const Dashboard = () => {
     const whatsappMetrics = useMemo(() => {
         // If snapshot is loaded, use snapshot metrics
         if (whatsappData?._isSnapshot && whatsappData._snapshotMetrics) {
+            const snapshot = whatsappData._snapshotMetrics;
             return {
                 page1: {
-                    kpis: whatsappData._snapshotMetrics.kpis,
-                    charts: whatsappData._snapshotMetrics.charts
+                    kpis: snapshot.kpis,
+                    charts: snapshot.charts
                 },
                 page2: {
-                    tablaAsesores: [],
-                    ventaPorPalabraClave: []
+                    tablaAsesores: snapshot.page2?.tablaAsesores || [],
+                    ventaPorPalabraClave: snapshot.page2?.ventaPorPalabraClave || []
                 }
             };
         }
@@ -450,14 +456,14 @@ const Dashboard = () => {
                                 <div className="selector-divider"></div>
                                 {currentSnapshotsByMonth[selectedMonth].map(snap => (
                                     <div
-                                        key={snap.id}
-                                        className={`selector-option ${selectedWeek === snap.id ? 'active' : ''}`}
-                                        onClick={() => handleSelectWeek(snap.id)}
+                                        key={snap.dateId || snap.id}
+                                        className={`selector-option ${selectedWeek === (snap.dateId || snap.id) ? 'active' : ''}`}
+                                        onClick={() => handleSelectWeek(snap.dateId || snap.id)}
                                     >
-                                        <span>📅 {formatWeekLabel(snap.id)}</span>
+                                        <span>📅 {formatWeekLabel(snap.dateId || snap.id)}</span>
                                         <button
                                             className="snapshot-delete-btn"
-                                            onClick={(e) => handleDeleteSnapshot(snap.id, e)}
+                                            onClick={(e) => handleDeleteSnapshot(snap.dateId || snap.id, e)}
                                         >
                                             <Trash2 size={14} />
                                         </button>
