@@ -360,3 +360,176 @@ export const calculateEcommerceMonthlyAggregate = (weeklySnapshots) => {
         }
     };
 };
+
+// =============================================
+// WHATSAPP MARKETING SNAPSHOTS (Separate Collection)
+// =============================================
+
+const WHATSAPP_COLLECTION = 'snapshots-whatsapp';
+
+/**
+ * Save WhatsApp Marketing dashboard snapshot
+ */
+export const saveWhatsAppSnapshot = async (dateId, data) => {
+    try {
+        const docRef = doc(db, WHATSAPP_COLLECTION, dateId);
+        await setDoc(docRef, {
+            ...data,
+            savedAt: new Date().toISOString(),
+            dateId
+        });
+        return { success: true };
+    } catch (error) {
+        console.error('Error saving WhatsApp snapshot:', error);
+        return { success: false, error: error.message };
+    }
+};
+
+/**
+ * Load WhatsApp Marketing snapshot by date
+ */
+export const loadWhatsAppSnapshot = async (dateId) => {
+    try {
+        const docRef = doc(db, WHATSAPP_COLLECTION, dateId);
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+            return { success: true, data: docSnap.data() };
+        }
+        return { success: false, error: 'No existe' };
+    } catch (error) {
+        console.error('Error loading WhatsApp snapshot:', error);
+        return { success: false, error: error.message };
+    }
+};
+
+/**
+ * Get all WhatsApp snapshots organized by month
+ */
+export const getWhatsAppSnapshotsByMonth = async () => {
+    try {
+        const querySnapshot = await getDocs(collection(db, WHATSAPP_COLLECTION));
+        const byMonth = {};
+
+        querySnapshot.forEach((docSnap) => {
+            const data = docSnap.data();
+            const dateId = docSnap.id;
+            const monthKey = dateId.substring(0, 7);
+
+            if (!byMonth[monthKey]) {
+                byMonth[monthKey] = [];
+            }
+            byMonth[monthKey].push({ dateId, ...data });
+        });
+
+        Object.keys(byMonth).forEach(month => {
+            byMonth[month].sort((a, b) => a.dateId.localeCompare(b.dateId));
+        });
+
+        return byMonth;
+    } catch (error) {
+        console.error('Error getting WhatsApp snapshots:', error);
+        return {};
+    }
+};
+
+/**
+ * Delete WhatsApp snapshot
+ */
+export const deleteWhatsAppSnapshot = async (dateId) => {
+    try {
+        await deleteDoc(doc(db, WHATSAPP_COLLECTION, dateId));
+        return { success: true };
+    } catch (error) {
+        console.error('Error deleting WhatsApp snapshot:', error);
+        return { success: false, error: error.message };
+    }
+};
+
+/**
+ * Calculate WhatsApp monthly aggregate from snapshots
+ */
+export const calculateWhatsAppMonthlyAggregate = (snapshots) => {
+    if (!snapshots || snapshots.length === 0) return null;
+
+    let totalVenta = 0;
+    let cantidadVenta = 0;
+    let totalVentaTGU = 0;
+    let totalVentaSPS = 0;
+
+    const productCounts = {};
+    const ciudadTotals = {};
+    const campanaTotals = {};
+
+    snapshots.forEach(snap => {
+        const kpis = snap.kpis;
+        if (kpis) {
+            totalVenta += kpis.totalVenta || 0;
+            cantidadVenta += kpis.cantidadVenta || 0;
+            totalVentaTGU += kpis.totalVentaTGU || 0;
+            totalVentaSPS += kpis.totalVentaSPS || 0;
+        }
+
+        const charts = snap.charts;
+        if (charts) {
+            if (charts.topProductos) {
+                charts.topProductos.forEach(p => {
+                    productCounts[p.name] = (productCounts[p.name] || 0) + p.value;
+                });
+            }
+            if (charts.ventaPorCiudad) {
+                charts.ventaPorCiudad.forEach(c => {
+                    ciudadTotals[c.name] = (ciudadTotals[c.name] || 0) + c.value;
+                });
+            }
+            if (charts.ventaPorCampana) {
+                charts.ventaPorCampana.forEach(c => {
+                    campanaTotals[c.name] = (campanaTotals[c.name] || 0) + c.value;
+                });
+            }
+        }
+    });
+
+    const ticketPromedio = cantidadVenta > 0 ? totalVenta / cantidadVenta : 0;
+
+    const topProductos = Object.entries(productCounts)
+        .map(([name, value]) => ({ name, value }))
+        .sort((a, b) => b.value - a.value)
+        .slice(0, 6);
+
+    const ventaPorCiudad = Object.entries(ciudadTotals)
+        .map(([name, value]) => ({ name, value }))
+        .sort((a, b) => b.value - a.value);
+
+    const ventaPorCampana = Object.entries(campanaTotals)
+        .map(([name, value]) => ({ name, value }))
+        .sort((a, b) => b.value - a.value);
+
+    return {
+        page1: {
+            kpis: {
+                totalVenta,
+                cantidadVenta,
+                ticketPromedio,
+                totalVentaTGU,
+                totalVentaSPS,
+                // These would need more complex aggregation
+                tasaConversion: 0,
+                roas: 0,
+                tasaRespuesta: 0,
+                tasaConversionTGU: 0,
+                tasaConversionSPS: 0,
+                ticketPromedioTGU: cantidadVenta > 0 ? totalVentaTGU / cantidadVenta : 0,
+                ticketPromedioSPS: cantidadVenta > 0 ? totalVentaSPS / cantidadVenta : 0
+            },
+            charts: {
+                topProductos,
+                ventaPorCiudad,
+                ventaPorCampana
+            }
+        },
+        page2: {
+            tablaAsesores: [],
+            ventaPorPalabraClave: []
+        }
+    };
+};

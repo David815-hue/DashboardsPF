@@ -15,7 +15,8 @@ import { processWhatsAppMarketingData } from '../utils/whatsappProcessor';
 import { calculateWhatsAppMetrics } from '../utils/whatsappMetrics';
 import {
     saveSnapshot, loadSnapshot, getSnapshotsByMonth, deleteSnapshot, calculateMonthlyAggregate,
-    saveEcommerceSnapshot, loadEcommerceSnapshot, getEcommerceSnapshotsByMonth, deleteEcommerceSnapshot, calculateEcommerceMonthlyAggregate
+    saveEcommerceSnapshot, loadEcommerceSnapshot, getEcommerceSnapshotsByMonth, deleteEcommerceSnapshot, calculateEcommerceMonthlyAggregate,
+    saveWhatsAppSnapshot, loadWhatsAppSnapshot, getWhatsAppSnapshotsByMonth, deleteWhatsAppSnapshot, calculateWhatsAppMonthlyAggregate
 } from '../firebase/snapshotService';
 import './Dashboard.css';
 
@@ -58,6 +59,7 @@ const Dashboard = () => {
     const [snapshotDate, setSnapshotDate] = useState(getCurrentWeekMonday());
     const [snapshotsByMonth, setSnapshotsByMonth] = useState({});
     const [ecommerceSnapshotsByMonth, setEcommerceSnapshotsByMonth] = useState({});
+    const [whatsappSnapshotsByMonth, setWhatsappSnapshotsByMonth] = useState({});
 
     // Hierarchical selection
     const [selectedMonth, setSelectedMonth] = useState(null);
@@ -92,6 +94,9 @@ const Dashboard = () => {
         if (ecomResult.success) {
             setEcommerceSnapshotsByMonth(ecomResult.data);
         }
+        // Load WhatsApp snapshots
+        const waResult = await getWhatsAppSnapshotsByMonth();
+        setWhatsappSnapshotsByMonth(waResult);
     };
 
     const handleFileChange = (key, file) => {
@@ -133,6 +138,11 @@ const Dashboard = () => {
                 setError('No hay datos de E-commerce para guardar');
                 return;
             }
+        } else if (activeTab === 'whatsapp') {
+            if (!whatsappData || !whatsappMetrics) {
+                setError('No hay datos de WhatsApp Marketing para guardar');
+                return;
+            }
         } else {
             if (!data || !metrics) {
                 setError('No hay datos para guardar');
@@ -153,6 +163,13 @@ const Dashboard = () => {
                     charts: ecommerceMetrics.charts
                 };
                 result = await saveEcommerceSnapshot(snapshotDate, snapshotData);
+            } else if (activeTab === 'whatsapp') {
+                // Save WhatsApp Marketing snapshot
+                const snapshotData = {
+                    kpis: whatsappMetrics.page1.kpis,
+                    charts: whatsappMetrics.page1.charts
+                };
+                result = await saveWhatsAppSnapshot(snapshotDate, snapshotData);
             } else {
                 // Save Venta Meta snapshot
                 const snapshotData = {
@@ -452,7 +469,9 @@ const Dashboard = () => {
                                         disabled={isSaving ||
                                             (activeTab === 'ecommerce'
                                                 ? (!ecommerceData || ecommerceData._isSnapshot)
-                                                : (!data || data._isSnapshot)
+                                                : activeTab === 'whatsapp'
+                                                    ? (!whatsappData || whatsappData._isSnapshot)
+                                                    : (!data || data._isSnapshot)
                                             )
                                         }
                                     >
