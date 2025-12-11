@@ -468,7 +468,13 @@ const Dashboard = () => {
 
             {/* Header */}
             <header className="dashboard-header">
-                <Logo />
+                {activeTab === 'venta-meta' && <Logo />}
+                {activeTab === 'ecommerce' && (
+                    <div className="logo">
+                        <span className="logo-text">Venta E-commerce</span>
+                        <div className="logo-icon"><img src="/PuntoFarma.png" alt="Logo" /></div>
+                    </div>
+                )}
             </header>
 
             {/* Dashboard Content - Switch based on active tab */}

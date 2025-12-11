@@ -94,13 +94,18 @@ const WhatsAppDashboard = ({ metrics }) => {
         const textAnchor = x > cx ? 'start' : 'end';
 
         // Shorten name if too long
-        const shortName = name.length > 15 ? name.substring(0, 12) + '...' : name;
+        const shortName = name && name.length > 15 ? name.substring(0, 12) + '...' : (name || '');
+
+        // Handle undefined/NaN percent
+        const displayPercent = (typeof percent === 'number' && !isNaN(percent))
+            ? `(${(percent * 100).toFixed(1)}%)`
+            : '';
 
         return (
             <text x={x} y={y} fill="#666" textAnchor={textAnchor} dominantBaseline="central" fontSize="0.7rem">
                 {`${shortName}`}
                 <tspan x={x} dy="1.2em" fontSize="0.65rem" fill="#999">
-                    {`(${(percent * 100).toFixed(1)}%)`}
+                    {displayPercent}
                 </tspan>
             </text>
         );
