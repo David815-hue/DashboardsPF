@@ -74,7 +74,7 @@ export const calculateAgregadoresMetrics = (processedData, config = {}) => {
 
     // Prepare chart data - Venta por Día (daily trend)
     const ventaPorDiaChart = (processedData.ventaPorDia || []).map(d => ({
-        name: `Día ${d.name}`,
+        name: d.name, // Already formatted as DD/MM
         day: d.day,
         venta: d.venta,
         pedidos: d.pedidos

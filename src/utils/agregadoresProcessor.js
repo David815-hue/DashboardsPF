@@ -188,49 +188,66 @@ export const processAgregadoresData = async (files) => {
 
     const dailyData = {};
     const dailyOrders = {};
+    const dailyDates = {}; // Store actual date strings
 
     pedidosYaData.forEach(row => {
         // Parse date - handle different formats
         let fecha = row[fechaColumn];
         if (!fecha) return;
 
-        // Try to extract day of month
-        let day;
-        if (typeof fecha === 'string') {
-            // Handle "DD/MM/YYYY" or "YYYY-MM-DD" or Excel date
-            const parts = fecha.split(/[\/\-]/);
-            if (parts.length >= 1) {
-                day = parseInt(parts[0]) || parseInt(parts[2]);
+        // Try to extract day/month
+        let day, month, dateKey, displayDate;
+
+        // Convert to string if needed
+        const fechaStr = String(fecha).trim();
+
+        // Try DD/MM/YYYY format first (most common)
+        const slashMatch = fechaStr.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})$/);
+        if (slashMatch) {
+            day = parseInt(slashMatch[1]);
+            month = parseInt(slashMatch[2]);
+        } else {
+            // Try YYYY-MM-DD format
+            const dashMatch = fechaStr.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
+            if (dashMatch) {
+                day = parseInt(dashMatch[3]);
+                month = parseInt(dashMatch[2]);
+            } else if (typeof fecha === 'number') {
+                // Excel serial date
+                const excelDate = new Date((fecha - 25569) * 86400 * 1000);
+                day = excelDate.getDate();
+                month = excelDate.getMonth() + 1;
             }
-        } else if (typeof fecha === 'number') {
-            // Excel serial date
-            const excelDate = new Date((fecha - 25569) * 86400 * 1000);
-            day = excelDate.getDate();
         }
 
         if (!day || day < 1 || day > 31) return;
+        if (!month || month < 1 || month > 12) month = new Date().getMonth() + 1;
 
-        const dayKey = String(day).padStart(2, '0');
+        dateKey = String(day).padStart(2, '0');
+        displayDate = `${String(day).padStart(2, '0')}/${String(month).padStart(2, '0')}`;
+
+        // Store display date
+        dailyDates[dateKey] = displayDate;
 
         // Sum totals by day
-        dailyData[dayKey] = (dailyData[dayKey] || 0) + row['_total'];
+        dailyData[dateKey] = (dailyData[dateKey] || 0) + row['_total'];
 
         // Count unique orders by day
-        if (!dailyOrders[dayKey]) {
-            dailyOrders[dayKey] = new Set();
+        if (!dailyOrders[dateKey]) {
+            dailyOrders[dateKey] = new Set();
         }
         if (row['_pedido']) {
-            dailyOrders[dayKey].add(row['_pedido']);
+            dailyOrders[dateKey].add(row['_pedido']);
         }
     });
 
     // Convert to array sorted by day
     const ventaPorDia = Object.entries(dailyData)
-        .map(([day, total]) => ({
-            day: parseInt(day),
-            name: `${parseInt(day)}`,
+        .map(([dayKey, total]) => ({
+            day: parseInt(dayKey),
+            name: dailyDates[dayKey] || dayKey,
             venta: total,
-            pedidos: dailyOrders[day]?.size || 0
+            pedidos: dailyOrders[dayKey]?.size || 0
         }))
         .sort((a, b) => a.day - b.day);
 
