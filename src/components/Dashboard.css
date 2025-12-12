@@ -355,8 +355,12 @@ body {
   justify-content: center;
 }
 
+.kpi-centered-row .tilted-card-wrapper {
+  width: calc(50% - 6px) !important;
+}
+
 .kpi-centered-row .kpi-card {
-  width: 50%;
+  width: 100%;
 }
 
 /* Right Column: Charts */
