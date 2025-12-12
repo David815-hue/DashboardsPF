@@ -479,7 +479,12 @@ export const calculateWhatsAppMonthlyAggregate = (snapshots) => {
         totalEnvios += config.totalEnvios || 0;
         totalEnviosTGU += config.enviosTGU || 0;
         totalEnviosSPS += config.enviosSPS || 0;
-        totalInversionUSD += config.inversionUSD || 0;
+        // Calculate inversionUSD the same way as whatsappMetrics.js
+        const costoEnvioLps = config.costoEnvioLps || 2.11;
+        const tipoCambio = config.tipoCambio || 26.41;
+        const snapEnvios = config.totalEnvios || 0;
+        const snapInversionUSD = (costoEnvioLps / tipoCambio) * snapEnvios;
+        totalInversionUSD += snapInversionUSD;
         totalConversaciones += config.totalConversaciones || 0;
 
         // --- 2. Accumulate KPIs ---
