@@ -50,7 +50,7 @@ const EcommerceDashboard = ({ metrics, topProductsCount = 6 }) => {
                 <div className="ecommerce-quadrant">
                     <div className="chart-wrapper">
                         <h3 className="chart-title">Top Productos</h3>
-                        <div className="chart-container">
+                        <div className="chart-container" style={{ padding: '20px' }}>
                             <ResponsiveContainer width="100%" height="100%">
                                 <BarChart data={topProductosData} margin={{ top: 10, right: 20, left: 10, bottom: 60 }}>
                                     <defs>
