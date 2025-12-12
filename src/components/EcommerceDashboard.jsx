@@ -85,7 +85,7 @@ const EcommerceDashboard = ({ metrics, topProductsCount = 6 }) => {
                 <div className="ecommerce-quadrant" style={{ overflow: 'hidden' }}>
                     <div className="chart-wrapper" style={{ maxHeight: '100%', overflow: 'hidden' }}>
                         <h3 className="chart-title">Motivo de Cancelación</h3>
-                        <div className="chart-container" style={{ height: 200, marginTop: '10px' }}>
+                        <div className="chart-container">
                             <ResponsiveContainer width="100%" height="100%">
                                 <BarChart data={charts.motivosCancelacion} margin={{ top: 20, right: 20, left: 10, bottom: 20 }}>
                                     <defs>
@@ -154,7 +154,7 @@ const EcommerceDashboard = ({ metrics, topProductsCount = 6 }) => {
                                         cx="50%"
                                         cy="50%"
                                         innerRadius={0}
-                                        outerRadius={70}
+                                        outerRadius={65}
                                         paddingAngle={2}
                                         dataKey="value"
                                         label={({ name, percent }) => `${(percent * 100).toFixed(1)}%`}
@@ -169,7 +169,7 @@ const EcommerceDashboard = ({ metrics, topProductsCount = 6 }) => {
                                         align="right"
                                         layout="vertical"
                                         iconType="circle"
-                                        formatter={(value) => <span style={{ fontSize: '0.75rem', color: '#333' }}>{value}</span>}
+                                        formatter={(value) => <span style={{ fontSize: '0.7rem', color: '#333' }}>{value}</span>}
                                     />
                                     <Tooltip content={<CustomTooltip />} />
                                 </PieChart>
