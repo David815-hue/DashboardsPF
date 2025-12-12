@@ -167,7 +167,7 @@ const AgregadoresDashboard = ({ metrics, config = {} }) => {
                             <CircularProgress percentage={kpis.cumplimientoPct} size={140} strokeWidth={12} />
                             <div className="compliance-details">
                                 <div className="compliance-row">
-                                    <span className="label">Meta Prorrateada</span>
+                                    <span className="label">Debería de Llevar</span>
                                     <span className="value">L {Math.round(kpis.metaProrrateada).toLocaleString('es-HN')}</span>
                                 </div>
                                 <div className="compliance-row">
@@ -182,7 +182,7 @@ const AgregadoresDashboard = ({ metrics, config = {} }) => {
 
                     <div className="agregadores-charts-section page1">
                         <div className="chart-card">
-                            <h3 className="chart-title">🏆 Top 5 Productos</h3>
+                            <h3 className="chart-title">Top 5 Productos</h3>
                             <div className="chart-container horizontal-bar">
                                 <ResponsiveContainer width="100%" height="100%">
                                     <BarChart data={charts.topProductos} layout="vertical" margin={{ top: 5, right: 30, left: 10, bottom: 5 }}>
@@ -202,7 +202,7 @@ const AgregadoresDashboard = ({ metrics, config = {} }) => {
                         </div>
 
                         <div className="chart-card">
-                            <h3 className="chart-title">🏪 Top 5 Tiendas</h3>
+                            <h3 className="chart-title">Tiendas</h3>
                             <div className="chart-container horizontal-bar">
                                 <ResponsiveContainer width="100%" height="100%">
                                     <BarChart data={charts.topTiendas} layout="vertical" margin={{ top: 5, right: 30, left: 10, bottom: 5 }}>
@@ -227,7 +227,7 @@ const AgregadoresDashboard = ({ metrics, config = {} }) => {
                     <div className="page2-charts-grid">
                         {/* Top: Meta por Tienda (stacked bar) */}
                         <div className="chart-card">
-                            <h3 className="chart-title">🏪 Meta de Pedidos por Tienda (Meta: {metaPedidosPorTienda})</h3>
+                            <h3 className="chart-title">Meta de Pedidos por Tienda (Meta: {metaPedidosPorTienda})</h3>
                             <div className="chart-container">
                                 <ResponsiveContainer width="100%" height={300}>
                                     <BarChart data={charts.metaPorTienda.map(item => ({
@@ -263,7 +263,7 @@ const AgregadoresDashboard = ({ metrics, config = {} }) => {
                         {/* Bottom: Daily Trend (area chart with toggle) */}
                         <div className="chart-card">
                             <div className="chart-header-with-toggle">
-                                <h3 className="chart-title">📈 Tendencia Diaria del Mes</h3>
+                                <h3 className="chart-title">Tendencia Diaria del Mes</h3>
                                 <div className="chart-toggle">
                                     <button
                                         className={`toggle-btn ${trendMetric === 'pedidos' ? 'active' : ''}`}
