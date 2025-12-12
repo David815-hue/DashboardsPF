@@ -26,9 +26,15 @@ body {
 .dashboard {
   height: 100vh;
   width: 100vw;
-  background: linear-gradient(-45deg, #f8fafc, #e0f2fe, #dbeafe, #f0f9ff);
-  background-size: 400% 400%;
-  animation: gradientShift 15s ease infinite;
+  background-color: #f3f4f6;
+  background-image:
+    radial-gradient(at 0% 0%, hsla(250, 70%, 75%, 0.6) 0px, transparent 50%),
+    radial-gradient(at 100% 0%, hsla(190, 80%, 70%, 0.6) 0px, transparent 50%),
+    radial-gradient(at 100% 100%, hsla(280, 70%, 75%, 0.6) 0px, transparent 50%),
+    radial-gradient(at 0% 100%, hsla(220, 80%, 75%, 0.6) 0px, transparent 50%),
+    radial-gradient(at 50% 50%, hsla(240, 60%, 90%, 0.5) 0px, transparent 50%);
+  background-size: 160% 160%;
+  animation: meshFlow 8s ease-in-out infinite alternate;
   padding: 15px 30px;
   position: relative;
   font-family: 'Segoe UI', sans-serif;
@@ -37,17 +43,13 @@ body {
   flex-direction: column;
 }
 
-@keyframes gradientShift {
+@keyframes meshFlow {
   0% {
-    background-position: 0% 50%;
-  }
-
-  50% {
-    background-position: 100% 50%;
+    background-position: 0% 0%;
   }
 
   100% {
-    background-position: 0% 50%;
+    background-position: 100% 100%;
   }
 }
 
