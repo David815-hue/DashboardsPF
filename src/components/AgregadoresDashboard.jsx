@@ -115,7 +115,7 @@ const CircularProgress = ({ percentage, size = 120, strokeWidth = 10 }) => {
 
 const AgregadoresDashboard = ({ metrics, config = {} }) => {
     const [currentPage, setCurrentPage] = useState(1);
-    const [trendMetric, setTrendMetric] = useState('pedidos');
+    const [trendMetric, setTrendMetric] = useState('venta');
 
     if (!metrics) {
         return (
@@ -223,33 +223,28 @@ const AgregadoresDashboard = ({ metrics, config = {} }) => {
                 </>
             ) : (
                 <div className="agregadores-page2">
-                    <div className="page2-header">
-                        <h2 className="page2-title">📊 Análisis Detallado</h2>
-                        <p className="page2-subtitle">Meta por tienda: {metaPedidosPorTienda} pedidos | Tendencia diaria del mes</p>
-                    </div>
-
                     <div className="page2-charts-grid">
-                        {/* Left: Meta por Tienda (stacked bar) */}
+                        {/* Top: Meta por Tienda (stacked bar) */}
                         <div className="chart-card">
-                            <h3 className="chart-title">🏪 Meta de Pedidos por Tienda</h3>
+                            <h3 className="chart-title">🏪 Meta de Pedidos por Tienda (Meta: {metaPedidosPorTienda})</h3>
                             <div className="chart-container">
-                                <ResponsiveContainer width="100%" height={350}>
+                                <ResponsiveContainer width="100%" height={300}>
                                     <BarChart data={charts.metaPorTienda.map(item => ({
                                         ...item,
                                         restante: Math.max(0, item.meta - item.actual),
                                         excedente: Math.max(0, item.actual - item.meta)
-                                    }))} margin={{ top: 20, right: 20, left: 10, bottom: 80 }}>
+                                    }))} margin={{ top: 20, right: 20, left: 10, bottom: 60 }}>
                                         <defs>
                                             <linearGradient id="actualStackGradient" x1="0" y1="0" x2="0" y2="1">
-                                                <stop offset="0%" stopColor="#22c55e" stopOpacity={0.9} />
-                                                <stop offset="100%" stopColor="#16a34a" stopOpacity={1} />
+                                                <stop offset="0%" stopColor="#10b981" stopOpacity={1} />
+                                                <stop offset="100%" stopColor="#34d399" stopOpacity={0.8} />
                                             </linearGradient>
                                             <linearGradient id="restanteGradient" x1="0" y1="0" x2="0" y2="1">
-                                                <stop offset="0%" stopColor="#f97316" stopOpacity={0.8} />
-                                                <stop offset="100%" stopColor="#ea580c" stopOpacity={1} />
+                                                <stop offset="0%" stopColor="#f59e0b" stopOpacity={1} />
+                                                <stop offset="100%" stopColor="#fbbf24" stopOpacity={0.8} />
                                             </linearGradient>
                                         </defs>
-                                        <XAxis dataKey="name" tick={{ fontSize: 9, fill: '#666' }} angle={-45} textAnchor="end" interval={0} height={80} />
+                                        <XAxis dataKey="name" tick={{ fontSize: 10, fill: '#666' }} angle={-45} textAnchor="end" interval={0} height={60} />
                                         <YAxis tick={{ fontSize: 10, fill: '#666' }} />
                                         <Tooltip content={<CustomTooltip />} />
                                         <Legend wrapperStyle={{ paddingTop: '10px' }} formatter={(value) => <span style={{ color: '#666', fontSize: '12px' }}>{value}</span>} />
@@ -264,10 +259,10 @@ const AgregadoresDashboard = ({ metrics, config = {} }) => {
                             </div>
                         </div>
 
-                        {/* Right: Daily Trend (area chart with toggle) */}
+                        {/* Bottom: Daily Trend (area chart with toggle) */}
                         <div className="chart-card">
                             <div className="chart-header-with-toggle">
-                                <h3 className="chart-title">📈 Tendencia Diaria</h3>
+                                <h3 className="chart-title">📈 Tendencia Diaria del Mes</h3>
                                 <div className="chart-toggle">
                                     <button
                                         className={`toggle-btn ${trendMetric === 'pedidos' ? 'active' : ''}`}
@@ -284,12 +279,12 @@ const AgregadoresDashboard = ({ metrics, config = {} }) => {
                                 </div>
                             </div>
                             <div className="chart-container">
-                                <ResponsiveContainer width="100%" height={350}>
+                                <ResponsiveContainer width="100%" height={300}>
                                     <AreaChart data={charts.ventaPorDia} margin={{ top: 20, right: 20, left: 10, bottom: 20 }}>
                                         <defs>
                                             <linearGradient id="trendGradient" x1="0" y1="0" x2="0" y2="1">
-                                                <stop offset="0%" stopColor={trendMetric === 'venta' ? '#FE0000' : '#0ea5e9'} stopOpacity={0.8} />
-                                                <stop offset="100%" stopColor={trendMetric === 'venta' ? '#FE0000' : '#0ea5e9'} stopOpacity={0.1} />
+                                                <stop offset="0%" stopColor={trendMetric === 'venta' ? '#0ea5e9' : '#8b5cf6'} stopOpacity={0.8} />
+                                                <stop offset="100%" stopColor={trendMetric === 'venta' ? '#0ea5e9' : '#8b5cf6'} stopOpacity={0.1} />
                                             </linearGradient>
                                         </defs>
                                         <XAxis dataKey="name" tick={{ fontSize: 10, fill: '#666' }} />
@@ -298,10 +293,11 @@ const AgregadoresDashboard = ({ metrics, config = {} }) => {
                                         <Area
                                             type="monotone"
                                             dataKey={trendMetric}
-                                            stroke={trendMetric === 'venta' ? '#FE0000' : '#0ea5e9'}
-                                            strokeWidth={2}
+                                            stroke={trendMetric === 'venta' ? '#0ea5e9' : '#8b5cf6'}
+                                            strokeWidth={3}
                                             fill="url(#trendGradient)"
                                             name={trendMetric === 'venta' ? 'Venta' : 'Pedidos'}
+                                            activeDot={{ r: 6, strokeWidth: 0 }}
                                         />
                                     </AreaChart>
                                 </ResponsiveContainer>
