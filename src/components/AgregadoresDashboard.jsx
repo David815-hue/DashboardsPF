@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import {
-    BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend
+    BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend, LabelList
 } from 'recharts';
 import { TrendingUp, TrendingDown, Target, ShoppingCart, DollarSign, ChevronRight, ChevronLeft } from 'lucide-react';
 
@@ -230,23 +230,35 @@ const AgregadoresDashboard = ({ metrics, config = {} }) => {
                     <div className="chart-card full-height">
                         <div className="chart-container">
                             <ResponsiveContainer width="100%" height={400}>
-                                <BarChart data={charts.metaPorTienda} margin={{ top: 20, right: 30, left: 20, bottom: 80 }}>
+                                <BarChart data={charts.metaPorTienda.map(item => ({
+                                    ...item,
+                                    restante: Math.max(0, item.meta - item.actual),
+                                    excedente: Math.max(0, item.actual - item.meta)
+                                }))} margin={{ top: 20, right: 30, left: 20, bottom: 80 }}>
                                     <defs>
-                                        <linearGradient id="metaGradient" x1="0" y1="0" x2="0" y2="1">
-                                            <stop offset="0%" stopColor="#8b5cf6" stopOpacity={0.8} />
-                                            <stop offset="100%" stopColor="#a78bfa" stopOpacity={1} />
+                                        <linearGradient id="actualStackGradient" x1="0" y1="0" x2="0" y2="1">
+                                            <stop offset="0%" stopColor="#22c55e" stopOpacity={0.9} />
+                                            <stop offset="100%" stopColor="#16a34a" stopOpacity={1} />
                                         </linearGradient>
-                                        <linearGradient id="actualGradient" x1="0" y1="0" x2="0" y2="1">
-                                            <stop offset="0%" stopColor="#22c55e" stopOpacity={0.8} />
-                                            <stop offset="100%" stopColor="#4ade80" stopOpacity={1} />
+                                        <linearGradient id="restanteGradient" x1="0" y1="0" x2="0" y2="1">
+                                            <stop offset="0%" stopColor="#f97316" stopOpacity={0.8} />
+                                            <stop offset="100%" stopColor="#ea580c" stopOpacity={1} />
+                                        </linearGradient>
+                                        <linearGradient id="excedenteGradient" x1="0" y1="0" x2="0" y2="1">
+                                            <stop offset="0%" stopColor="#3b82f6" stopOpacity={0.8} />
+                                            <stop offset="100%" stopColor="#2563eb" stopOpacity={1} />
                                         </linearGradient>
                                     </defs>
                                     <XAxis dataKey="name" tick={{ fontSize: 11, fill: '#666' }} angle={-45} textAnchor="end" interval={0} height={80} />
                                     <YAxis tick={{ fontSize: 12, fill: '#666' }} />
                                     <Tooltip content={<CustomTooltip />} />
                                     <Legend wrapperStyle={{ paddingTop: '20px' }} formatter={(value) => <span style={{ color: '#666', fontSize: '14px' }}>{value}</span>} />
-                                    <Bar dataKey="meta" fill="url(#metaGradient)" radius={[8, 8, 0, 0]} name="Meta" />
-                                    <Bar dataKey="actual" fill="url(#actualGradient)" radius={[8, 8, 0, 0]} name="Actual" />
+                                    <Bar dataKey="actual" stackId="a" fill="url(#actualStackGradient)" name="Actual">
+                                        <LabelList dataKey="actual" position="center" fill="#fff" fontWeight="bold" fontSize={12} />
+                                    </Bar>
+                                    <Bar dataKey="restante" stackId="a" fill="url(#restanteGradient)" radius={[8, 8, 0, 0]} name="Faltante">
+                                        <LabelList dataKey="restante" position="center" fill="#fff" fontWeight="bold" fontSize={12} formatter={(val) => val > 0 ? val : ''} />
+                                    </Bar>
                                 </BarChart>
                             </ResponsiveContainer>
                         </div>
