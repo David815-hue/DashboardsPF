@@ -20,7 +20,8 @@ import { calculateAgregadoresMetrics } from '../utils/agregadoresMetrics';
 import {
     saveSnapshot, loadSnapshot, getSnapshotsByMonth, deleteSnapshot, calculateMonthlyAggregate,
     saveEcommerceSnapshot, loadEcommerceSnapshot, getEcommerceSnapshotsByMonth, deleteEcommerceSnapshot, calculateEcommerceMonthlyAggregate,
-    saveWhatsAppSnapshot, loadWhatsAppSnapshot, getWhatsAppSnapshotsByMonth, deleteWhatsAppSnapshot, calculateWhatsAppMonthlyAggregate
+    saveWhatsAppSnapshot, loadWhatsAppSnapshot, getWhatsAppSnapshotsByMonth, deleteWhatsAppSnapshot, calculateWhatsAppMonthlyAggregate,
+    saveAgregadoresSnapshot, loadAgregadoresSnapshot, getAgregadoresSnapshotsByMonth, deleteAgregadoresSnapshot, calculateAgregadoresMonthlyAggregate
 } from '../firebase/snapshotService';
 import './Dashboard.css';
 
@@ -73,6 +74,7 @@ const Dashboard = () => {
     const [snapshotsByMonth, setSnapshotsByMonth] = useState({});
     const [ecommerceSnapshotsByMonth, setEcommerceSnapshotsByMonth] = useState({});
     const [whatsappSnapshotsByMonth, setWhatsappSnapshotsByMonth] = useState({});
+    const [agregadoresSnapshotsByMonth, setAgregadoresSnapshotsByMonth] = useState({});
 
     // Hierarchical selection
     const [selectedMonth, setSelectedMonth] = useState(null);
@@ -114,13 +116,18 @@ const Dashboard = () => {
             const waResult = await getWhatsAppSnapshotsByMonth();
             setWhatsappSnapshotsByMonth(waResult);
 
+            // Load Agregadores snapshots
+            const agregResult = await getAgregadoresSnapshotsByMonth();
+            setAgregadoresSnapshotsByMonth(agregResult);
+
             // Auto-select current month if available
             const now = new Date();
             const currentMonthKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
 
             const hasData = (result.success && result.data[currentMonthKey]) ||
                 (ecomResult.success && ecomResult.data[currentMonthKey]) ||
-                (waResult && waResult[currentMonthKey]);
+                (waResult && waResult[currentMonthKey]) ||
+                (agregResult && agregResult[currentMonthKey]);
 
             if (hasData) {
                 setSelectedMonth(currentMonthKey);
@@ -180,6 +187,11 @@ const Dashboard = () => {
                 setError('No hay datos de WhatsApp Marketing para guardar');
                 return;
             }
+        } else if (activeTab === 'agregadores') {
+            if (!agregadoresData || !agregadoresMetrics) {
+                setError('No hay datos de Agregadores para guardar');
+                return;
+            }
         } else {
             if (!data || !metrics) {
                 setError('No hay datos para guardar');
@@ -212,6 +224,14 @@ const Dashboard = () => {
                     }
                 };
                 result = await saveWhatsAppSnapshot(snapshotDate, snapshotData);
+            } else if (activeTab === 'agregadores') {
+                // Save Agregadores snapshot
+                const snapshotData = {
+                    config: agregadoresConfig,
+                    kpis: agregadoresMetrics.kpis,
+                    charts: agregadoresMetrics.charts
+                };
+                result = await saveAgregadoresSnapshot(snapshotDate, snapshotData);
             } else {
                 // Save Venta Meta snapshot
                 const snapshotData = {
@@ -266,6 +286,8 @@ const Dashboard = () => {
                 loadFn = loadEcommerceSnapshot;
             } else if (activeTab === 'whatsapp') {
                 loadFn = loadWhatsAppSnapshot;
+            } else if (activeTab === 'agregadores') {
+                loadFn = loadAgregadoresSnapshot;
             } else {
                 loadFn = loadSnapshot;
             }
@@ -278,6 +300,11 @@ const Dashboard = () => {
                     });
                 } else if (activeTab === 'whatsapp') {
                     setWhatsappData({
+                        _isSnapshot: true,
+                        _snapshotMetrics: result.data
+                    });
+                } else if (activeTab === 'agregadores') {
+                    setAgregadoresData({
                         _isSnapshot: true,
                         _snapshotMetrics: result.data
                     });
@@ -304,6 +331,8 @@ const Dashboard = () => {
                 deleteFn = deleteEcommerceSnapshot;
             } else if (activeTab === 'whatsapp') {
                 deleteFn = deleteWhatsAppSnapshot;
+            } else if (activeTab === 'agregadores') {
+                deleteFn = deleteAgregadoresSnapshot;
             } else {
                 deleteFn = deleteSnapshot;
             }
@@ -390,9 +419,24 @@ const Dashboard = () => {
 
     // Agregadores metrics calculation
     const agregadoresMetrics = useMemo(() => {
+        // Loaded Agregadores snapshot (specific week)
+        if (agregadoresData && agregadoresData._isSnapshot) {
+            const snap = agregadoresData._snapshotMetrics;
+            return {
+                kpis: snap.kpis,
+                charts: snap.charts
+            };
+        }
+
+        // Agregadores month aggregate
+        if (activeTab === 'agregadores' && selectedMonth && !selectedWeek && agregadoresSnapshotsByMonth[selectedMonth]) {
+            return calculateAgregadoresMonthlyAggregate(agregadoresSnapshotsByMonth[selectedMonth]);
+        }
+
+        // Fresh Agregadores data
         if (!agregadoresData) return null;
         return calculateAgregadoresMetrics(agregadoresData, agregadoresConfig);
-    }, [agregadoresData, agregadoresConfig]);
+    }, [agregadoresData, agregadoresConfig, activeTab, selectedMonth, selectedWeek, agregadoresSnapshotsByMonth]);
 
     const formatMonthLabel = (monthKey) => {
         const [year, month] = monthKey.split('-');
@@ -409,7 +453,9 @@ const Dashboard = () => {
         ? ecommerceSnapshotsByMonth
         : activeTab === 'whatsapp'
             ? whatsappSnapshotsByMonth
-            : snapshotsByMonth;
+            : activeTab === 'agregadores'
+                ? agregadoresSnapshotsByMonth
+                : snapshotsByMonth;
     const availableMonths = Object.keys(currentSnapshotsByMonth).sort().reverse();
 
     return (
@@ -654,7 +700,9 @@ const Dashboard = () => {
                                                 ? (!ecommerceData || ecommerceData._isSnapshot)
                                                 : activeTab === 'whatsapp'
                                                     ? (!whatsappData || whatsappData._isSnapshot)
-                                                    : (!data || data._isSnapshot)
+                                                    : activeTab === 'agregadores'
+                                                        ? (!agregadoresData || agregadoresData._isSnapshot)
+                                                        : (!data || data._isSnapshot)
                                             )
                                         }
                                     >

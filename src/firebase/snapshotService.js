@@ -447,9 +447,6 @@ export const deleteWhatsAppSnapshot = async (dateId) => {
     }
 };
 
-/**
- * Calculate WhatsApp monthly aggregate from snapshots
- */
 export const calculateWhatsAppMonthlyAggregate = (snapshots) => {
     if (!snapshots || snapshots.length === 0) return null;
 
@@ -636,6 +633,207 @@ export const calculateWhatsAppMonthlyAggregate = (snapshots) => {
         page2: {
             tablaAsesores,
             ventaPorPalabraClave
+        }
+    };
+};
+
+// =============================================
+// AGREGADORES SNAPSHOTS (Separate Collection)
+// =============================================
+
+const AGREGADORES_COLLECTION = 'snapshots-agregadores';
+
+/**
+ * Save Agregadores dashboard snapshot
+ */
+export const saveAgregadoresSnapshot = async (dateId, data) => {
+    try {
+        console.log('Saving Agregadores snapshot:', { dateId, data });
+        const docRef = doc(db, AGREGADORES_COLLECTION, dateId);
+        await setDoc(docRef, {
+            ...data,
+            savedAt: new Date().toISOString(),
+            dateId
+        });
+        console.log('Agregadores snapshot saved successfully');
+        return { success: true };
+    } catch (error) {
+        console.error('Error saving Agregadores snapshot:', error);
+        return { success: false, error: error.message };
+    }
+};
+
+/**
+ * Load Agregadores snapshot by date
+ */
+export const loadAgregadoresSnapshot = async (dateId) => {
+    try {
+        const docRef = doc(db, AGREGADORES_COLLECTION, dateId);
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+            return { success: true, data: docSnap.data() };
+        }
+        return { success: false, error: 'No existe' };
+    } catch (error) {
+        console.error('Error loading Agregadores snapshot:', error);
+        return { success: false, error: error.message };
+    }
+};
+
+/**
+ * Get all Agregadores snapshots organized by month
+ */
+export const getAgregadoresSnapshotsByMonth = async () => {
+    try {
+        const querySnapshot = await getDocs(collection(db, AGREGADORES_COLLECTION));
+        const byMonth = {};
+
+        querySnapshot.forEach((docSnap) => {
+            const data = docSnap.data();
+            const dateId = docSnap.id;
+            const monthKey = dateId.substring(0, 7);
+
+            if (!byMonth[monthKey]) {
+                byMonth[monthKey] = [];
+            }
+            byMonth[monthKey].push({ dateId, ...data });
+        });
+
+        Object.keys(byMonth).forEach(month => {
+            byMonth[month].sort((a, b) => a.dateId.localeCompare(b.dateId));
+        });
+
+        return byMonth;
+    } catch (error) {
+        console.error('Error getting Agregadores snapshots:', error);
+        return {};
+    }
+};
+
+/**
+ * Delete Agregadores snapshot
+ */
+export const deleteAgregadoresSnapshot = async (dateId) => {
+    try {
+        await deleteDoc(doc(db, AGREGADORES_COLLECTION, dateId));
+        return { success: true };
+    } catch (error) {
+        console.error('Error deleting Agregadores snapshot:', error);
+        return { success: false, error: error.message };
+    }
+};
+
+/**
+ * Calculate Agregadores monthly aggregate from snapshots
+ */
+export const calculateAgregadoresMonthlyAggregate = (snapshots) => {
+    if (!snapshots || snapshots.length === 0) return null;
+
+    let ventaTotal = 0;
+    let cantidadTx = 0;
+    let presupuestoTotal = 0;
+
+    // Merged chart data
+    const productCounts = {};
+    const tiendaTotals = {};
+    const ventaPorDiaMap = {};
+
+    snapshots.forEach(snap => {
+        // Accumulate KPIs
+        const kpis = snap.kpis || {};
+        ventaTotal += kpis.ventaTotal || 0;
+        cantidadTx += kpis.cantidadTx || 0;
+        presupuestoTotal += kpis.presupuesto || 0;
+
+        // Merge charts
+        const charts = snap.charts || {};
+
+        // Top Products
+        if (charts.topProductos) {
+            charts.topProductos.forEach(p => {
+                const key = p.fullName || p.name;
+                if (!productCounts[key]) {
+                    productCounts[key] = { value: 0, total: 0 };
+                }
+                productCounts[key].value += p.value || 0;
+                productCounts[key].total += p.total || 0;
+            });
+        }
+
+        // Top Tiendas
+        if (charts.topTiendas) {
+            charts.topTiendas.forEach(t => {
+                if (!tiendaTotals[t.name]) {
+                    tiendaTotals[t.name] = { venta: 0, pedidos: 0 };
+                }
+                tiendaTotals[t.name].venta += t.value || 0;
+                tiendaTotals[t.name].pedidos += t.pedidos || 0;
+            });
+        }
+
+        // Venta por Día
+        if (charts.ventaPorDia) {
+            charts.ventaPorDia.forEach(d => {
+                const key = d.name;
+                if (!ventaPorDiaMap[key]) {
+                    ventaPorDiaMap[key] = { day: d.day, venta: 0, pedidos: 0 };
+                }
+                ventaPorDiaMap[key].venta += d.venta || 0;
+                ventaPorDiaMap[key].pedidos += d.pedidos || 0;
+            });
+        }
+    });
+
+    // Calculate derived KPIs
+    const ticketPromedio = cantidadTx > 0 ? ventaTotal / cantidadTx : 0;
+    const cumplimientoPct = presupuestoTotal > 0 ? (ventaTotal / presupuestoTotal) * 100 : 0;
+
+    // Format chart data
+    const topProductos = Object.entries(productCounts)
+        .map(([name, data]) => ({
+            name: name.length > 25 ? name.substring(0, 25) + '...' : name,
+            fullName: name,
+            value: data.value,
+            total: data.total
+        }))
+        .sort((a, b) => b.value - a.value)
+        .slice(0, 5);
+
+    const topTiendas = Object.entries(tiendaTotals)
+        .map(([name, data]) => ({
+            name,
+            value: data.venta,
+            pedidos: data.pedidos
+        }))
+        .sort((a, b) => b.value - a.value)
+        .slice(0, 5);
+
+    const ventaPorDia = Object.entries(ventaPorDiaMap)
+        .map(([name, data]) => ({
+            name,
+            day: data.day,
+            venta: data.venta,
+            pedidos: data.pedidos
+        }))
+        .sort((a, b) => String(a.day || '').localeCompare(String(b.day || '')));
+
+    return {
+        kpis: {
+            ventaTotal,
+            presupuesto: presupuestoTotal,
+            cumplimientoPct,
+            cantidadTx,
+            ticketPromedio,
+            metaProrrateada: 0, // Cannot calculate accurately for aggregate
+            diferenciaProrrateada: 0,
+            metaTx: 0,
+            cumplimientoTx: 0
+        },
+        charts: {
+            topProductos,
+            topTiendas,
+            metaPorTienda: [], // Not aggregatable without full store list
+            ventaPorDia
         }
     };
 };
