@@ -11,19 +11,14 @@ const KPICard = ({ title, value, format = 'number', suffix = '', trend = null })
     // Format the animated value
     let displayValue;
     if (format === 'currency') {
-        if (Math.abs(animatedValue) >= 1000000) {
-            displayValue = (animatedValue / 1000000).toFixed(2);
-        } else if (Math.abs(animatedValue) >= 1000 && suffix.trim() === 'mil') {
-            displayValue = (animatedValue / 1000).toFixed(2);
-        } else {
-            displayValue = animatedValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-        }
+        // Show full number with comma separators (no abbreviation)
+        displayValue = Math.round(animatedValue).toLocaleString('es-HN');
     } else if (format === 'percent') {
         displayValue = animatedValue.toFixed(2);
     } else if (format === 'decimal') {
         displayValue = animatedValue.toFixed(2);
     } else {
-        displayValue = Math.round(animatedValue).toLocaleString();
+        displayValue = Math.round(animatedValue).toLocaleString('es-HN');
     }
 
     return (

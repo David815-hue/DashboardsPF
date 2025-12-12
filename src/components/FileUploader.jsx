@@ -44,7 +44,7 @@ const FileUploader = ({ files, onFileChange, onProcess, isProcessing, dashboardT
                         <span className="file-label">{label}</span>
                         <input
                             type="file"
-                            accept=".xlsx"
+                            accept=".xlsx,.xls"
                             className="file-input"
                             onChange={(e) => onFileChange(key, e.target.files[0])}
                         />

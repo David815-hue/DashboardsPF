@@ -699,11 +699,11 @@ const Dashboard = () => {
                         <div className="dashboard-layout">
                             <div className="left-column">
                                 <div className="kpi-grid-container">
-                                    <KPICard title="Total Venta" value={metrics.totalVenta} format="currency" suffix=" mil" />
+                                    <KPICard title="Total Venta" value={metrics.totalVenta} format="currency" suffix="" />
                                     <KPICard title="Cantidad de Pedidos" value={metrics.cantidadPedidos} format="number" />
                                     <KPICard title="Venta TGU" value={metrics.ventaTGU} format="currency" />
                                     <KPICard title="Ticket Promedio" value={metrics.ticketPromedio} format="currency" />
-                                    <KPICard title="Venta SPS" value={metrics.ventaSPS} format="currency" suffix=" mil" />
+                                    <KPICard title="Venta SPS" value={metrics.ventaSPS} format="currency" suffix="" />
                                     <KPICard title="Tasa de Conversion" value={metrics.tasaConversion} format="percent" suffix="%" />
                                     <div className="kpi-centered-row">
                                         <KPICard title="ROAS" value={typeof metrics.roas === 'number' ? metrics.roas.toFixed(2) : metrics.roas} format="decimal" />

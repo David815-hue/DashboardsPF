@@ -36,11 +36,11 @@ const EcommerceDashboard = ({ metrics, topProductsCount = 6 }) => {
                 {/* Quadrant 1 (Top-Left): KPIs */}
                 <div className="ecommerce-quadrant">
                     <div className="ecommerce-kpi-grid-quadrant">
-                        <KPICard title="Venta Total" value={kpis.ventaTotal} format="currency" suffix=" mil" />
+                        <KPICard title="Venta Total" value={kpis.ventaTotal} format="currency" suffix="" />
                         <KPICard title="Cantidad de Pedidos" value={kpis.cantidadPedidos} format="number" />
-                        <KPICard title="Venta APP" value={kpis.ventaAPP} format="currency" suffix=" mil" />
+                        <KPICard title="Venta APP" value={kpis.ventaAPP} format="currency" suffix="" />
                         <KPICard title="Ticket Promedio" value={kpis.ticketPromedio} format="currency" />
-                        <KPICard title="Venta Ecommerce" value={kpis.ventaEcommerce} format="currency" suffix=" mil" />
+                        <KPICard title="Venta Ecommerce" value={kpis.ventaEcommerce} format="currency" suffix="" />
                         <KPICard title="Pedidos Cancelados" value={kpis.pedidosCancelados} format="number" />
                     </div>
                 </div>

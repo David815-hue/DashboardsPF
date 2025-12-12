@@ -30,18 +30,8 @@ const StatCard = ({ title, value, subValue, format = 'number', suffix = '', vari
 
     if (format === 'currency') {
         const val = parseFloat(value) || 0;
-        if (Math.abs(val) >= 1000000) {
-            displayValue = (val / 1000000).toFixed(2) + ' M';
-        } else if (Math.abs(val) >= 1000) {
-            // Check if suffix is 'mil' to avoid double suffix
-            if (suffix.includes('mil')) {
-                displayValue = (val / 1000).toFixed(2);
-            } else {
-                displayValue = (val / 1000).toFixed(2) + ' k';
-            }
-        } else {
-            displayValue = val.toFixed(2);
-        }
+        // Show full number with comma separators (no abbreviation)
+        displayValue = Math.round(val).toLocaleString('es-HN');
     } else if (format === 'percent') {
         displayValue = (parseFloat(value) || 0).toFixed(2);
     } else if (format === 'decimal') {
@@ -146,9 +136,9 @@ const WhatsAppDashboard = ({ metrics, topProductsCount = 5, keywordCount = 5 }) 
 
                         {/* Row 1: Main KPIs */}
                         <div className="wa-row-main">
-                            <StatCard title="Total Venta" value={page1.kpis.totalVenta} format="currency" suffix="mil" />
+                            <StatCard title="Total Venta" value={page1.kpis.totalVenta} format="currency" suffix="" />
                             <StatCard title="Tasa Conversion" value={page1.kpis.tasaConversion} format="percent" suffix="%" />
-                            <StatCard title="Ticket Promedio" value={page1.kpis.ticketPromedio} format="currency" suffix="mil" />
+                            <StatCard title="Ticket Promedio" value={page1.kpis.ticketPromedio} format="currency" suffix="" />
                             <StatCard title="ROAS" value={page1.kpis.roas} format="decimal" />
                         </div>
 
@@ -157,9 +147,9 @@ const WhatsAppDashboard = ({ metrics, topProductsCount = 5, keywordCount = 5 }) 
                             <div className="city-tag tgu">
                                 <span>ZC</span>
                             </div>
-                            <StatCard title="Total Venta TGU" value={page1.kpis.totalVentaTGU} format="currency" suffix="mil" variant="teal" />
+                            <StatCard title="Total Venta TGU" value={page1.kpis.totalVentaTGU} format="currency" suffix="" variant="teal" />
                             <StatCard title="Tasa Conversión TGU" value={page1.kpis.tasaConversionTGU} format="percent" suffix="%" variant="teal" />
-                            <StatCard title="Ticket Promedio TGU" value={page1.kpis.ticketPromedioTGU} format="currency" suffix="mil" variant="teal" />
+                            <StatCard title="Ticket Promedio TGU" value={page1.kpis.ticketPromedioTGU} format="currency" suffix="" variant="teal" />
                             <StatCard title="Cantidad Venta" value={page1.kpis.cantidadVenta} format="number" />
                         </div>
 
@@ -168,9 +158,9 @@ const WhatsAppDashboard = ({ metrics, topProductsCount = 5, keywordCount = 5 }) 
                             <div className="city-tag sps">
                                 <span>ZN</span>
                             </div>
-                            <StatCard title="Total Venta SPS" value={page1.kpis.totalVentaSPS} format="currency" suffix="mil" variant="teal" />
+                            <StatCard title="Total Venta SPS" value={page1.kpis.totalVentaSPS} format="currency" suffix="" variant="teal" />
                             <StatCard title="Tasa Conversión SPS" value={page1.kpis.tasaConversionSPS} format="percent" suffix="%" variant="teal" />
-                            <StatCard title="Ticket Promedio SPS" value={page1.kpis.ticketPromedioSPS} format="currency" suffix="mil" variant="teal" />
+                            <StatCard title="Ticket Promedio SPS" value={page1.kpis.ticketPromedioSPS} format="currency" suffix="" variant="teal" />
                             <StatCard title="Tasa de Respuesta" value={page1.kpis.tasaRespuesta} format="percent" suffix="%" />
                         </div>
 

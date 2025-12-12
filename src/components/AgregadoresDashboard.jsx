@@ -36,7 +36,7 @@ const CustomTooltip = ({ active, payload, label }) => {
 const KPICard = ({ title, value, format, icon: Icon, subtitle }) => {
     const formatValue = (val) => {
         if (format === 'currency') {
-            return `L ${(val / 1000).toLocaleString('es-HN', { minimumFractionDigits: 2 })} mil`;
+            return `L ${Math.round(val).toLocaleString('es-HN')}`;
         }
         if (format === 'percent') {
             return `${val.toFixed(1)}%`;
@@ -166,12 +166,12 @@ const AgregadoresDashboard = ({ metrics, config = {} }) => {
                             <div className="compliance-details">
                                 <div className="compliance-row">
                                     <span className="label">Meta Prorrateada</span>
-                                    <span className="value">L {(kpis.metaProrrateada / 1000).toLocaleString('es-HN', { minimumFractionDigits: 2 })} mil</span>
+                                    <span className="value">L {Math.round(kpis.metaProrrateada).toLocaleString('es-HN')}</span>
                                 </div>
                                 <div className="compliance-row">
                                     <span className="label">Diferencia</span>
                                     <span className={`value ${kpis.diferenciaProrrateada >= 0 ? 'positive' : 'negative'}`}>
-                                        {kpis.diferenciaProrrateada >= 0 ? '+' : ''}L {(kpis.diferenciaProrrateada / 1000).toLocaleString('es-HN', { minimumFractionDigits: 2 })} mil
+                                        {kpis.diferenciaProrrateada >= 0 ? '+' : ''}L {Math.round(kpis.diferenciaProrrateada).toLocaleString('es-HN')}
                                     </span>
                                 </div>
                             </div>
