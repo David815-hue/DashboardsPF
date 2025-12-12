@@ -464,7 +464,7 @@ export const calculateWhatsAppMonthlyAggregate = (snapshots) => {
     let totalVentaSPS = 0;
     let cantidadVentaTGU = 0;
     let cantidadVentaSPS = 0;
-    let totalConversaciones = 0; // For response rate if tracked
+    let totalConversaciones = 0; // For response rate calculation
 
     // Merged Tables
     const asesorMap = {};
@@ -480,6 +480,7 @@ export const calculateWhatsAppMonthlyAggregate = (snapshots) => {
         totalEnviosTGU += config.enviosTGU || 0;
         totalEnviosSPS += config.enviosSPS || 0;
         totalInversionUSD += config.inversionUSD || 0;
+        totalConversaciones += config.totalConversaciones || 0;
 
         // --- 2. Accumulate KPIs ---
         const kpis = snap.kpis || {};
@@ -622,7 +623,7 @@ export const calculateWhatsAppMonthlyAggregate = (snapshots) => {
                 ticketPromedioSPS,
                 tasaConversionTGU,
                 tasaConversionSPS,
-                tasaRespuesta: 0 // Difficult to calc without explicit conversation counts per week
+                tasaRespuesta: totalConversaciones > 0 ? (cantidadVenta / totalConversaciones) * 100 : 0
             },
             charts: {
                 topProductos,

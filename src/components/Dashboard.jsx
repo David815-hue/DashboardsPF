@@ -215,7 +215,10 @@ const Dashboard = () => {
             } else if (activeTab === 'whatsapp') {
                 // Save WhatsApp Marketing snapshot (both pages)
                 const snapshotData = {
-                    config, // Save config for reference or future recalculations
+                    config: {
+                        ...config,
+                        totalConversaciones: whatsappData?.totalConversaciones || 0
+                    },
                     kpis: whatsappMetrics.page1.kpis,
                     charts: whatsappMetrics.page1.charts,
                     page2: {
