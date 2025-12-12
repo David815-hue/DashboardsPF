@@ -229,7 +229,8 @@ const Dashboard = () => {
                 const snapshotData = {
                     config: agregadoresConfig,
                     kpis: agregadoresMetrics.kpis,
-                    charts: agregadoresMetrics.charts
+                    charts: agregadoresMetrics.charts,
+                    snapshotDate: snapshotDate // Save date for metaProrrateada recalculation
                 };
                 result = await saveAgregadoresSnapshot(snapshotDate, snapshotData);
             } else {

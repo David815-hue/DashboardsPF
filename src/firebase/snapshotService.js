@@ -732,13 +732,32 @@ export const calculateAgregadoresMonthlyAggregate = (snapshots) => {
     let ventaTotal = 0;
     let cantidadTx = 0;
     let presupuestoTotal = 0;
+    let metaPedidosPorTienda = 30; // Default
 
     // Merged chart data
     const productCounts = {};
     const tiendaTotals = {};
     const ventaPorDiaMap = {};
+    const metaPorTiendaMap = {};
+
+    // Track latest snapshot date for metaProrrateada calc
+    let latestSnapshotDate = null;
 
     snapshots.forEach(snap => {
+        // Track config
+        const config = snap.config || {};
+        if (config.metaPedidosPorTienda) {
+            metaPedidosPorTienda = config.metaPedidosPorTienda;
+        }
+
+        // Track latest date
+        if (snap.snapshotDate || snap.dateId) {
+            const snapDate = snap.snapshotDate || snap.dateId;
+            if (!latestSnapshotDate || snapDate > latestSnapshotDate) {
+                latestSnapshotDate = snapDate;
+            }
+        }
+
         // Accumulate KPIs
         const kpis = snap.kpis || {};
         ventaTotal += kpis.ventaTotal || 0;
@@ -771,6 +790,17 @@ export const calculateAgregadoresMonthlyAggregate = (snapshots) => {
             });
         }
 
+        // Meta por Tienda - aggregate pedidos per store
+        if (charts.metaPorTienda) {
+            charts.metaPorTienda.forEach(t => {
+                const key = t.fullName || t.name;
+                if (!metaPorTiendaMap[key]) {
+                    metaPorTiendaMap[key] = { actual: 0 };
+                }
+                metaPorTiendaMap[key].actual += t.actual || 0;
+            });
+        }
+
         // Venta por Día
         if (charts.ventaPorDia) {
             charts.ventaPorDia.forEach(d => {
@@ -787,6 +817,17 @@ export const calculateAgregadoresMonthlyAggregate = (snapshots) => {
     // Calculate derived KPIs
     const ticketPromedio = cantidadTx > 0 ? ventaTotal / cantidadTx : 0;
     const cumplimientoPct = presupuestoTotal > 0 ? (ventaTotal / presupuestoTotal) * 100 : 0;
+
+    // Calculate metaProrrateada based on latest snapshot date or today
+    let metaProrrateada = 0;
+    let diferenciaProrrateada = 0;
+    if (latestSnapshotDate && presupuestoTotal > 0) {
+        const date = new Date(latestSnapshotDate + 'T00:00:00');
+        const dayOfMonth = date.getDate();
+        const daysInMonth = new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
+        metaProrrateada = (presupuestoTotal / daysInMonth) * dayOfMonth;
+        diferenciaProrrateada = ventaTotal - metaProrrateada;
+    }
 
     // Format chart data
     const topProductos = Object.entries(productCounts)
@@ -808,6 +849,16 @@ export const calculateAgregadoresMonthlyAggregate = (snapshots) => {
         .sort((a, b) => b.value - a.value)
         .slice(0, 5);
 
+    // Meta por Tienda with aggregated data
+    const metaPorTienda = Object.entries(metaPorTiendaMap)
+        .map(([name, data]) => ({
+            name: name.length > 15 ? name.substring(0, 15) + '...' : name,
+            fullName: name,
+            actual: data.actual,
+            meta: metaPedidosPorTienda * snapshots.length // Meta scales with number of weeks
+        }))
+        .sort((a, b) => b.actual - a.actual);
+
     const ventaPorDia = Object.entries(ventaPorDiaMap)
         .map(([name, data]) => ({
             name,
@@ -824,15 +875,15 @@ export const calculateAgregadoresMonthlyAggregate = (snapshots) => {
             cumplimientoPct,
             cantidadTx,
             ticketPromedio,
-            metaProrrateada: 0, // Cannot calculate accurately for aggregate
-            diferenciaProrrateada: 0,
+            metaProrrateada,
+            diferenciaProrrateada,
             metaTx: 0,
             cumplimientoTx: 0
         },
         charts: {
             topProductos,
             topTiendas,
-            metaPorTienda: [], // Not aggregatable without full store list
+            metaPorTienda,
             ventaPorDia
         }
     };
