@@ -623,7 +623,7 @@ export const calculateWhatsAppMonthlyAggregate = (snapshots) => {
                 ticketPromedioSPS,
                 tasaConversionTGU,
                 tasaConversionSPS,
-                tasaRespuesta: totalConversaciones > 0 ? (cantidadVenta / totalConversaciones) * 100 : 0
+                tasaRespuesta: totalEnvios > 0 ? (totalConversaciones / totalEnvios) * 100 : 0
             },
             charts: {
                 topProductos,

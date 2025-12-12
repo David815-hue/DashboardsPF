@@ -33,8 +33,8 @@ export const calculateWhatsAppMetrics = (data, config = {}) => {
     const inversionUSD = costoEnvioUSD * totalEnvios;
     const roas = inversionUSD > 0 ? totalVentasUSD / inversionUSD : 0;
 
-    // Tasa de Respuesta (pedidos matcheados / total conversaciones)
-    const tasaRespuesta = totalConversaciones > 0 ? (cantidadVenta / totalConversaciones) * 100 : 0;
+    // Tasa de Respuesta: Chats Relevantes (totalConversaciones) / Total Envíos
+    const tasaRespuesta = totalEnvios > 0 ? (totalConversaciones / totalEnvios) * 100 : 0;
 
     // === By Campaña ===
     const pedidosFarma = pedidosDetalle.filter(p => (p['Campaña'] || '').toLowerCase().includes('farmacovigilancia'));
