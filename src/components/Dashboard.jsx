@@ -8,6 +8,7 @@ import ManualInputs from './ManualInputs';
 import EcommerceDashboard from './EcommerceDashboard';
 import WhatsAppDashboard from './WhatsAppDashboard';
 import AgregadoresDashboard from './AgregadoresDashboard';
+import TiltedCard from './TiltedCard';
 import { processData } from '../utils/excelProcessor';
 import { calculateMetrics } from '../utils/metricsCalculator';
 import { processEcommerceData } from '../utils/ecommerceProcessor';
@@ -699,14 +700,14 @@ const Dashboard = () => {
                         <div className="dashboard-layout">
                             <div className="left-column">
                                 <div className="kpi-grid-container">
-                                    <KPICard title="Total Venta" value={metrics.totalVenta} format="currency" suffix="" />
-                                    <KPICard title="Cantidad de Pedidos" value={metrics.cantidadPedidos} format="number" />
-                                    <KPICard title="Venta TGU" value={metrics.ventaTGU} format="currency" />
-                                    <KPICard title="Ticket Promedio" value={metrics.ticketPromedio} format="currency" />
-                                    <KPICard title="Venta SPS" value={metrics.ventaSPS} format="currency" suffix="" />
-                                    <KPICard title="Tasa de Conversion" value={metrics.tasaConversion} format="percent" suffix="%" />
+                                    <TiltedCard><KPICard title="Total Venta" value={metrics.totalVenta} format="currency" suffix="" /></TiltedCard>
+                                    <TiltedCard><KPICard title="Cantidad de Pedidos" value={metrics.cantidadPedidos} format="number" /></TiltedCard>
+                                    <TiltedCard><KPICard title="Venta TGU" value={metrics.ventaTGU} format="currency" /></TiltedCard>
+                                    <TiltedCard><KPICard title="Ticket Promedio" value={metrics.ticketPromedio} format="currency" /></TiltedCard>
+                                    <TiltedCard><KPICard title="Venta SPS" value={metrics.ventaSPS} format="currency" suffix="" /></TiltedCard>
+                                    <TiltedCard><KPICard title="Tasa de Conversion" value={metrics.tasaConversion} format="percent" suffix="%" /></TiltedCard>
                                     <div className="kpi-centered-row">
-                                        <KPICard title="ROAS" value={typeof metrics.roas === 'number' ? metrics.roas.toFixed(2) : metrics.roas} format="decimal" />
+                                        <TiltedCard><KPICard title="ROAS" value={typeof metrics.roas === 'number' ? metrics.roas.toFixed(2) : metrics.roas} format="decimal" /></TiltedCard>
                                     </div>
                                 </div>
                             </div>

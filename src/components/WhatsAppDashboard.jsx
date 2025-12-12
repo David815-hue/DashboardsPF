@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, PieChart, Pie, Legend } from 'recharts';
 import { ChevronRight, ChevronLeft } from 'lucide-react';
+import TiltedCard from './TiltedCard';
 
 const COLORS = ['#22d3ee', '#374151']; // Teal and Dark Gray for Pie
 const BAR_COLOR = '#22d3ee'; // Teal for bars
@@ -136,10 +137,10 @@ const WhatsAppDashboard = ({ metrics, topProductsCount = 5, keywordCount = 5 }) 
 
                         {/* Row 1: Main KPIs */}
                         <div className="wa-row-main">
-                            <StatCard title="Total Venta" value={page1.kpis.totalVenta} format="currency" suffix="" />
-                            <StatCard title="Tasa Conversion" value={page1.kpis.tasaConversion} format="percent" suffix="%" />
-                            <StatCard title="Ticket Promedio" value={page1.kpis.ticketPromedio} format="currency" suffix="" />
-                            <StatCard title="ROAS" value={page1.kpis.roas} format="decimal" />
+                            <TiltedCard><StatCard title="Total Venta" value={page1.kpis.totalVenta} format="currency" suffix="" /></TiltedCard>
+                            <TiltedCard><StatCard title="Tasa Conversion" value={page1.kpis.tasaConversion} format="percent" suffix="%" /></TiltedCard>
+                            <TiltedCard><StatCard title="Ticket Promedio" value={page1.kpis.ticketPromedio} format="currency" suffix="" /></TiltedCard>
+                            <TiltedCard><StatCard title="ROAS" value={page1.kpis.roas} format="decimal" /></TiltedCard>
                         </div>
 
                         {/* Row 2: TGU */}
@@ -147,10 +148,10 @@ const WhatsAppDashboard = ({ metrics, topProductsCount = 5, keywordCount = 5 }) 
                             <div className="city-tag tgu">
                                 <span>ZC</span>
                             </div>
-                            <StatCard title="Total Venta TGU" value={page1.kpis.totalVentaTGU} format="currency" suffix="" variant="teal" />
-                            <StatCard title="Tasa Conversión TGU" value={page1.kpis.tasaConversionTGU} format="percent" suffix="%" variant="teal" />
-                            <StatCard title="Ticket Promedio TGU" value={page1.kpis.ticketPromedioTGU} format="currency" suffix="" variant="teal" />
-                            <StatCard title="Cantidad Venta" value={page1.kpis.cantidadVenta} format="number" />
+                            <TiltedCard><StatCard title="Total Venta TGU" value={page1.kpis.totalVentaTGU} format="currency" suffix="" variant="teal" /></TiltedCard>
+                            <TiltedCard><StatCard title="Tasa Conversión TGU" value={page1.kpis.tasaConversionTGU} format="percent" suffix="%" variant="teal" /></TiltedCard>
+                            <TiltedCard><StatCard title="Ticket Promedio TGU" value={page1.kpis.ticketPromedioTGU} format="currency" suffix="" variant="teal" /></TiltedCard>
+                            <TiltedCard><StatCard title="Cantidad Venta" value={page1.kpis.cantidadVenta} format="number" /></TiltedCard>
                         </div>
 
                         {/* Row 3: SPS */}
@@ -158,10 +159,10 @@ const WhatsAppDashboard = ({ metrics, topProductsCount = 5, keywordCount = 5 }) 
                             <div className="city-tag sps">
                                 <span>ZN</span>
                             </div>
-                            <StatCard title="Total Venta SPS" value={page1.kpis.totalVentaSPS} format="currency" suffix="" variant="teal" />
-                            <StatCard title="Tasa Conversión SPS" value={page1.kpis.tasaConversionSPS} format="percent" suffix="%" variant="teal" />
-                            <StatCard title="Ticket Promedio SPS" value={page1.kpis.ticketPromedioSPS} format="currency" suffix="" variant="teal" />
-                            <StatCard title="Tasa de Respuesta" value={page1.kpis.tasaRespuesta} format="percent" suffix="%" />
+                            <TiltedCard><StatCard title="Total Venta SPS" value={page1.kpis.totalVentaSPS} format="currency" suffix="" variant="teal" /></TiltedCard>
+                            <TiltedCard><StatCard title="Tasa Conversión SPS" value={page1.kpis.tasaConversionSPS} format="percent" suffix="%" variant="teal" /></TiltedCard>
+                            <TiltedCard><StatCard title="Ticket Promedio SPS" value={page1.kpis.ticketPromedioSPS} format="currency" suffix="" variant="teal" /></TiltedCard>
+                            <TiltedCard><StatCard title="Tasa de Respuesta" value={page1.kpis.tasaRespuesta} format="percent" suffix="%" /></TiltedCard>
                         </div>
 
                         {/* Row 4: Bottom (Logo + Chart) */}

@@ -3,6 +3,7 @@ import {
     BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend, LabelList, AreaChart, Area
 } from 'recharts';
 import { TrendingUp, TrendingDown, Target, ShoppingCart, DollarSign, ChevronRight, ChevronLeft } from 'lucide-react';
+import TiltedCard from './TiltedCard';
 
 // Custom tooltip with glassmorphism
 const CustomTooltip = ({ active, payload, label }) => {
@@ -156,10 +157,10 @@ const AgregadoresDashboard = ({ metrics, config = {} }) => {
                     {/* Page 1: KPIs + Top Charts */}
                     <div className="agregadores-top-section">
                         <div className="agregadores-kpi-grid">
-                            <KPICard title="Venta Total" value={kpis.ventaTotal} format="currency" icon={DollarSign} />
-                            <KPICard title="Presupuesto" value={kpis.presupuesto} format="currency" icon={Target} />
-                            <KPICard title="Cantidad Tx" value={kpis.cantidadTx} format="number" icon={ShoppingCart} />
-                            <KPICard title="Ticket Promedio" value={kpis.ticketPromedio} format="currency" icon={DollarSign} />
+                            <TiltedCard><KPICard title="Venta Total" value={kpis.ventaTotal} format="currency" icon={DollarSign} /></TiltedCard>
+                            <TiltedCard><KPICard title="Presupuesto" value={kpis.presupuesto} format="currency" icon={Target} /></TiltedCard>
+                            <TiltedCard><KPICard title="Cantidad Tx" value={kpis.cantidadTx} format="number" icon={ShoppingCart} /></TiltedCard>
+                            <TiltedCard><KPICard title="Ticket Promedio" value={kpis.ticketPromedio} format="currency" icon={DollarSign} /></TiltedCard>
                         </div>
 
                         <div className="agregadores-compliance-card">

@@ -1,6 +1,7 @@
 import React from 'react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, PieChart, Pie, Legend } from 'recharts';
 import KPICard from './KPICard';
+import TiltedCard from './TiltedCard';
 
 const COLORS = ['#FE0000', '#0ea5e9', '#22c55e', '#f59e0b', '#8b5cf6', '#ec4899'];
 
@@ -36,12 +37,12 @@ const EcommerceDashboard = ({ metrics, topProductsCount = 6 }) => {
                 {/* Quadrant 1 (Top-Left): KPIs */}
                 <div className="ecommerce-quadrant">
                     <div className="ecommerce-kpi-grid-quadrant">
-                        <KPICard title="Venta Total" value={kpis.ventaTotal} format="currency" suffix="" />
-                        <KPICard title="Cantidad de Pedidos" value={kpis.cantidadPedidos} format="number" />
-                        <KPICard title="Venta APP" value={kpis.ventaAPP} format="currency" suffix="" />
-                        <KPICard title="Ticket Promedio" value={kpis.ticketPromedio} format="currency" />
-                        <KPICard title="Venta Ecommerce" value={kpis.ventaEcommerce} format="currency" suffix="" />
-                        <KPICard title="Pedidos Cancelados" value={kpis.pedidosCancelados} format="number" />
+                        <TiltedCard><KPICard title="Venta Total" value={kpis.ventaTotal} format="currency" suffix="" /></TiltedCard>
+                        <TiltedCard><KPICard title="Cantidad de Pedidos" value={kpis.cantidadPedidos} format="number" /></TiltedCard>
+                        <TiltedCard><KPICard title="Venta APP" value={kpis.ventaAPP} format="currency" suffix="" /></TiltedCard>
+                        <TiltedCard><KPICard title="Ticket Promedio" value={kpis.ticketPromedio} format="currency" /></TiltedCard>
+                        <TiltedCard><KPICard title="Venta Ecommerce" value={kpis.ventaEcommerce} format="currency" suffix="" /></TiltedCard>
+                        <TiltedCard><KPICard title="Pedidos Cancelados" value={kpis.pedidosCancelados} format="number" /></TiltedCard>
                     </div>
                 </div>
 

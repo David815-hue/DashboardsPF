@@ -1,0 +1,25 @@
+.tilted-card-wrapper {
+    perspective: 800px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    z-index: 1;
+    transition: z-index 0s linear 0.1s;
+    padding: 10px;
+    /* Buffer for tilt */
+}
+
+.tilted-card-wrapper:hover {
+    z-index: 50;
+    /* Bring to front on hover */
+    transition-delay: 0s;
+}
+
+.tilted-card-content {
+    transform-style: preserve-3d;
+    will-change: transform;
+    width: 100%;
+    height: 100%;
+    /* Removed overflow: hidden to allow 3D overflow */
+}

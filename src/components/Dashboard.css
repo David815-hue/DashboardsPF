@@ -1557,6 +1557,8 @@ body {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 12px;
+  padding: 10px;
+  /* Prevent clipping of tilted cards */
 }
 
 .agregadores-kpi-card {
