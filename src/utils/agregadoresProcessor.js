@@ -179,6 +179,61 @@ export const processAgregadoresData = async (files) => {
         }))
         .sort((a, b) => b.pedidos - a.pedidos);
 
+    // === Calculate daily data (for trend chart) ===
+    // Find Fecha column
+    const fechaColumn = columnNames.find(col =>
+        col.toLowerCase().includes('fecha') ||
+        col.toLowerCase().includes('date')
+    ) || 'Fecha';
+
+    const dailyData = {};
+    const dailyOrders = {};
+
+    pedidosYaData.forEach(row => {
+        // Parse date - handle different formats
+        let fecha = row[fechaColumn];
+        if (!fecha) return;
+
+        // Try to extract day of month
+        let day;
+        if (typeof fecha === 'string') {
+            // Handle "DD/MM/YYYY" or "YYYY-MM-DD" or Excel date
+            const parts = fecha.split(/[\/\-]/);
+            if (parts.length >= 1) {
+                day = parseInt(parts[0]) || parseInt(parts[2]);
+            }
+        } else if (typeof fecha === 'number') {
+            // Excel serial date
+            const excelDate = new Date((fecha - 25569) * 86400 * 1000);
+            day = excelDate.getDate();
+        }
+
+        if (!day || day < 1 || day > 31) return;
+
+        const dayKey = String(day).padStart(2, '0');
+
+        // Sum totals by day
+        dailyData[dayKey] = (dailyData[dayKey] || 0) + row['_total'];
+
+        // Count unique orders by day
+        if (!dailyOrders[dayKey]) {
+            dailyOrders[dayKey] = new Set();
+        }
+        if (row['_pedido']) {
+            dailyOrders[dayKey].add(row['_pedido']);
+        }
+    });
+
+    // Convert to array sorted by day
+    const ventaPorDia = Object.entries(dailyData)
+        .map(([day, total]) => ({
+            day: parseInt(day),
+            name: `${parseInt(day)}`,
+            venta: total,
+            pedidos: dailyOrders[day]?.size || 0
+        }))
+        .sort((a, b) => a.day - b.day);
+
     return {
         rawData: pedidosYaData,
         ventaTotal,
@@ -186,6 +241,7 @@ export const processAgregadoresData = async (files) => {
         topProductos,
         topTiendas,
         pedidosPorTienda,
+        ventaPorDia,
         ventasByStore,
         ordersByStore: Object.fromEntries(
             Object.entries(ordersByStore).map(([k, v]) => [k, v.size])

@@ -33,6 +33,9 @@ export const calculateAgregadoresMetrics = (processedData, config = {}) => {
     // Difference from prorated target
     const diferenciaProrrateada = ventaTotal - metaProrrateada;
 
+    // Calculate ticket promedio (average order value)
+    const ticketPromedio = cantidadTx > 0 ? ventaTotal / cantidadTx : 0;
+
     // Prepare KPIs
     const kpis = {
         ventaTotal,
@@ -41,6 +44,7 @@ export const calculateAgregadoresMetrics = (processedData, config = {}) => {
         metaProrrateada,
         diferenciaProrrateada,
         cantidadTx,
+        ticketPromedio,
         metaTx,
         cumplimientoTx
     };
@@ -68,12 +72,21 @@ export const calculateAgregadoresMetrics = (processedData, config = {}) => {
         meta: metaPedidosPorTienda
     }));
 
+    // Prepare chart data - Venta por Día (daily trend)
+    const ventaPorDiaChart = (processedData.ventaPorDia || []).map(d => ({
+        name: `Día ${d.name}`,
+        day: d.day,
+        venta: d.venta,
+        pedidos: d.pedidos
+    }));
+
     return {
         kpis,
         charts: {
             topProductos: topProductosChart,
             topTiendas: topTiendasChart,
-            metaPorTienda: metaPorTiendaChart
+            metaPorTienda: metaPorTiendaChart,
+            ventaPorDia: ventaPorDiaChart
         }
     };
 };
