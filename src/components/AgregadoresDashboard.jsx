@@ -131,6 +131,32 @@ const AgregadoresDashboard = ({ metrics, config = {} }) => {
 
     return (
         <div className="dashboard-content agregadores-dashboard">
+            {/* Small Header */}
+            <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '8px',
+                position: 'absolute',
+                top: '15px',
+                left: '50%',
+                transform: 'translateX(-50%)',
+                zIndex: 50
+            }}>
+                <span style={{
+                    fontSize: '1.6rem',
+                    fontWeight: '700',
+                    color: '#333'
+                }}>
+                    Agregadores
+                </span>
+                <img
+                    src="/PuntoFarma.png"
+                    alt="Logo"
+                    style={{ height: '28px' }}
+                />
+            </div>
+
             {/* Navigation Buttons (Floating) */}
             {currentPage === 1 && (
                 <button
