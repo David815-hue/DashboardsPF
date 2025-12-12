@@ -7,12 +7,15 @@ import FileUploader from './FileUploader';
 import ManualInputs from './ManualInputs';
 import EcommerceDashboard from './EcommerceDashboard';
 import WhatsAppDashboard from './WhatsAppDashboard';
+import AgregadoresDashboard from './AgregadoresDashboard';
 import { processData } from '../utils/excelProcessor';
 import { calculateMetrics } from '../utils/metricsCalculator';
 import { processEcommerceData } from '../utils/ecommerceProcessor';
 import { calculateEcommerceMetrics } from '../utils/ecommerceMetrics';
 import { processWhatsAppMarketingData } from '../utils/whatsappProcessor';
 import { calculateWhatsAppMetrics } from '../utils/whatsappMetrics';
+import { processAgregadoresData } from '../utils/agregadoresProcessor';
+import { calculateAgregadoresMetrics } from '../utils/agregadoresMetrics';
 import {
     saveSnapshot, loadSnapshot, getSnapshotsByMonth, deleteSnapshot, calculateMonthlyAggregate,
     saveEcommerceSnapshot, loadEcommerceSnapshot, getEcommerceSnapshotsByMonth, deleteEcommerceSnapshot, calculateEcommerceMonthlyAggregate,
@@ -54,7 +57,9 @@ const Dashboard = () => {
     const [data, setData] = useState(null);
     const [ecommerceData, setEcommerceData] = useState(null);
     const [whatsappData, setWhatsappData] = useState(null);
+    const [agregadoresData, setAgregadoresData] = useState(null);
     const [config, setConfig] = useState({ inversionUSD: 25.52, tipoCambio: 26.42, clics: 7796, topProductsCount: 5, totalEnvios: 94, enviosTGU: 74, enviosSPS: 20, costoEnvioLps: 2.11 });
+    const [agregadoresConfig, setAgregadoresConfig] = useState({ presupuesto: 0, metaTx: 0, cumplimientoTx: 0, metaPedidosPorTienda: 30 });
     const [topProductsConfig, setTopProductsConfig] = useState({
         ventaMetaTopProductos: 5,
         ecommerceTopProductos: 6,
@@ -80,7 +85,8 @@ const Dashboard = () => {
     const DASHBOARD_TABS = [
         { id: 'venta-meta', label: 'Venta Meta', icon: '📊' },
         { id: 'ecommerce', label: 'Venta E-commerce', icon: '🛒' },
-        { id: 'whatsapp', label: 'WhatsApp Marketing', icon: '💬' }
+        { id: 'whatsapp', label: 'WhatsApp Marketing', icon: '💬' },
+        { id: 'agregadores', label: 'Agregadores', icon: '🚀' }
     ];
 
     const currentDashboard = DASHBOARD_TABS.find(t => t.id === activeTab);
@@ -142,6 +148,10 @@ const Dashboard = () => {
                 // WhatsApp Marketing processing (Albatross + RMS + SIMLA)
                 const result = await processWhatsAppMarketingData(files);
                 setWhatsappData(result);
+            } else if (activeTab === 'agregadores') {
+                // Agregadores processing (RMS only)
+                const result = await processAgregadoresData(files);
+                setAgregadoresData(result);
             } else {
                 // Venta Meta processing (Albatross + RMS + SIMLA)
                 const result = await processData(files);
@@ -377,6 +387,12 @@ const Dashboard = () => {
         return calculateWhatsAppMetrics(whatsappData, config);
     }, [whatsappData, config, activeTab, selectedMonth, selectedWeek, whatsappSnapshotsByMonth]);
 
+    // Agregadores metrics calculation
+    const agregadoresMetrics = useMemo(() => {
+        if (!agregadoresData) return null;
+        return calculateAgregadoresMetrics(agregadoresData, agregadoresConfig);
+    }, [agregadoresData, agregadoresConfig]);
+
     const formatMonthLabel = (monthKey) => {
         const [year, month] = monthKey.split('-');
         return `${MONTH_NAMES[month]} ${year}`;
@@ -571,6 +587,50 @@ const Dashboard = () => {
                             </div>
                             <div className="divider"></div>
 
+                            {/* Agregadores Config - only show when agregadores tab is active */}
+                            {activeTab === 'agregadores' && (
+                                <>
+                                    <div className="snapshot-section">
+                                        <h3 className="inputs-title">🚀 Configuración Agregadores</h3>
+                                        <div className="input-row" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                                            <div className="input-group">
+                                                <label>Presupuesto (L)</label>
+                                                <input
+                                                    type="text"
+                                                    inputMode="numeric"
+                                                    value={agregadoresConfig.presupuesto}
+                                                    onChange={(e) => {
+                                                        const val = e.target.value.replace(/[^\d.]/g, '');
+                                                        setAgregadoresConfig({ ...agregadoresConfig, presupuesto: parseFloat(val) || 0 });
+                                                    }}
+                                                    placeholder="Ej: 150000"
+                                                />
+                                            </div>
+                                            <div className="input-group">
+                                                <label>Meta Tx</label>
+                                                <input
+                                                    type="number"
+                                                    min="0"
+                                                    value={agregadoresConfig.metaTx}
+                                                    onChange={(e) => setAgregadoresConfig({ ...agregadoresConfig, metaTx: parseInt(e.target.value) || 0 })}
+                                                />
+                                            </div>
+                                            <div className="input-group">
+                                                <label>Cumplimiento Tx (%)</label>
+                                                <input
+                                                    type="number"
+                                                    min="0"
+                                                    max="200"
+                                                    value={agregadoresConfig.cumplimientoTx}
+                                                    onChange={(e) => setAgregadoresConfig({ ...agregadoresConfig, cumplimientoTx: parseFloat(e.target.value) || 0 })}
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="divider"></div>
+                                </>
+                            )}
+
                             <div className="snapshot-section">
                                 <h3 className="inputs-title">
                                     <Save size={20} />
@@ -674,6 +734,15 @@ const Dashboard = () => {
                 ) : (
                     <div className="empty-state">
                         <p>⚠️ No hay datos de WhatsApp Marketing cargados</p>
+                        <button className="process-btn" onClick={() => setIsConfigOpen(true)}>Configurar Dashboard</button>
+                    </div>
+                )
+            ) : activeTab === 'agregadores' ? (
+                agregadoresMetrics ? (
+                    <AgregadoresDashboard metrics={agregadoresMetrics} config={agregadoresConfig} />
+                ) : (
+                    <div className="empty-state">
+                        <p>⚠️ No hay datos de Agregadores cargados</p>
                         <button className="process-btn" onClick={() => setIsConfigOpen(true)}>Configurar Dashboard</button>
                     </div>
                 )
