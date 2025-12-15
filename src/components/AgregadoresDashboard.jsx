@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import {
-    BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend, LabelList, AreaChart, Area
+    BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend, LabelList, AreaChart, Area, PieChart, Pie, Cell
 } from 'recharts';
 import { TrendingUp, TrendingDown, Target, ShoppingCart, DollarSign, ChevronRight, ChevronLeft } from 'lucide-react';
 import TiltedCard from './TiltedCard';
@@ -117,6 +117,8 @@ const CircularProgress = ({ percentage, size = 120, strokeWidth = 10 }) => {
 const AgregadoresDashboard = ({ metrics, config = {} }) => {
     const [currentPage, setCurrentPage] = useState(1);
     const [trendMetric, setTrendMetric] = useState('venta');
+    const [cityMetric, setCityMetric] = useState('venta'); // 'venta' | 'pedidos'
+    const [isFlipped, setIsFlipped] = useState(false); // Flip card state
 
     if (!metrics) {
         return (
@@ -189,18 +191,77 @@ const AgregadoresDashboard = ({ metrics, config = {} }) => {
                             <TiltedCard><KPICard title="Ticket Promedio" value={kpis.ticketPromedio} format="currency" icon={DollarSign} /></TiltedCard>
                         </div>
 
-                        <div className="agregadores-compliance-card">
-                            <CircularProgress percentage={kpis.cumplimientoPct} size={140} strokeWidth={12} />
-                            <div className="compliance-details">
-                                <div className="compliance-row">
-                                    <span className="label">Debería de Llevar</span>
-                                    <span className="value">L {Math.round(kpis.metaProrrateada).toLocaleString('es-HN')}</span>
+                        {/* Flip Card: Compliance (front) / City Chart (back) */}
+                        <div
+                            className={`flip-card ${isFlipped ? 'flipped' : ''}`}
+                            onClick={() => setIsFlipped(!isFlipped)}
+                            style={{ cursor: 'pointer' }}
+                        >
+                            <div className="flip-card-inner">
+                                {/* Front: Compliance */}
+                                <div className="flip-card-front agregadores-compliance-card">
+                                    <CircularProgress percentage={kpis.cumplimientoPct} size={140} strokeWidth={12} />
+                                    <div className="compliance-details">
+                                        <div className="compliance-row">
+                                            <span className="label">Debería de Llevar</span>
+                                            <span className="value">L {Math.round(kpis.metaProrrateada).toLocaleString('es-HN')}</span>
+                                        </div>
+                                        <div className="compliance-row">
+                                            <span className="label">Diferencia</span>
+                                            <span className={`value ${kpis.diferenciaProrrateada >= 0 ? 'positive' : 'negative'}`}>
+                                                {kpis.diferenciaProrrateada >= 0 ? '+' : ''}L {Math.round(kpis.diferenciaProrrateada).toLocaleString('es-HN')}
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div className="flip-hint">Click para ver ciudades</div>
                                 </div>
-                                <div className="compliance-row">
-                                    <span className="label">Diferencia</span>
-                                    <span className={`value ${kpis.diferenciaProrrateada >= 0 ? 'positive' : 'negative'}`}>
-                                        {kpis.diferenciaProrrateada >= 0 ? '+' : ''}L {Math.round(kpis.diferenciaProrrateada).toLocaleString('es-HN')}
-                                    </span>
+
+                                {/* Back: City Chart */}
+                                <div className="flip-card-back">
+                                    <div className="chart-header-with-toggle" onClick={(e) => e.stopPropagation()}>
+                                        <h3 className="chart-title" style={{ fontSize: '0.9rem', margin: 0 }}>Por Ciudad</h3>
+                                        <div className="chart-toggle" style={{ transform: 'scale(0.85)' }}>
+                                            <button
+                                                className={`toggle-btn ${cityMetric === 'venta' ? 'active' : ''}`}
+                                                onClick={(e) => { e.stopPropagation(); setCityMetric('venta'); }}
+                                            >
+                                                Venta
+                                            </button>
+                                            <button
+                                                className={`toggle-btn ${cityMetric === 'pedidos' ? 'active' : ''}`}
+                                                onClick={(e) => { e.stopPropagation(); setCityMetric('pedidos'); }}
+                                            >
+                                                Pedidos
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div style={{ flex: 1, minHeight: 0 }}>
+                                        <ResponsiveContainer width="100%" height="100%">
+                                            <PieChart>
+                                                <Pie
+                                                    data={charts.ventaPorCiudad}
+                                                    dataKey={cityMetric}
+                                                    nameKey="name"
+                                                    cx="50%"
+                                                    cy="50%"
+                                                    innerRadius={30}
+                                                    outerRadius={55}
+                                                    paddingAngle={2}
+                                                    label={({ name, percent }) => `${name.substring(0, 6)}.. ${(percent * 100).toFixed(0)}%`}
+                                                    labelLine={{ stroke: '#94a3b8', strokeWidth: 0.5 }}
+                                                    fontSize={8}
+                                                >
+                                                    {charts.ventaPorCiudad?.map((entry, index) => (
+                                                        <Cell key={`cell-${index}`} fill={[
+                                                            '#FE0000', '#0ea5e9', '#22c55e', '#f59e0b', '#8b5cf6', '#ec4899', '#06b6d4', '#f97316'
+                                                        ][index % 8]} />
+                                                    ))}
+                                                </Pie>
+                                                <Tooltip content={<CustomTooltip />} />
+                                            </PieChart>
+                                        </ResponsiveContainer>
+                                    </div>
+                                    <div className="flip-hint">Click para volver</div>
                                 </div>
                             </div>
                         </div>

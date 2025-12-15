@@ -80,13 +80,33 @@ export const calculateAgregadoresMetrics = (processedData, config = {}) => {
         pedidos: d.pedidos
     }));
 
+    // Prepare chart data - Venta por Ciudad (aggregated from topTiendas)
+    const ciudadAgg = {};
+    topTiendas.forEach(t => {
+        const city = t.city || 'Desconocida';
+        if (!ciudadAgg[city]) {
+            ciudadAgg[city] = { venta: 0, pedidos: 0 };
+        }
+        ciudadAgg[city].venta += t.venta || 0;
+        ciudadAgg[city].pedidos += t.pedidos || 0;
+    });
+
+    const ventaPorCiudadChart = Object.entries(ciudadAgg)
+        .map(([city, data]) => ({
+            name: city,
+            venta: data.venta,
+            pedidos: data.pedidos
+        }))
+        .sort((a, b) => b.venta - a.venta);
+
     return {
         kpis,
         charts: {
             topProductos: topProductosChart,
             topTiendas: topTiendasChart,
             metaPorTienda: metaPorTiendaChart,
-            ventaPorDia: ventaPorDiaChart
+            ventaPorDia: ventaPorDiaChart,
+            ventaPorCiudad: ventaPorCiudadChart
         }
     };
 };
