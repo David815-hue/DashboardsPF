@@ -17,6 +17,9 @@ const ManualInputs = ({ config, onConfigChange }) => {
             </h3>
 
             <div className="input-grid">
+                {/* Meta */}
+                <div className="config-section-header" style={{ gridColumn: '1 / -1', fontSize: '0.75rem', fontWeight: '600', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '-4px', marginTop: '4px' }}>Meta</div>
+
                 <div className="input-group">
                     <label>Inversión (USD)</label>
                     <input
@@ -34,6 +37,9 @@ const ManualInputs = ({ config, onConfigChange }) => {
                         onChange={(e) => handleChange('tipoCambio', e.target.value)}
                     />
                 </div>
+
+                {/* WhatsApp */}
+                <div className="config-section-header" style={{ gridColumn: '1 / -1', fontSize: '0.75rem', fontWeight: '600', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '-4px', marginTop: '8px' }}>WhatsApp</div>
 
                 <div className="input-group">
                     <label>Clics</label>
