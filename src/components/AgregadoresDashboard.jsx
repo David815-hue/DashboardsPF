@@ -263,7 +263,6 @@ const AgregadoresDashboard = ({ metrics, config = {} }) => {
                                             </PieChart>
                                         </ResponsiveContainer>
                                     </div>
-                                    <div className="flip-hint">Click para volver</div>
                                 </div>
                             </div>
                         </div>
@@ -278,9 +277,9 @@ const AgregadoresDashboard = ({ metrics, config = {} }) => {
                         >
                             <div className="flip-card-inner">
                                 {/* Front: Top 5 Bar Chart */}
-                                <div className="flip-card-front" style={{ background: 'linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(248,250,252,0.95) 100%)', padding: '12px', display: 'flex', flexDirection: 'column' }}>
-                                    <h3 className="chart-title" style={{ margin: '0 0 8px 0' }}>Top 5 Productos</h3>
-                                    <div className="chart-container horizontal-bar" style={{ flex: 1 }}>
+                                <div className="flip-card-front">
+                                    <h3 className="chart-title">Top 5 Productos</h3>
+                                    <div className="chart-container horizontal-bar">
                                         <ResponsiveContainer width="100%" height="100%">
                                             <BarChart data={charts.topProductos} layout="vertical" margin={{ top: 5, right: 30, left: 10, bottom: 5 }}>
                                                 <defs>
@@ -296,7 +295,6 @@ const AgregadoresDashboard = ({ metrics, config = {} }) => {
                                             </BarChart>
                                         </ResponsiveContainer>
                                     </div>
-                                    <div className="flip-hint">Click para ver todos</div>
                                 </div>
 
                                 {/* Back: TreeMap All Products */}
@@ -365,7 +363,6 @@ const AgregadoresDashboard = ({ metrics, config = {} }) => {
                                             </Treemap>
                                         </ResponsiveContainer>
                                     </div>
-                                    <div className="flip-hint">Click para volver</div>
                                 </div>
                             </div>
                         </div>
