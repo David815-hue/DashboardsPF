@@ -726,18 +726,172 @@ body {
 }
 
 /* ======================= */
-/* PERIOD SELECTORS */
+/* PERIOD SELECTORS - PREMIUM GLASSMORPHISM */
 /* ======================= */
 
-.period-selectors {
+.period-selectors-container {
   position: absolute;
-  bottom: 20px;
-  left: 30px;
+  bottom: 25px;
+  /* Un poco más arriba para que "respire" */
+  left: 25px;
   z-index: 100;
-  display: flex;
-  gap: 10px;
 }
 
+.period-selectors-wrapper {
+  display: flex;
+  align-items: center;
+  /* Eliminamos el gap para que parezca una sola pieza al unirse */
+  gap: 0;
+  padding: 5px;
+  /* Espacio para el glow/shadow sin cortar */
+  transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+/* Menu Toggle Button - The Anchor */
+.menu-toggle-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  /* Un poco más grande para ser buen 'touch target' */
+  height: 48px;
+  background: rgba(255, 255, 255, 0.35);
+  /* Más visible inicialmente */
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  border-radius: 50%;
+  /* Circular por defecto */
+  color: #1f2937;
+  cursor: pointer;
+
+  /* Sombra suave y elevada */
+  box-shadow:
+    0 4px 6px -1px rgba(0, 0, 0, 0.1),
+    0 2px 4px -1px rgba(0, 0, 0, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.4);
+
+  transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  /* Elastic bounce */
+  flex-shrink: 0;
+  z-index: 2;
+  /* Siempre encima */
+}
+
+/* Icon rotation on hover */
+.menu-toggle-btn svg {
+  transition: transform 0.5s ease;
+}
+
+.period-selectors-wrapper:hover .menu-toggle-btn svg {
+  transform: rotate(90deg);
+  /* Interacción sutil */
+}
+
+.menu-toggle-btn:hover {
+  background: rgba(255, 255, 255, 0.55);
+  transform: scale(1.1);
+  box-shadow:
+    0 10px 15px -3px rgba(0, 0, 0, 0.1),
+    0 4px 6px -2px rgba(0, 0, 0, 0.05),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.6);
+  color: #000;
+}
+
+/* Expandable Content Container */
+.period-selectors-content {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: -20px;
+  /* Empezamos 'escondidos' detrás del botón */
+  padding-left: 30px;
+  /* Compensamos para el contenido */
+  padding-right: 10px;
+  height: 48px;
+  /* Misma altura que el botón */
+
+  max-width: 0;
+  opacity: 0;
+  visibility: hidden;
+
+  /* Glass container styles when expanded */
+  background: rgba(255, 255, 255, 0.25);
+  backdrop-filter: blur(12px);
+  border-radius: 0 24px 24px 0;
+  /* Forma de píldora al final */
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-left: none;
+  /* Se une con el botón */
+
+  transform-origin: left center;
+  transform: scaleX(0.8);
+
+  transition: all 0.5s cubic-bezier(0.25, 0.8, 0.25, 1);
+  z-index: 1;
+}
+
+/* --- STATE: HOVER / EXPANDED --- */
+
+.period-selectors-wrapper:hover .menu-toggle-btn,
+.period-selectors-container.locked .menu-toggle-btn {
+  border-radius: 24px 0 0 24px;
+  /* Se convierte en el inicio de la píldora */
+  margin-right: -1px;
+  /* Fuse borders */
+  background: rgba(255, 255, 255, 0.6);
+  border-right-color: transparent;
+  /* Seamless merge */
+}
+
+/* Maintain active state style for button when locked */
+.period-selectors-container.locked .menu-toggle-btn {
+  color: #000;
+  box-shadow:
+    0 10px 15px -3px rgba(0, 0, 0, 0.1),
+    0 4px 6px -2px rgba(0, 0, 0, 0.05),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.6);
+}
+
+.period-selectors-wrapper:hover .period-selectors-content,
+.period-selectors-container.locked .period-selectors-content {
+  max-width: 500px;
+  margin-left: 0;
+  padding-left: 15px;
+  /* Espacio visual entre botón y contenido */
+  opacity: 1;
+  visibility: visible;
+  transform: scaleX(1);
+  background: rgba(255, 255, 255, 0.45);
+  /* Más sólido al expandir */
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+}
+
+/* Keep the first selector connected to menu button when hovered or locked */
+.period-selectors-wrapper:hover .period-selectors-content .selector-group:first-child .selector-btn,
+.period-selectors-container.locked .period-selectors-content .selector-group:first-child .selector-btn {
+  border-radius: 0 12px 12px 0;
+}
+
+/* Inner Buttons Styling adjustment for context */
+.period-selectors-content .selector-btn {
+  height: 36px;
+  /* Un poco más pequeños que el contenedor */
+  background: rgba(255, 255, 255, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  border-radius: 18px;
+  /* Píldoras internas */
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+  font-size: 0.8rem;
+  padding: 0 14px;
+  white-space: nowrap;
+}
+
+.period-selectors-content .selector-btn:hover {
+  background: #fff;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
 
 
 .selector-group {

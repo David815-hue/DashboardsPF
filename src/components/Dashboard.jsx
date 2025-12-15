@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect } from 'react';
-import { Settings, X, Save, Calendar, ChevronDown, Trash2, Maximize2, Minimize2 } from 'lucide-react';
+import { Settings, X, Save, Calendar, ChevronDown, Trash2, Maximize2, Minimize2, Menu } from 'lucide-react';
 import KPICard from './KPICard';
 import TopProductsChart from './TopProductsChart';
 import FunnelChart from './FunnelChart';
@@ -115,6 +115,7 @@ const Dashboard = () => {
 
     // Dashboard tabs
     const [activeTab, setActiveTab] = useState('venta-meta');
+    const [isMenuLocked, setIsMenuLocked] = useState(false); // New state for menu lock
     const [isDashboardDropdownOpen, setIsDashboardDropdownOpen] = useState(false);
     const DASHBOARD_TABS = [
         { id: 'venta-meta', label: 'Venta Meta', icon: '📊' },
@@ -552,82 +553,95 @@ const Dashboard = () => {
                 </div>
             )}
 
-            {/* Period Selectors - Bottom Left (Hidden in Zen Mode) */}
+            {/* Period Selectors - Bottom Left - Collapsible on Hover (Hidden in Zen Mode) */}
             {!isZenMode && (
-                <div className="period-selectors">
-                    {/* Month Selector */}
-                    <div className="selector-group">
-                        <button
-                            className="selector-btn"
-                            onClick={() => { setIsMonthDropdownOpen(!isMonthDropdownOpen); setIsWeekDropdownOpen(false); }}
+                <div className={`period-selectors-container ${isMenuLocked ? 'locked' : ''}`}>
+                    <div className="period-selectors-wrapper">
+                        {/* Menu Toggle Button */}
+                        <div
+                            className={`menu-toggle-btn ${isMenuLocked ? 'active' : ''}`}
+                            onClick={() => setIsMenuLocked(!isMenuLocked)}
                         >
-                            <Calendar size={16} />
-                            {selectedMonth ? formatMonthLabel(selectedMonth) : 'Datos Actuales'}
-                            <ChevronDown size={16} />
-                        </button>
+                            {isMenuLocked ? <X size={18} /> : <Menu size={18} />}
+                        </div>
 
-                        {isMonthDropdownOpen && (
-                            <div className="selector-dropdown">
-                                <div
-                                    className={`selector-option ${!selectedMonth ? 'active' : ''}`}
-                                    onClick={() => handleSelectMonth('current')}
+                        {/* Expandable Controls */}
+                        <div className="period-selectors-content">
+                            {/* Month Selector */}
+                            <div className="selector-group">
+                                <button
+                                    className="selector-btn"
+                                    onClick={() => { setIsMonthDropdownOpen(!isMonthDropdownOpen); setIsWeekDropdownOpen(false); }}
                                 >
-                                    📊 Datos Actuales
-                                </div>
-                                {availableMonths.length > 0 && <div className="selector-divider"></div>}
-                                {availableMonths.map(monthKey => (
-                                    <div
-                                        key={monthKey}
-                                        className={`selector-option ${selectedMonth === monthKey ? 'active' : ''}`}
-                                        onClick={() => handleSelectMonth(monthKey)}
-                                    >
-                                        📆 {formatMonthLabel(monthKey)}
-                                        <span className="week-count">{currentSnapshotsByMonth[monthKey].length} sem</span>
-                                    </div>
-                                ))}
-                            </div>
-                        )}
-                    </div>
+                                    <Calendar size={16} />
+                                    {selectedMonth ? formatMonthLabel(selectedMonth) : 'Datos Actuales'}
+                                    <ChevronDown size={16} />
+                                </button>
 
-                    {/* Week Selector */}
-                    {selectedMonth && currentSnapshotsByMonth[selectedMonth] && (
-                        <div className="selector-group">
-                            <button
-                                className="selector-btn week-btn"
-                                onClick={() => { setIsWeekDropdownOpen(!isWeekDropdownOpen); setIsMonthDropdownOpen(false); }}
-                            >
-                                {selectedWeek ? formatWeekLabel(selectedWeek) : 'Acumulado Mensual'}
-                                <ChevronDown size={16} />
-                            </button>
-
-                            {isWeekDropdownOpen && (
-                                <div className="selector-dropdown">
-                                    <div
-                                        className={`selector-option ${!selectedWeek ? 'active' : ''}`}
-                                        onClick={() => handleSelectWeek('aggregate')}
-                                    >
-                                        📊 Acumulado Mensual
-                                    </div>
-                                    <div className="selector-divider"></div>
-                                    {currentSnapshotsByMonth[selectedMonth].map(snap => (
+                                {isMonthDropdownOpen && (
+                                    <div className="selector-dropdown">
                                         <div
-                                            key={snap.dateId || snap.id}
-                                            className={`selector-option ${selectedWeek === (snap.dateId || snap.id) ? 'active' : ''}`}
-                                            onClick={() => handleSelectWeek(snap.dateId || snap.id)}
+                                            className={`selector-option ${!selectedMonth ? 'active' : ''}`}
+                                            onClick={() => handleSelectMonth('current')}
                                         >
-                                            <span>📅 {formatWeekLabel(snap.dateId || snap.id)}</span>
-                                            <button
-                                                className="snapshot-delete-btn"
-                                                onClick={(e) => handleDeleteSnapshot(snap.dateId || snap.id, e)}
-                                            >
-                                                <Trash2 size={14} />
-                                            </button>
+                                            📊 Datos Actuales
                                         </div>
-                                    ))}
+                                        {availableMonths.length > 0 && <div className="selector-divider"></div>}
+                                        {availableMonths.map(monthKey => (
+                                            <div
+                                                key={monthKey}
+                                                className={`selector-option ${selectedMonth === monthKey ? 'active' : ''}`}
+                                                onClick={() => handleSelectMonth(monthKey)}
+                                            >
+                                                📆 {formatMonthLabel(monthKey)}
+                                                <span className="week-count">{currentSnapshotsByMonth[monthKey].length} sem</span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Week Selector */}
+                            {selectedMonth && currentSnapshotsByMonth[selectedMonth] && (
+                                <div className="selector-group">
+                                    <button
+                                        className="selector-btn week-btn"
+                                        onClick={() => { setIsWeekDropdownOpen(!isWeekDropdownOpen); setIsMonthDropdownOpen(false); }}
+                                    >
+                                        {selectedWeek ? formatWeekLabel(selectedWeek) : 'Acumulado Mensual'}
+                                        <ChevronDown size={16} />
+                                    </button>
+
+                                    {isWeekDropdownOpen && (
+                                        <div className="selector-dropdown">
+                                            <div
+                                                className={`selector-option ${!selectedWeek ? 'active' : ''}`}
+                                                onClick={() => handleSelectWeek('aggregate')}
+                                            >
+                                                📊 Acumulado Mensual
+                                            </div>
+                                            <div className="selector-divider"></div>
+                                            {currentSnapshotsByMonth[selectedMonth].map(snap => (
+                                                <div
+                                                    key={snap.dateId || snap.id}
+                                                    className={`selector-option ${selectedWeek === (snap.dateId || snap.id) ? 'active' : ''}`}
+                                                    onClick={() => handleSelectWeek(snap.dateId || snap.id)}
+                                                >
+                                                    <span>📅 {formatWeekLabel(snap.dateId || snap.id)}</span>
+                                                    <button
+                                                        className="snapshot-delete-btn"
+                                                        onClick={(e) => handleDeleteSnapshot(snap.dateId || snap.id, e)}
+                                                    >
+                                                        <Trash2 size={14} />
+                                                    </button>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
                                 </div>
                             )}
                         </div>
-                    )}
+                    </div>
                 </div>
             )}
 
