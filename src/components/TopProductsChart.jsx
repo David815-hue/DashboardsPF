@@ -47,7 +47,7 @@ const TopProductsChart = ({ data }) => {
                         <YAxis tick={{ fontSize: 12, fill: '#666' }} />
                         <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(0,0,0,0.05)' }} />
                         <Bar
-                            dataKey="count"
+                            dataKey={(item) => item.count || item.value || 0}
                             radius={[8, 8, 0, 0]}
                             fill="url(#barGradient)"
                             animationDuration={1000}

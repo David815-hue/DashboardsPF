@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect } from 'react';
-import { Settings, X, Save, Calendar, ChevronDown, Trash2 } from 'lucide-react';
+import { Settings, X, Save, Calendar, ChevronDown, Trash2, Maximize2, Minimize2 } from 'lucide-react';
 import KPICard from './KPICard';
 import TopProductsChart from './TopProductsChart';
 import FunnelChart from './FunnelChart';
@@ -49,6 +49,36 @@ const MONTH_NAMES = {
 };
 
 const Dashboard = () => {
+    // Zen Mode State
+    const [isZenMode, setIsZenMode] = useState(false);
+
+    // Toggle Fullscreen when Zen Mode changes
+    useEffect(() => {
+        if (isZenMode) {
+            document.documentElement.requestFullscreen().catch((e) => {
+                console.error(`Error attempting to enable fullscreen mode: ${e.message} (${e.name})`);
+            });
+        } else {
+            if (document.fullscreenElement) {
+                document.exitFullscreen().catch((e) => {
+                    console.error(`Error attempting to exit fullscreen mode: ${e.message} (${e.name})`);
+                });
+            }
+        }
+    }, [isZenMode]);
+
+    // Handle ESC key to sync state if user exits fullscreen manually
+    useEffect(() => {
+        const handleFullscreenChange = () => {
+            if (!document.fullscreenElement) {
+                setIsZenMode(false);
+            }
+        };
+
+        document.addEventListener('fullscreenchange', handleFullscreenChange);
+        return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
+    }, []);
+
     const [isConfigOpen, setIsConfigOpen] = useState(false);
     const [files, setFiles] = useState({ albatross: null, rms: null, simla: null });
     const [isProcessing, setIsProcessing] = useState(false);
@@ -463,115 +493,147 @@ const Dashboard = () => {
     const availableMonths = Object.keys(currentSnapshotsByMonth).sort().reverse();
 
     return (
-        <div className="dashboard">
-            {/* Dashboard Selector - Top Left */}
-            <div className="dashboard-selector">
-                <button
-                    className="dashboard-selector-btn"
-                    onClick={() => setIsDashboardDropdownOpen(!isDashboardDropdownOpen)}
-                >
-                    <span className="tab-icon">{currentDashboard?.icon}</span>
-                    {currentDashboard?.label || 'Dashboard'}
-                    <ChevronDown size={16} />
-                </button>
-
-                {isDashboardDropdownOpen && (
-                    <div className="dashboard-dropdown">
-                        {DASHBOARD_TABS.map(tab => (
-                            <div
-                                key={tab.id}
-                                className={`dashboard-option ${activeTab === tab.id ? 'active' : ''}`}
-                                onClick={() => { setActiveTab(tab.id); setIsDashboardDropdownOpen(false); }}
-                            >
-                                <span className="tab-icon">{tab.icon}</span>
-                                {tab.label}
-                            </div>
-                        ))}
-                    </div>
-                )}
-            </div>
-
-            {/* Period Selectors - Bottom Left */}
-            <div className="period-selectors">
-                {/* Month Selector */}
-                <div className="selector-group">
+        <div className={`dashboard ${isZenMode ? 'zen-mode' : ''}`}>
+            {/* Dashboard Selector - Top Left (Hidden in Zen Mode) */}
+            {!isZenMode && (
+                <div className="dashboard-selector">
                     <button
-                        className="selector-btn"
-                        onClick={() => { setIsMonthDropdownOpen(!isMonthDropdownOpen); setIsWeekDropdownOpen(false); }}
+                        className="dashboard-selector-btn"
+                        onClick={() => setIsDashboardDropdownOpen(!isDashboardDropdownOpen)}
                     >
-                        <Calendar size={16} />
-                        {selectedMonth ? formatMonthLabel(selectedMonth) : 'Datos Actuales'}
+                        <span className="tab-icon">{currentDashboard?.icon}</span>
+                        {currentDashboard?.label || 'Dashboard'}
                         <ChevronDown size={16} />
                     </button>
 
-                    {isMonthDropdownOpen && (
-                        <div className="selector-dropdown">
-                            <div
-                                className={`selector-option ${!selectedMonth ? 'active' : ''}`}
-                                onClick={() => handleSelectMonth('current')}
-                            >
-                                📊 Datos Actuales
-                            </div>
-                            {availableMonths.length > 0 && <div className="selector-divider"></div>}
-                            {availableMonths.map(monthKey => (
+                    {isDashboardDropdownOpen && (
+                        <div className="dashboard-dropdown">
+                            {DASHBOARD_TABS.map(tab => (
                                 <div
-                                    key={monthKey}
-                                    className={`selector-option ${selectedMonth === monthKey ? 'active' : ''}`}
-                                    onClick={() => handleSelectMonth(monthKey)}
+                                    key={tab.id}
+                                    className={`dashboard-option ${activeTab === tab.id ? 'active' : ''}`}
+                                    onClick={() => { setActiveTab(tab.id); setIsDashboardDropdownOpen(false); }}
                                 >
-                                    📆 {formatMonthLabel(monthKey)}
-                                    <span className="week-count">{currentSnapshotsByMonth[monthKey].length} sem</span>
+                                    <span className="tab-icon">{tab.icon}</span>
+                                    {tab.label}
                                 </div>
                             ))}
                         </div>
                     )}
                 </div>
+            )}
 
-                {/* Week Selector (only visible when month is selected) */}
-                {selectedMonth && currentSnapshotsByMonth[selectedMonth] && (
+            {/* Period Selectors - Bottom Left (Hidden in Zen Mode) */}
+            {!isZenMode && (
+                <div className="period-selectors">
+                    {/* Month Selector */}
                     <div className="selector-group">
                         <button
-                            className="selector-btn week-btn"
-                            onClick={() => { setIsWeekDropdownOpen(!isWeekDropdownOpen); setIsMonthDropdownOpen(false); }}
+                            className="selector-btn"
+                            onClick={() => { setIsMonthDropdownOpen(!isMonthDropdownOpen); setIsWeekDropdownOpen(false); }}
                         >
-                            {selectedWeek ? formatWeekLabel(selectedWeek) : 'Acumulado Mensual'}
+                            <Calendar size={16} />
+                            {selectedMonth ? formatMonthLabel(selectedMonth) : 'Datos Actuales'}
                             <ChevronDown size={16} />
                         </button>
 
-                        {isWeekDropdownOpen && (
+                        {isMonthDropdownOpen && (
                             <div className="selector-dropdown">
                                 <div
-                                    className={`selector-option ${!selectedWeek ? 'active' : ''}`}
-                                    onClick={() => handleSelectWeek('aggregate')}
+                                    className={`selector-option ${!selectedMonth ? 'active' : ''}`}
+                                    onClick={() => handleSelectMonth('current')}
                                 >
-                                    📊 Acumulado Mensual
+                                    📊 Datos Actuales
                                 </div>
-                                <div className="selector-divider"></div>
-                                {currentSnapshotsByMonth[selectedMonth].map(snap => (
+                                {availableMonths.length > 0 && <div className="selector-divider"></div>}
+                                {availableMonths.map(monthKey => (
                                     <div
-                                        key={snap.dateId || snap.id}
-                                        className={`selector-option ${selectedWeek === (snap.dateId || snap.id) ? 'active' : ''}`}
-                                        onClick={() => handleSelectWeek(snap.dateId || snap.id)}
+                                        key={monthKey}
+                                        className={`selector-option ${selectedMonth === monthKey ? 'active' : ''}`}
+                                        onClick={() => handleSelectMonth(monthKey)}
                                     >
-                                        <span>📅 {formatWeekLabel(snap.dateId || snap.id)}</span>
-                                        <button
-                                            className="snapshot-delete-btn"
-                                            onClick={(e) => handleDeleteSnapshot(snap.dateId || snap.id, e)}
-                                        >
-                                            <Trash2 size={14} />
-                                        </button>
+                                        📆 {formatMonthLabel(monthKey)}
+                                        <span className="week-count">{currentSnapshotsByMonth[monthKey].length} sem</span>
                                     </div>
                                 ))}
                             </div>
                         )}
                     </div>
+
+                    {/* Week Selector */}
+                    {selectedMonth && currentSnapshotsByMonth[selectedMonth] && (
+                        <div className="selector-group">
+                            <button
+                                className="selector-btn week-btn"
+                                onClick={() => { setIsWeekDropdownOpen(!isWeekDropdownOpen); setIsMonthDropdownOpen(false); }}
+                            >
+                                {selectedWeek ? formatWeekLabel(selectedWeek) : 'Acumulado Mensual'}
+                                <ChevronDown size={16} />
+                            </button>
+
+                            {isWeekDropdownOpen && (
+                                <div className="selector-dropdown">
+                                    <div
+                                        className={`selector-option ${!selectedWeek ? 'active' : ''}`}
+                                        onClick={() => handleSelectWeek('aggregate')}
+                                    >
+                                        📊 Acumulado Mensual
+                                    </div>
+                                    <div className="selector-divider"></div>
+                                    {currentSnapshotsByMonth[selectedMonth].map(snap => (
+                                        <div
+                                            key={snap.dateId || snap.id}
+                                            className={`selector-option ${selectedWeek === (snap.dateId || snap.id) ? 'active' : ''}`}
+                                            onClick={() => handleSelectWeek(snap.dateId || snap.id)}
+                                        >
+                                            <span>📅 {formatWeekLabel(snap.dateId || snap.id)}</span>
+                                            <button
+                                                className="snapshot-delete-btn"
+                                                onClick={(e) => handleDeleteSnapshot(snap.dateId || snap.id, e)}
+                                            >
+                                                <Trash2 size={14} />
+                                            </button>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    )}
+                </div>
+            )}
+
+            {/* Zen Mode Toggle & Config */}
+            <div className="top-right-controls" style={{ position: 'absolute', top: '15px', right: '15px', display: 'flex', gap: '10px', zIndex: 100 }}>
+                {/* Zen Toggle */}
+                <button
+                    className="icon-btn zen-toggle"
+                    onClick={() => setIsZenMode(!isZenMode)}
+                    title={isZenMode ? "Salir de Zen Mode" : "Modo Zen"}
+                    style={{
+                        background: 'rgba(255, 255, 255, 0.25)',
+                        backdropFilter: 'blur(12px)',
+                        border: '1px solid rgba(255, 255, 255, 0.4)',
+                        borderRadius: '50%',
+                        width: '40px',
+                        height: '40px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        cursor: 'pointer',
+                        color: '#333',
+                        boxShadow: '0 4px 15px rgba(0,0,0,0.1)'
+                    }}
+                >
+                    {isZenMode ? <Minimize2 size={20} /> : <Maximize2 size={20} />}
+                </button>
+
+                {/* Config (Hidden in Zen Mode) */}
+                {!isZenMode && (
+                    <button className="config-toggle-btn" style={{ position: 'static' }} onClick={() => setIsConfigOpen(true)} title="Configuración">
+                        <Settings size={22} />
+                    </button>
                 )}
             </div>
-
-            {/* Config Toggle Button */}
-            <button className="config-toggle-btn" onClick={() => setIsConfigOpen(true)} title="Configuración">
-                <Settings size={22} />
-            </button>
 
             {/* Success Toast */}
             {successMessage && <div className="success-toast">{successMessage}</div>}
@@ -720,7 +782,7 @@ const Dashboard = () => {
                 </div>
             )}
 
-            {/* Header */}
+            {/* Header (Always visible) */}
             <header className="dashboard-header">
                 {activeTab === 'venta-meta' && <Logo />}
                 {activeTab === 'ecommerce' && (
@@ -731,7 +793,7 @@ const Dashboard = () => {
                 )}
             </header>
 
-            {/* Dashboard Content - Switch based on active tab */}
+            {/* Dashboard Content */}
             {isLoading ? (
                 <div className="loading-state">
                     <div className="spinner"></div>
@@ -799,13 +861,10 @@ const Dashboard = () => {
                         <button className="process-btn" onClick={() => setIsConfigOpen(true)}>Configurar Dashboard</button>
                     </div>
                 )
-            ) : (
-                <div className="empty-state">
-                    <p>⚠️ Selecciona un dashboard</p>
-                </div>
-            )}
+            ) : null}
         </div>
     );
 };
+
 
 export default Dashboard;
