@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import {
-    BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend, LabelList, AreaChart, Area, PieChart, Pie, Cell
+    BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend, LabelList, AreaChart, Area, PieChart, Pie, Cell, Treemap
 } from 'recharts';
-import { TrendingUp, TrendingDown, Target, ShoppingCart, DollarSign, ChevronRight, ChevronLeft } from 'lucide-react';
+import { TrendingUp, TrendingDown, Target, ShoppingCart, DollarSign, ChevronRight, ChevronLeft, Maximize2, X } from 'lucide-react';
 import TiltedCard from './TiltedCard';
 
 // Custom tooltip with glassmorphism
@@ -118,7 +118,9 @@ const AgregadoresDashboard = ({ metrics, config = {} }) => {
     const [currentPage, setCurrentPage] = useState(1);
     const [trendMetric, setTrendMetric] = useState('venta');
     const [cityMetric, setCityMetric] = useState('venta'); // 'venta' | 'pedidos'
-    const [isFlipped, setIsFlipped] = useState(false); // Flip card state
+    const [isFlipped, setIsFlipped] = useState(false); // Flip card state for compliance
+    const [isProductsFlipped, setIsProductsFlipped] = useState(false); // Flip card state for products
+    const [isTreeMapFullscreen, setIsTreeMapFullscreen] = useState(false); // Fullscreen modal for TreeMap
 
     if (!metrics) {
         return (
@@ -268,23 +270,103 @@ const AgregadoresDashboard = ({ metrics, config = {} }) => {
                     </div>
 
                     <div className="agregadores-charts-section page1">
-                        <div className="chart-card">
-                            <h3 className="chart-title">Top 5 Productos</h3>
-                            <div className="chart-container horizontal-bar">
-                                <ResponsiveContainer width="100%" height="100%">
-                                    <BarChart data={charts.topProductos} layout="vertical" margin={{ top: 5, right: 30, left: 10, bottom: 5 }}>
-                                        <defs>
-                                            <linearGradient id="productGradient" x1="0" y1="0" x2="1" y2="0">
-                                                <stop offset="0%" stopColor="#FE0000" stopOpacity={0.8} />
-                                                <stop offset="100%" stopColor="#ff6b6b" stopOpacity={1} />
-                                            </linearGradient>
-                                        </defs>
-                                        <XAxis type="number" tick={{ fontSize: 10, fill: '#888' }} />
-                                        <YAxis dataKey="name" type="category" width={120} tick={{ fontSize: 10, fill: '#888' }} />
-                                        <Tooltip content={<CustomTooltip />} />
-                                        <Bar dataKey="value" fill="url(#productGradient)" radius={[0, 8, 8, 0]} name="Cantidad" />
-                                    </BarChart>
-                                </ResponsiveContainer>
+                        {/* Flip Card: Top 5 Products (front) / TreeMap All Products (back) */}
+                        <div
+                            className={`flip-card chart-card ${isProductsFlipped ? 'flipped' : ''}`}
+                            onClick={() => setIsProductsFlipped(!isProductsFlipped)}
+                            style={{ cursor: 'pointer' }}
+                        >
+                            <div className="flip-card-inner">
+                                {/* Front: Top 5 Bar Chart */}
+                                <div className="flip-card-front" style={{ background: 'linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(248,250,252,0.95) 100%)', padding: '12px', display: 'flex', flexDirection: 'column' }}>
+                                    <h3 className="chart-title" style={{ margin: '0 0 8px 0' }}>Top 5 Productos</h3>
+                                    <div className="chart-container horizontal-bar" style={{ flex: 1 }}>
+                                        <ResponsiveContainer width="100%" height="100%">
+                                            <BarChart data={charts.topProductos} layout="vertical" margin={{ top: 5, right: 30, left: 10, bottom: 5 }}>
+                                                <defs>
+                                                    <linearGradient id="productGradient" x1="0" y1="0" x2="1" y2="0">
+                                                        <stop offset="0%" stopColor="#FE0000" stopOpacity={0.8} />
+                                                        <stop offset="100%" stopColor="#ff6b6b" stopOpacity={1} />
+                                                    </linearGradient>
+                                                </defs>
+                                                <XAxis type="number" tick={{ fontSize: 10, fill: '#888' }} />
+                                                <YAxis dataKey="name" type="category" width={120} tick={{ fontSize: 10, fill: '#888' }} />
+                                                <Tooltip content={<CustomTooltip />} />
+                                                <Bar dataKey="value" fill="url(#productGradient)" radius={[0, 8, 8, 0]} name="Cantidad" />
+                                            </BarChart>
+                                        </ResponsiveContainer>
+                                    </div>
+                                    <div className="flip-hint">Click para ver todos</div>
+                                </div>
+
+                                {/* Back: TreeMap All Products */}
+                                <div className="flip-card-back" style={{ display: 'flex', flexDirection: 'column' }}>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                                        <h3 className="chart-title" style={{ fontSize: '0.9rem', margin: 0 }}>Todos los Productos</h3>
+                                        <button
+                                            onClick={(e) => { e.stopPropagation(); setIsTreeMapFullscreen(true); }}
+                                            style={{
+                                                background: 'rgba(0,0,0,0.1)',
+                                                border: 'none',
+                                                borderRadius: '6px',
+                                                padding: '4px 8px',
+                                                cursor: 'pointer',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                gap: '4px',
+                                                fontSize: '0.7rem',
+                                                color: '#666'
+                                            }}
+                                            title="Ver en pantalla completa"
+                                        >
+                                            <Maximize2 size={14} />
+                                        </button>
+                                    </div>
+                                    <div style={{ flex: 1, minHeight: 0 }}>
+                                        <ResponsiveContainer width="100%" height="100%">
+                                            <Treemap
+                                                data={charts.allProductos}
+                                                dataKey="value"
+                                                aspectRatio={4 / 3}
+                                                stroke="#fff"
+                                                content={({ root, depth, x, y, width, height, index, name, value }) => {
+                                                    const COLORS = ['#FE0000', '#0ea5e9', '#22c55e', '#f59e0b', '#8b5cf6', '#ec4899', '#06b6d4', '#f97316'];
+                                                    return (
+                                                        <g>
+                                                            <rect
+                                                                x={x}
+                                                                y={y}
+                                                                width={width}
+                                                                height={height}
+                                                                style={{
+                                                                    fill: COLORS[index % COLORS.length],
+                                                                    stroke: '#fff',
+                                                                    strokeWidth: 2,
+                                                                }}
+                                                            />
+                                                            {width > 40 && height > 25 && (
+                                                                <text
+                                                                    x={x + width / 2}
+                                                                    y={y + height / 2}
+                                                                    textAnchor="middle"
+                                                                    dominantBaseline="middle"
+                                                                    fill="#fff"
+                                                                    fontSize={width < 60 ? 7 : 9}
+                                                                    fontWeight="bold"
+                                                                >
+                                                                    {name?.substring(0, 8)}...
+                                                                </text>
+                                                            )}
+                                                        </g>
+                                                    );
+                                                }}
+                                            >
+                                                <Tooltip content={<CustomTooltip />} />
+                                            </Treemap>
+                                        </ResponsiveContainer>
+                                    </div>
+                                    <div className="flip-hint">Click para volver</div>
+                                </div>
                             </div>
                         </div>
 
@@ -400,6 +482,107 @@ const AgregadoresDashboard = ({ metrics, config = {} }) => {
                                 </ResponsiveContainer>
                             </div>
                         </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Fullscreen TreeMap Modal */}
+            {isTreeMapFullscreen && (
+                <div
+                    className="treemap-fullscreen-overlay"
+                    onClick={() => setIsTreeMapFullscreen(false)}
+                    style={{
+                        position: 'fixed',
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        background: 'rgba(0, 0, 0, 0.85)',
+                        backdropFilter: 'blur(10px)',
+                        zIndex: 1000,
+                        display: 'flex',
+                        flexDirection: 'column',
+                        padding: '20px'
+                    }}
+                >
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                        <h2 style={{ color: '#fff', margin: 0, fontSize: '1.5rem' }}>Todos los Productos - TreeMap</h2>
+                        <button
+                            onClick={() => setIsTreeMapFullscreen(false)}
+                            style={{
+                                background: 'rgba(255,255,255,0.2)',
+                                border: 'none',
+                                borderRadius: '50%',
+                                width: '40px',
+                                height: '40px',
+                                cursor: 'pointer',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                color: '#fff'
+                            }}
+                        >
+                            <X size={24} />
+                        </button>
+                    </div>
+                    <div style={{ flex: 1, background: 'rgba(255,255,255,0.05)', borderRadius: '16px', padding: '16px' }} onClick={(e) => e.stopPropagation()}>
+                        <ResponsiveContainer width="100%" height="100%">
+                            <Treemap
+                                data={charts.allProductos}
+                                dataKey="value"
+                                aspectRatio={16 / 9}
+                                stroke="#fff"
+                                content={({ root, depth, x, y, width, height, index, name, value }) => {
+                                    const COLORS = ['#FE0000', '#0ea5e9', '#22c55e', '#f59e0b', '#8b5cf6', '#ec4899', '#06b6d4', '#f97316'];
+                                    return (
+                                        <g>
+                                            <rect
+                                                x={x}
+                                                y={y}
+                                                width={width}
+                                                height={height}
+                                                style={{
+                                                    fill: COLORS[index % COLORS.length],
+                                                    stroke: '#fff',
+                                                    strokeWidth: 2,
+                                                }}
+                                            />
+                                            {width > 60 && height > 35 && (
+                                                <>
+                                                    <text
+                                                        x={x + width / 2}
+                                                        y={y + height / 2 - 8}
+                                                        textAnchor="middle"
+                                                        dominantBaseline="middle"
+                                                        fill="#fff"
+                                                        fontSize={width < 100 ? 10 : 13}
+                                                        fontWeight="600"
+                                                        fontFamily="system-ui, -apple-system, sans-serif"
+                                                        style={{ textShadow: '0 1px 3px rgba(0,0,0,0.5)' }}
+                                                    >
+                                                        {name?.substring(0, Math.floor(width / 8))}{name?.length > Math.floor(width / 8) ? '..' : ''}
+                                                    </text>
+                                                    <text
+                                                        x={x + width / 2}
+                                                        y={y + height / 2 + 10}
+                                                        textAnchor="middle"
+                                                        dominantBaseline="middle"
+                                                        fill="rgba(255,255,255,0.9)"
+                                                        fontSize={width < 100 ? 9 : 11}
+                                                        fontFamily="system-ui, -apple-system, sans-serif"
+                                                        style={{ textShadow: '0 1px 2px rgba(0,0,0,0.4)' }}
+                                                    >
+                                                        {value} pedidos
+                                                    </text>
+                                                </>
+                                            )}
+                                        </g>
+                                    );
+                                }}
+                            >
+                                <Tooltip content={<CustomTooltip />} />
+                            </Treemap>
+                        </ResponsiveContainer>
                     </div>
                 </div>
             )}

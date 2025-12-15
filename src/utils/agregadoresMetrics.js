@@ -99,10 +99,21 @@ export const calculateAgregadoresMetrics = (processedData, config = {}) => {
         }))
         .sort((a, b) => b.venta - a.venta);
 
+    // Prepare chart data - ALL Products for TreeMap (min 5 orders)
+    const allProductosChart = topProductos
+        .filter(p => p.cantidad >= 5) // Minimum 5 orders to show
+        .map(p => ({
+            name: p.descripcion.length > 20 ? p.descripcion.substring(0, 20) + '...' : p.descripcion,
+            fullName: p.descripcion,
+            value: p.cantidad,
+            total: p.total
+        }));
+
     return {
         kpis,
         charts: {
             topProductos: topProductosChart,
+            allProductos: allProductosChart,
             topTiendas: topTiendasChart,
             metaPorTienda: metaPorTiendaChart,
             ventaPorDia: ventaPorDiaChart,
