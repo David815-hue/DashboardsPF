@@ -90,8 +90,9 @@ const Dashboard = () => {
     const [ecommerceData, setEcommerceData] = useState(null);
     const [whatsappData, setWhatsappData] = useState(null);
     const [agregadoresData, setAgregadoresData] = useState(null);
+    const [agregadoresZoneFilter, setAgregadoresZoneFilter] = useState('all'); // 'all', 'centro', 'norte'
     const [config, setConfig] = useState({ inversionUSD: 25.52, tipoCambio: 26.42, clics: 7796, topProductsCount: 5, totalEnvios: 94, enviosTGU: 74, enviosSPS: 20, costoEnvioLps: 2.11 });
-    const [agregadoresConfig, setAgregadoresConfig] = useState({ presupuesto: 0, metaTx: 0, cumplimientoTx: 0, metaPedidosPorTienda: 30 });
+    const [agregadoresConfig, setAgregadoresConfig] = useState({ presupuesto: 0, presupuestoCentro: 0, presupuestoNorte: 0, metaTx: 0, cumplimientoTx: 0, metaPedidosPorTienda: 30 });
     const [topProductsConfig, setTopProductsConfig] = useState({
         ventaMetaTopProductos: 5,
         ecommerceTopProductos: 6,
@@ -469,8 +470,8 @@ const Dashboard = () => {
 
         // Fresh Agregadores data
         if (!agregadoresData) return null;
-        return calculateAgregadoresMetrics(agregadoresData, agregadoresConfig);
-    }, [agregadoresData, agregadoresConfig, activeTab, selectedMonth, selectedWeek, agregadoresSnapshotsByMonth]);
+        return calculateAgregadoresMetrics(agregadoresData, agregadoresConfig, agregadoresZoneFilter);
+    }, [agregadoresData, agregadoresConfig, agregadoresZoneFilter, activeTab, selectedMonth, selectedWeek, agregadoresSnapshotsByMonth]);
 
     const formatMonthLabel = (monthKey) => {
         const [year, month] = monthKey.split('-');
@@ -705,9 +706,9 @@ const Dashboard = () => {
                                 <>
                                     <div className="snapshot-section">
                                         <h3 className="inputs-title">🚀 Configuración Agregadores</h3>
-                                        <div className="input-row" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                                        <div className="input-row" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '12px' }}>
                                             <div className="input-group">
-                                                <label>Presupuesto (L)</label>
+                                                <label>Presupuesto Total (L)</label>
                                                 <input
                                                     type="text"
                                                     inputMode="numeric"
@@ -717,6 +718,32 @@ const Dashboard = () => {
                                                         setAgregadoresConfig({ ...agregadoresConfig, presupuesto: parseFloat(val) || 0 });
                                                     }}
                                                     placeholder="Ej: 150000"
+                                                />
+                                            </div>
+                                            <div className="input-group">
+                                                <label>Presupuesto Centro (L)</label>
+                                                <input
+                                                    type="text"
+                                                    inputMode="numeric"
+                                                    value={agregadoresConfig.presupuestoCentro}
+                                                    onChange={(e) => {
+                                                        const val = e.target.value.replace(/[^\d.]/g, '');
+                                                        setAgregadoresConfig({ ...agregadoresConfig, presupuestoCentro: parseFloat(val) || 0 });
+                                                    }}
+                                                    placeholder="TGU + Choluteca"
+                                                />
+                                            </div>
+                                            <div className="input-group">
+                                                <label>Presupuesto Norte (L)</label>
+                                                <input
+                                                    type="text"
+                                                    inputMode="numeric"
+                                                    value={agregadoresConfig.presupuestoNorte}
+                                                    onChange={(e) => {
+                                                        const val = e.target.value.replace(/[^\d.]/g, '');
+                                                        setAgregadoresConfig({ ...agregadoresConfig, presupuestoNorte: parseFloat(val) || 0 });
+                                                    }}
+                                                    placeholder="SPS + otros"
                                                 />
                                             </div>
                                             <div className="input-group">
@@ -854,7 +881,7 @@ const Dashboard = () => {
                 )
             ) : activeTab === 'agregadores' ? (
                 agregadoresMetrics ? (
-                    <AgregadoresDashboard metrics={agregadoresMetrics} config={agregadoresConfig} />
+                    <AgregadoresDashboard metrics={agregadoresMetrics} config={agregadoresConfig} zoneFilter={agregadoresZoneFilter} setZoneFilter={setAgregadoresZoneFilter} />
                 ) : (
                     <div className="empty-state">
                         <p>⚠️ No hay datos de Agregadores cargados</p>

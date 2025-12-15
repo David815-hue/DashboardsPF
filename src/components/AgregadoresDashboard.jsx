@@ -114,7 +114,7 @@ const CircularProgress = ({ percentage, size = 120, strokeWidth = 10 }) => {
     );
 };
 
-const AgregadoresDashboard = ({ metrics, config = {} }) => {
+const AgregadoresDashboard = ({ metrics, config = {}, zoneFilter = 'all', setZoneFilter }) => {
     const [currentPage, setCurrentPage] = useState(1);
     const [trendMetric, setTrendMetric] = useState('venta');
     const [cityMetric, setCityMetric] = useState('venta'); // 'venta' | 'pedidos'
@@ -135,6 +135,80 @@ const AgregadoresDashboard = ({ metrics, config = {} }) => {
 
     return (
         <div className="dashboard-content agregadores-dashboard">
+            {/* Zone Filter - Top Right with Glassmorphism */}
+            {setZoneFilter && (
+                <div style={{
+                    position: 'absolute',
+                    top: '15px',
+                    right: '140px',
+                    zIndex: 100,
+                    display: 'flex',
+                    gap: '3px',
+                    background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.7), rgba(255, 255, 255, 0.4))',
+                    backdropFilter: 'blur(20px)',
+                    WebkitBackdropFilter: 'blur(20px)',
+                    border: '1px solid rgba(255, 255, 255, 0.6)',
+                    borderRadius: '16px',
+                    padding: '5px 6px',
+                    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.12), inset 0 1px 0 rgba(255,255,255,0.8)'
+                }}>
+                    <button
+                        onClick={() => setZoneFilter('all')}
+                        style={{
+                            padding: '8px 14px',
+                            border: 'none',
+                            borderRadius: '12px',
+                            fontSize: '0.75rem',
+                            fontWeight: '600',
+                            cursor: 'pointer',
+                            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                            transform: zoneFilter === 'all' ? 'scale(1.05)' : 'scale(1)',
+                            background: zoneFilter === 'all' ? 'linear-gradient(135deg, #8b5cf6, #a78bfa)' : 'rgba(255,255,255,0.3)',
+                            color: zoneFilter === 'all' ? '#fff' : '#555',
+                            boxShadow: zoneFilter === 'all' ? '0 4px 15px rgba(139, 92, 246, 0.4)' : 'none'
+                        }}
+                    >
+                        Todo
+                    </button>
+                    <button
+                        onClick={() => setZoneFilter('centro')}
+                        style={{
+                            padding: '8px 14px',
+                            border: 'none',
+                            borderRadius: '12px',
+                            fontSize: '0.75rem',
+                            fontWeight: '600',
+                            cursor: 'pointer',
+                            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                            transform: zoneFilter === 'centro' ? 'scale(1.05)' : 'scale(1)',
+                            background: zoneFilter === 'centro' ? 'linear-gradient(135deg, #8b5cf6, #a78bfa)' : 'rgba(255,255,255,0.3)',
+                            color: zoneFilter === 'centro' ? '#fff' : '#555',
+                            boxShadow: zoneFilter === 'centro' ? '0 4px 15px rgba(139, 92, 246, 0.4)' : 'none'
+                        }}
+                    >
+                        Centro
+                    </button>
+                    <button
+                        onClick={() => setZoneFilter('norte')}
+                        style={{
+                            padding: '8px 14px',
+                            border: 'none',
+                            borderRadius: '12px',
+                            fontSize: '0.75rem',
+                            fontWeight: '600',
+                            cursor: 'pointer',
+                            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                            transform: zoneFilter === 'norte' ? 'scale(1.05)' : 'scale(1)',
+                            background: zoneFilter === 'norte' ? 'linear-gradient(135deg, #8b5cf6, #a78bfa)' : 'rgba(255,255,255,0.3)',
+                            color: zoneFilter === 'norte' ? '#fff' : '#555',
+                            boxShadow: zoneFilter === 'norte' ? '0 4px 15px rgba(139, 92, 246, 0.4)' : 'none'
+                        }}
+                    >
+                        Norte
+                    </button>
+                </div>
+            )}
+
             {/* Small Header */}
             <div style={{
                 display: 'flex',
