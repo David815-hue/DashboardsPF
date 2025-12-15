@@ -11,8 +11,8 @@ const KPICard = ({ title, value, format = 'number', suffix = '', trend = null })
     // Format the animated value
     let displayValue;
     if (format === 'currency') {
-        // Show full number with comma separators (no abbreviation)
-        displayValue = Math.round(animatedValue).toLocaleString('es-HN');
+        // Show full number with comma separators and L prefix
+        displayValue = 'L ' + Math.round(animatedValue).toLocaleString('es-HN');
     } else if (format === 'percent') {
         displayValue = animatedValue.toFixed(2);
     } else if (format === 'decimal') {

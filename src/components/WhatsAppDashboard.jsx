@@ -31,8 +31,8 @@ const StatCard = ({ title, value, subValue, format = 'number', suffix = '', vari
 
     if (format === 'currency') {
         const val = parseFloat(value) || 0;
-        // Show full number with comma separators (no abbreviation)
-        displayValue = Math.round(val).toLocaleString('es-HN');
+        // Show full number with comma separators and L prefix
+        displayValue = 'L ' + Math.round(val).toLocaleString('es-HN');
     } else if (format === 'percent') {
         displayValue = (parseFloat(value) || 0).toFixed(2);
     } else if (format === 'decimal') {
