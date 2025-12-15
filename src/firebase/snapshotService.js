@@ -9,6 +9,7 @@ import {
     orderBy,
     deleteDoc
 } from 'firebase/firestore';
+import { calculateAgregadoresMetrics } from '../utils/agregadoresMetrics';
 
 const COLLECTION_NAME = 'snapshots';
 
@@ -434,15 +435,23 @@ export const deleteAgregadoresSnapshot = async (dateId) => {
 
 /**
  * Calculate Agregadores monthly aggregate from snapshots
+ * @param {Array} snapshots - Array of snapshot data
+ * @param {Object} config - Agregadores config with budget values
+ * @param {string} zoneFilter - 'all', 'centro', or 'norte'
  */
-export const calculateAgregadoresMonthlyAggregate = (snapshots) => {
+export const calculateAgregadoresMonthlyAggregate = (snapshots, config = {}, zoneFilter = 'all') => {
     if (!snapshots || snapshots.length === 0) return null;
 
     // Sort by dateId descending and take the most recent snapshot
     const sorted = [...snapshots].sort((a, b) => (b.dateId || '').localeCompare(a.dateId || ''));
     const latestSnapshot = sorted[0];
 
-    // Return kpis and charts from the latest snapshot directly
+    // If rawProcessedData exists, recalculate with zone filter
+    if (latestSnapshot.rawProcessedData) {
+        return calculateAgregadoresMetrics(latestSnapshot.rawProcessedData, latestSnapshot.config || config, zoneFilter);
+    }
+
+    // Fallback: Return kpis and charts from the latest snapshot directly
     return {
         kpis: latestSnapshot.kpis,
         charts: latestSnapshot.charts

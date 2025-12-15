@@ -259,12 +259,33 @@ const Dashboard = () => {
                 };
                 result = await saveWhatsAppSnapshot(snapshotDate, snapshotData);
             } else if (activeTab === 'agregadores') {
-                // Save Agregadores snapshot
+                // Save Agregadores snapshot with raw data for zone filtering
+                // Get raw data - either from fresh data or from loaded snapshot
+                let rawDataToSave;
+                if (agregadoresData._isSnapshot && agregadoresData._snapshotMetrics?.rawProcessedData) {
+                    // If already a snapshot with rawProcessedData, use that
+                    rawDataToSave = agregadoresData._snapshotMetrics.rawProcessedData;
+                } else if (!agregadoresData._isSnapshot) {
+                    // Fresh data, use directly
+                    rawDataToSave = {
+                        ventaTotal: agregadoresData.ventaTotal,
+                        cantidadTx: agregadoresData.cantidadTx,
+                        topProductos: agregadoresData.topProductos,
+                        topTiendas: agregadoresData.topTiendas,
+                        pedidosPorTienda: agregadoresData.pedidosPorTienda,
+                        ventaPorDia: agregadoresData.ventaPorDia,
+                        rawData: agregadoresData.rawData
+                    };
+                }
+
+                console.log('[Agregadores Snapshot] Saving with rawProcessedData:', !!rawDataToSave);
+
                 const snapshotData = {
                     config: agregadoresConfig,
                     kpis: agregadoresMetrics.kpis,
                     charts: agregadoresMetrics.charts,
-                    snapshotDate: snapshotDate // Save date for metaProrrateada recalculation
+                    snapshotDate: snapshotDate,
+                    rawProcessedData: rawDataToSave
                 };
                 result = await saveAgregadoresSnapshot(snapshotDate, snapshotData);
             } else {
@@ -454,18 +475,25 @@ const Dashboard = () => {
 
     // Agregadores metrics calculation
     const agregadoresMetrics = useMemo(() => {
-        // Loaded Agregadores snapshot (specific week)
+        // Loaded Agregadores snapshot (specific week) - recalculate with zone filter
         if (agregadoresData && agregadoresData._isSnapshot) {
             const snap = agregadoresData._snapshotMetrics;
+            console.log('[Agregadores Snapshot] Loading, has rawProcessedData:', !!snap.rawProcessedData, 'zoneFilter:', agregadoresZoneFilter);
+            // If rawProcessedData exists, recalculate with current zone filter
+            if (snap.rawProcessedData) {
+                console.log('[Agregadores Snapshot] Recalculating with zone filter:', agregadoresZoneFilter);
+                return calculateAgregadoresMetrics(snap.rawProcessedData, snap.config || agregadoresConfig, agregadoresZoneFilter);
+            }
+            // Fallback for old snapshots without rawProcessedData
             return {
                 kpis: snap.kpis,
                 charts: snap.charts
             };
         }
 
-        // Agregadores month aggregate
+        // Agregadores month aggregate - recalculate with zone filter
         if (activeTab === 'agregadores' && selectedMonth && !selectedWeek && agregadoresSnapshotsByMonth[selectedMonth]) {
-            return calculateAgregadoresMonthlyAggregate(agregadoresSnapshotsByMonth[selectedMonth]);
+            return calculateAgregadoresMonthlyAggregate(agregadoresSnapshotsByMonth[selectedMonth], agregadoresConfig, agregadoresZoneFilter);
         }
 
         // Fresh Agregadores data
