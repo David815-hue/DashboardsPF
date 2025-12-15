@@ -215,13 +215,16 @@ const AgregadoresDashboard = ({ metrics, config = {} }) => {
                                             </span>
                                         </div>
                                     </div>
-                                    <div className="flip-hint">Click para ver ciudades</div>
+                                    <span style={{ position: 'absolute', top: '12px', right: '12px', fontSize: '0.65rem', color: 'rgba(100, 116, 139, 0.8)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Ver ciudades →</span>
                                 </div>
 
                                 {/* Back: City Chart */}
                                 <div className="flip-card-back">
-                                    <div className="chart-header-with-toggle" onClick={(e) => e.stopPropagation()}>
-                                        <h3 className="chart-title" style={{ fontSize: '0.9rem', margin: 0 }}>Por Ciudad</h3>
+                                    <div className="chart-header-with-toggle" onClick={(e) => e.stopPropagation()} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                            <span style={{ fontSize: '0.65rem', color: 'rgba(100, 116, 139, 0.8)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>← Volver</span>
+                                            <h3 className="chart-title" style={{ fontSize: '0.9rem', margin: 0 }}>Por Ciudad</h3>
+                                        </div>
                                         <div className="chart-toggle" style={{ transform: 'scale(0.85)' }}>
                                             <button
                                                 className={`toggle-btn ${cityMetric === 'venta' ? 'active' : ''}`}
@@ -278,8 +281,11 @@ const AgregadoresDashboard = ({ metrics, config = {} }) => {
                             <div className="flip-card-inner">
                                 {/* Front: Top 5 Bar Chart */}
                                 <div className="flip-card-front">
-                                    <h3 className="chart-title">Top 5 Productos</h3>
-                                    <div className="chart-container horizontal-bar">
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                                        <h3 className="chart-title" style={{ margin: 0 }}>Top 5 Productos</h3>
+                                        <span style={{ fontSize: '0.65rem', color: 'rgba(100, 116, 139, 0.8)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Ver todos →</span>
+                                    </div>
+                                    <div className="chart-container horizontal-bar" style={{ flex: 1 }}>
                                         <ResponsiveContainer width="100%" height="100%">
                                             <BarChart data={charts.topProductos} layout="vertical" margin={{ top: 5, right: 30, left: 10, bottom: 5 }}>
                                                 <defs>
@@ -301,24 +307,27 @@ const AgregadoresDashboard = ({ metrics, config = {} }) => {
                                 <div className="flip-card-back" style={{ display: 'flex', flexDirection: 'column' }}>
                                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
                                         <h3 className="chart-title" style={{ fontSize: '0.9rem', margin: 0 }}>Todos los Productos</h3>
-                                        <button
-                                            onClick={(e) => { e.stopPropagation(); setIsTreeMapFullscreen(true); }}
-                                            style={{
-                                                background: 'rgba(0,0,0,0.1)',
-                                                border: 'none',
-                                                borderRadius: '6px',
-                                                padding: '4px 8px',
-                                                cursor: 'pointer',
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                gap: '4px',
-                                                fontSize: '0.7rem',
-                                                color: '#666'
-                                            }}
-                                            title="Ver en pantalla completa"
-                                        >
-                                            <Maximize2 size={14} />
-                                        </button>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                            <span style={{ fontSize: '0.65rem', color: 'rgba(100, 116, 139, 0.8)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>← Volver</span>
+                                            <button
+                                                onClick={(e) => { e.stopPropagation(); setIsTreeMapFullscreen(true); }}
+                                                style={{
+                                                    background: 'rgba(0,0,0,0.1)',
+                                                    border: 'none',
+                                                    borderRadius: '6px',
+                                                    padding: '4px 8px',
+                                                    cursor: 'pointer',
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    gap: '4px',
+                                                    fontSize: '0.7rem',
+                                                    color: '#666'
+                                                }}
+                                                title="Ver en pantalla completa"
+                                            >
+                                                <Maximize2 size={14} />
+                                            </button>
+                                        </div>
                                     </div>
                                     <div style={{ flex: 1, minHeight: 0 }}>
                                         <ResponsiveContainer width="100%" height="100%">
