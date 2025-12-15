@@ -1835,7 +1835,7 @@ body {
   border: 1px solid rgba(255, 255, 255, 0.4);
   border-radius: 16px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
-  padding: 16px;
+  padding: 10px;
   overflow: hidden;
 }
 
@@ -1844,7 +1844,7 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 8px;
+  margin-bottom: 4px;
   position: relative;
   z-index: 10;
   /* Ensure buttons are clickable */

@@ -274,7 +274,12 @@ const AgregadoresDashboard = ({ metrics, config = {} }) => {
                                         <XAxis dataKey="name" tick={{ fontSize: 10, fill: '#666' }} angle={-45} textAnchor="end" interval={0} height={60} />
                                         <YAxis tick={{ fontSize: 10, fill: '#666' }} />
                                         <Tooltip content={<CustomTooltip />} />
-                                        <Legend wrapperStyle={{ paddingTop: '10px' }} formatter={(value) => <span style={{ color: '#666', fontSize: '12px' }}>{value}</span>} />
+                                        <Legend
+                                            verticalAlign="top"
+                                            align="right"
+                                            wrapperStyle={{ top: -10, right: 0, paddingBottom: '10px' }}
+                                            formatter={(value) => <span style={{ color: '#666', fontSize: '12px' }}>{value}</span>}
+                                        />
                                         <Bar dataKey="actual" stackId="a" fill="url(#actualStackGradient)" name="Actual">
                                             <LabelList dataKey="actual" position="center" fill="#fff" fontWeight="bold" fontSize={10} />
                                         </Bar>
@@ -306,7 +311,7 @@ const AgregadoresDashboard = ({ metrics, config = {} }) => {
                                 </div>
                             </div>
                             <div className="chart-container">
-                                <ResponsiveContainer width="100%" height={300}>
+                                <ResponsiveContainer width="100%" height={350}>
                                     <AreaChart data={charts.ventaPorDia} margin={{ top: 20, right: 20, left: 10, bottom: 20 }}>
                                         <defs>
                                             <linearGradient id="trendGradient" x1="0" y1="0" x2="0" y2="1">
@@ -315,7 +320,11 @@ const AgregadoresDashboard = ({ metrics, config = {} }) => {
                                             </linearGradient>
                                         </defs>
                                         <XAxis dataKey="name" tick={{ fontSize: 10, fill: '#666' }} />
-                                        <YAxis tick={{ fontSize: 10, fill: '#666' }} tickFormatter={(val) => trendMetric === 'venta' ? `${(val / 1000).toFixed(0)}k` : val} />
+                                        <YAxis
+                                            tick={{ fontSize: 10, fill: '#666' }}
+                                            tickFormatter={(val) => trendMetric === 'venta' ? `${(val / 1000).toFixed(0)}k` : val}
+                                            padding={{ bottom: 10 }}
+                                        />
                                         <Tooltip content={<CustomTooltip />} />
                                         <Area
                                             type="monotone"
