@@ -165,13 +165,9 @@ const WhatsAppDashboard = ({ metrics, topProductsCount = 5, keywordCount = 5 }) 
                             <TiltedCard><StatCard title="Tasa de Respuesta" value={page1.kpis.tasaRespuesta} format="percent" suffix="%" /></TiltedCard>
                         </div>
 
-                        {/* Row 4: Bottom (Logo + Chart) */}
+                        {/* Row 4: Top Productos (Full Width) */}
                         <div className="wa-bottom-row">
-                            <div className="wa-brand-area">
-                                <h2 className="wa-title">WhatsApp Marketing</h2>
-                                <img src="/DomiciliosPF.png" alt="Domicilios" className="wa-logo" />
-                            </div>
-                            <div className="wa-bottom-chart">
+                            <div className="wa-bottom-chart" style={{ width: '100%', maxWidth: 'none', flex: 1 }}>
                                 <h3 className="chart-title-center">Top Productos</h3>
                                 <ResponsiveContainer width="100%" height="100%">
                                     <BarChart data={topProductosData} margin={{ top: 20, right: 10, left: 10, bottom: 0 }}>
