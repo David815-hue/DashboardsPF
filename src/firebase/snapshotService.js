@@ -354,17 +354,28 @@ export const calculateWhatsAppMonthlyAggregate = (snapshots) => {
 const AGREGADORES_COLLECTION = 'snapshots-agregadores';
 
 /**
+ * Helper to remove undefined values from an object (Firebase doesn't accept undefined)
+ */
+const removeUndefined = (obj) => {
+    return JSON.parse(JSON.stringify(obj));
+};
+
+/**
  * Save Agregadores dashboard snapshot
  */
 export const saveAgregadoresSnapshot = async (dateId, data) => {
     try {
         console.log('Saving Agregadores snapshot:', { dateId, data });
         const docRef = doc(db, AGREGADORES_COLLECTION, dateId);
-        await setDoc(docRef, {
+
+        // Clean data to remove undefined values (Firebase doesn't accept them)
+        const cleanData = removeUndefined({
             ...data,
             savedAt: new Date().toISOString(),
             dateId
         });
+
+        await setDoc(docRef, cleanData);
         console.log('Agregadores snapshot saved successfully');
         return { success: true };
     } catch (error) {

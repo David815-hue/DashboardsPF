@@ -27,6 +27,9 @@ const TIENDAS_PEDIDOSYA = {
     'punto farma puerto cortes': { name: 'PUERTO CORTES', city: 'PUERTO CORTES', storeId: 20 },
     'punto farma viera (el hatillo)': { name: 'VIERA', city: 'TEGUCIGALPA D.C.', storeId: 12 },
     'punto farma guamilito': { name: 'GUAMILITO', city: 'SAN PEDRO SULA', storeId: 92 },
+    // Variantes con guión
+    'punto farma - guamilito': { name: 'GUAMILITO', city: 'SAN PEDRO SULA', storeId: 92 },
+    'punto farma - morazan': { name: 'BLVD. MORAZAN', city: 'TEGUCIGALPA D.C.', storeId: 4 },
 };
 
 // Export for use in metrics calculations

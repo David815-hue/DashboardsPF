@@ -260,33 +260,34 @@ const Dashboard = () => {
                 };
                 result = await saveWhatsAppSnapshot(snapshotDate, snapshotData);
             } else if (activeTab === 'agregadores') {
-                // Save Agregadores snapshot with raw data for zone filtering
-                // Get raw data - either from fresh data or from loaded snapshot
-                let rawDataToSave;
+                // Save Agregadores snapshot - only save summarized data (not rawData to avoid size limit)
+                // Get processed data - either from fresh data or from loaded snapshot
+                let processedDataToSave;
                 if (agregadoresData._isSnapshot && agregadoresData._snapshotMetrics?.rawProcessedData) {
-                    // If already a snapshot with rawProcessedData, use that
-                    rawDataToSave = agregadoresData._snapshotMetrics.rawProcessedData;
+                    // If already a snapshot with rawProcessedData, use that (without rawData)
+                    const { rawData, ...rest } = agregadoresData._snapshotMetrics.rawProcessedData;
+                    processedDataToSave = rest;
                 } else if (!agregadoresData._isSnapshot) {
-                    // Fresh data, use directly
-                    rawDataToSave = {
+                    // Fresh data - save summarized data only (no rawData - it's too large for Firebase)
+                    processedDataToSave = {
                         ventaTotal: agregadoresData.ventaTotal,
                         cantidadTx: agregadoresData.cantidadTx,
-                        topProductos: agregadoresData.topProductos,
+                        topProductos: agregadoresData.topProductos?.slice(0, 50), // Limit to top 50
                         topTiendas: agregadoresData.topTiendas,
                         pedidosPorTienda: agregadoresData.pedidosPorTienda,
-                        ventaPorDia: agregadoresData.ventaPorDia,
-                        rawData: agregadoresData.rawData
+                        ventaPorDia: agregadoresData.ventaPorDia
+                        // Note: rawData excluded to stay under Firebase 1MB limit
                     };
                 }
 
-                console.log('[Agregadores Snapshot] Saving with rawProcessedData:', !!rawDataToSave);
+                console.log('[Agregadores Snapshot] Saving with processedData:', !!processedDataToSave);
 
                 const snapshotData = {
                     config: agregadoresConfig,
                     kpis: agregadoresMetrics.kpis,
                     charts: agregadoresMetrics.charts,
                     snapshotDate: snapshotDate,
-                    rawProcessedData: rawDataToSave
+                    rawProcessedData: processedDataToSave
                 };
                 result = await saveAgregadoresSnapshot(snapshotDate, snapshotData);
             } else {
