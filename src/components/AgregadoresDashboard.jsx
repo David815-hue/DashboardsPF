@@ -75,19 +75,24 @@ const CircularProgress = ({ percentage, size = 120, strokeWidth = 10, minimal = 
     const circumference = radius * 2 * Math.PI;
     const offset = circumference - (Math.min(percentage, 100) / 100) * circumference;
 
+    // Create unique gradient ID to avoid conflicts when multiple CircularProgress exist
+    const gradientId = `progressGradient-${size}-${minimal ? 'mini' : 'main'}-${Math.random().toString(36).substr(2, 9)}`;
+
     const getColor = () => {
         if (percentage >= 100) return '#22c55e';
         if (percentage >= 80) return '#f59e0b';
         return '#ef4444';
     };
 
+    const color = getColor();
+
     return (
         <div className="circular-progress" style={{ width: size, height: size }}>
             <svg width={size} height={size}>
                 <defs>
-                    <linearGradient id="progressGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                        <stop offset="0%" stopColor={getColor()} stopOpacity="1" />
-                        <stop offset="100%" stopColor={getColor()} stopOpacity="0.6" />
+                    <linearGradient id={gradientId} x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stopColor={color} stopOpacity="1" />
+                        <stop offset="100%" stopColor={color} stopOpacity="0.6" />
                     </linearGradient>
                 </defs>
                 <circle
@@ -99,7 +104,7 @@ const CircularProgress = ({ percentage, size = 120, strokeWidth = 10, minimal = 
                     cy={size / 2}
                 />
                 <circle
-                    stroke="url(#progressGradient)"
+                    stroke={`url(#${gradientId})`}
                     fill="transparent"
                     strokeWidth={strokeWidth}
                     strokeLinecap="round"

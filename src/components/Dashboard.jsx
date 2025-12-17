@@ -15,7 +15,7 @@ import { processEcommerceData } from '../utils/ecommerceProcessor';
 import { calculateEcommerceMetrics } from '../utils/ecommerceMetrics';
 import { processWhatsAppMarketingData } from '../utils/whatsappProcessor';
 import { calculateWhatsAppMetrics } from '../utils/whatsappMetrics';
-import { processAgregadoresData } from '../utils/agregadoresProcessor';
+import { processPedidosYaData } from '../utils/pedidosYaProcessor';
 import { calculateAgregadoresMetrics } from '../utils/agregadoresMetrics';
 import {
     saveSnapshot, loadSnapshot, getSnapshotsByMonth, deleteSnapshot, calculateMonthlyAggregate,
@@ -189,8 +189,8 @@ const Dashboard = () => {
                 const result = await processWhatsAppMarketingData(files);
                 setWhatsappData(result);
             } else if (activeTab === 'agregadores') {
-                // Agregadores processing (RMS only)
-                const result = await processAgregadoresData(files);
+                // Agregadores processing (PedidosYa Excel)
+                const result = await processPedidosYaData(files);
                 setAgregadoresData(result);
             } else {
                 // Venta Meta processing (Albatross + RMS + SIMLA)

@@ -5,7 +5,7 @@ const FileUploader = ({ files, onFileChange, onProcess, isProcessing, dashboardT
     // Different file requirements based on dashboard type
     const fileConfig = dashboardType === 'agregadores'
         ? [
-            { key: 'rms', label: 'RMS.xlsx' }
+            { key: 'pedidosya', label: 'PedidosYa.xlsx' }
         ]
         : dashboardType === 'ecommerce'
             ? [
@@ -20,7 +20,7 @@ const FileUploader = ({ files, onFileChange, onProcess, isProcessing, dashboardT
 
     // Check if required files are selected based on dashboard type
     const allFilesSelected = dashboardType === 'agregadores'
-        ? files.rms
+        ? files.pedidosya
         : dashboardType === 'ecommerce'
             ? files.albatross && files.rms
             : files.albatross && files.rms && files.simla;
@@ -31,7 +31,7 @@ const FileUploader = ({ files, onFileChange, onProcess, isProcessing, dashboardT
                 <Upload size={20} />
                 Carga de Archivos
                 {dashboardType === 'agregadores' && (
-                    <span style={{ fontSize: '0.7rem', color: '#666', marginLeft: '8px' }}>(Solo RMS)</span>
+                    <span style={{ fontSize: '0.7rem', color: '#666', marginLeft: '8px' }}>(Solo PedidosYa)</span>
                 )}
                 {dashboardType === 'ecommerce' && (
                     <span style={{ fontSize: '0.7rem', color: '#666', marginLeft: '8px' }}>(Solo 2 archivos)</span>

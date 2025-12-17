@@ -1,4 +1,4 @@
-import { TIENDAS_AGREGADORES } from './agregadoresProcessor';
+import { TIENDAS_PEDIDOSYA } from './pedidosYaProcessor';
 
 /**
  * Zone definitions for filtering
@@ -10,7 +10,7 @@ export const ZONA_NORTE = ['SAN PEDRO SULA', 'PUERTO CORTES', 'EL PROGRESO', 'LA
 
 /**
  * Calculate Agregadores (PedidosYA) metrics for dashboard display
- * @param {Object} processedData - Output from processAgregadoresData
+ * @param {Object} processedData - Output from processPedidosYaData
  * @param {Object} config - Manual configuration (presupuesto, metaTx, cumplimientoTx, metaPedidosPorTienda)
  * @param {string} zoneFilter - 'all', 'centro', or 'norte'
  * @returns {Object} - Metrics and chart data
@@ -73,26 +73,42 @@ export const calculateAgregadoresMetrics = (processedData, config = {}, zoneFilt
     // Filter products by zone if needed (recalculate from rawData)
     let topProductos = topProductosRaw;
     if (allowedCities && rawData.length > 0) {
-        // Use already imported TIENDAS_AGREGADORES
-        const allowedStoreIds = Object.entries(TIENDAS_AGREGADORES)
-            .filter(([id, info]) => allowedCities.includes(info.city?.toUpperCase()))
-            .map(([id]) => parseInt(id));
+        // Get store IDs that belong to allowed cities using TIENDAS_PEDIDOSYA
+        const allowedStoreIds = Object.values(TIENDAS_PEDIDOSYA)
+            .filter(info => allowedCities.includes(info.city?.toUpperCase()))
+            .map(info => info.storeId);
 
         // Recalculate products from filtered raw data
         const filteredRows = rawData.filter(row => allowedStoreIds.includes(row._storeId));
         const productosMap = {};
         filteredRows.forEach(row => {
-            const key = `${row._codigo}_${row._descripcion}`;
-            if (!productosMap[key]) {
-                productosMap[key] = {
-                    codigo: row._codigo,
-                    descripcion: row._descripcion,
-                    cantidad: 0,
-                    total: 0
-                };
+            // Handle both old format (single product per row) and new format (array of products)
+            if (row._products && Array.isArray(row._products)) {
+                // New format: products are in _products array
+                row._products.forEach(product => {
+                    const key = product.descripcion.toLowerCase();
+                    if (!productosMap[key]) {
+                        productosMap[key] = {
+                            descripcion: product.descripcion,
+                            cantidad: 0
+                        };
+                    }
+                    productosMap[key].cantidad += product.cantidad || 0;
+                });
+            } else if (row._descripcion) {
+                // Old format: single product per row
+                const key = `${row._codigo}_${row._descripcion}`;
+                if (!productosMap[key]) {
+                    productosMap[key] = {
+                        codigo: row._codigo,
+                        descripcion: row._descripcion,
+                        cantidad: 0,
+                        total: 0
+                    };
+                }
+                productosMap[key].cantidad += row._cantidad || 0;
+                productosMap[key].total += row._total || 0;
             }
-            productosMap[key].cantidad += row._cantidad || 0;
-            productosMap[key].total += row._total || 0;
         });
         topProductos = Object.values(productosMap).sort((a, b) => b.cantidad - a.cantidad);
     }
