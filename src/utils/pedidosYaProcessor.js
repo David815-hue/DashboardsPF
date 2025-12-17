@@ -81,17 +81,34 @@ const parseProducts = (articlesString) => {
     const products = [];
     const items = String(articlesString).split(',');
 
+    // Fragments to ignore (units of measure, not real products)
+    const ignorePatterns = /^(ml|mg|g|kg|oz|unidades?|capsulas?|tabletas?|comprimidos?|sobres?)$/i;
+
     for (const item of items) {
         const trimmed = item.trim();
+
+        // Skip empty items
+        if (!trimmed) continue;
+
+        // Skip very short items (likely fragments like "ml", "g", etc.)
+        if (trimmed.length < 4) continue;
+
+        // Skip items that are just units of measure
+        if (ignorePatterns.test(trimmed)) continue;
+
         // Match pattern: "NUMBER PRODUCT_NAME"
         const match = trimmed.match(/^(\d+)\s+(.+)$/);
         if (match) {
-            products.push({
-                cantidad: parseInt(match[1]),
-                descripcion: match[2].trim()
-            });
-        } else if (trimmed) {
-            // No quantity found, assume 1
+            const descripcion = match[2].trim();
+            // Also validate the description is not too short
+            if (descripcion.length >= 4 && !ignorePatterns.test(descripcion)) {
+                products.push({
+                    cantidad: parseInt(match[1]),
+                    descripcion: descripcion
+                });
+            }
+        } else if (trimmed.length >= 5 && !ignorePatterns.test(trimmed)) {
+            // No quantity found, assume 1 (but only if it looks like a real product name)
             products.push({
                 cantidad: 1,
                 descripcion: trimmed
