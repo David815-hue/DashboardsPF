@@ -30,6 +30,8 @@ export const calculateAgregadoresMetrics = (processedData, config = {}, zoneFilt
         presupuestoCentro = 0,
         presupuestoNorte = 0,
         metaTx = 0,
+        metaTxCentro = 0,
+        metaTxNorte = 0,
         cumplimientoTx = 0,
         metaPedidosPorTienda = 30
     } = config;
@@ -101,8 +103,19 @@ export const calculateAgregadoresMetrics = (processedData, config = {}, zoneFilt
     const daysInMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0).getDate();
     const metaProrrateada = activePresupuesto > 0 ? (activePresupuesto / daysInMonth) * dayOfMonth : 0;
 
+    // Select the appropriate Tx target based on zone filter
+    const activeMetaTx = zoneFilter === 'centro' ? metaTxCentro
+        : zoneFilter === 'norte' ? metaTxNorte
+            : metaTx;
+
+    // Calculate prorated Tx target
+    const metaTxProrrateada = activeMetaTx > 0 ? (activeMetaTx / daysInMonth) * dayOfMonth : 0;
+
     // Calculate compliance percentage MTD (venta vs meta prorrateada)
     const cumplimientoPct = metaProrrateada > 0 ? (ventaTotal / metaProrrateada) * 100 : 0;
+
+    // Calculate sales compliance MTD
+    const cumplimientoTxMTDPct = metaTxProrrateada > 0 ? (cantidadTx / metaTxProrrateada) * 100 : 0;
 
     // Difference from prorated target
     const diferenciaProrrateada = ventaTotal - metaProrrateada;
@@ -119,8 +132,10 @@ export const calculateAgregadoresMetrics = (processedData, config = {}, zoneFilt
         diferenciaProrrateada,
         cantidadTx,
         ticketPromedio,
-        metaTx,
-        cumplimientoTx
+        metaTx: activeMetaTx,
+        cumplimientoTx,
+        cumplimientoTxMTDPct,
+        metaTxProrrateada
     };
 
     // Prepare chart data - Top 5 Products

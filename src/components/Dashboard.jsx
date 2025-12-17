@@ -92,7 +92,7 @@ const Dashboard = () => {
     const [agregadoresData, setAgregadoresData] = useState(null);
     const [agregadoresZoneFilter, setAgregadoresZoneFilter] = useState('all'); // 'all', 'centro', 'norte'
     const [config, setConfig] = useState({ inversionUSD: 25.52, tipoCambio: 26.42, clics: 7796, topProductsCount: 5, totalEnvios: 94, enviosTGU: 74, enviosSPS: 20, costoEnvioLps: 2.11 });
-    const [agregadoresConfig, setAgregadoresConfig] = useState({ presupuesto: 0, presupuestoCentro: 0, presupuestoNorte: 0, metaTx: 0, cumplimientoTx: 0, metaPedidosPorTienda: 30 });
+    const [agregadoresConfig, setAgregadoresConfig] = useState({ presupuesto: 0, presupuestoCentro: 0, presupuestoNorte: 0, metaTx: 0, metaTxCentro: 0, metaTxNorte: 0, cumplimientoTx: 0, metaPedidosPorTienda: 30 });
     const [topProductsConfig, setTopProductsConfig] = useState({
         ventaMetaTopProductos: 5,
         ecommerceTopProductos: 6,
@@ -789,12 +789,33 @@ const Dashboard = () => {
                                                 />
                                             </div>
                                             <div className="input-group">
-                                                <label>Meta Tx</label>
+                                                <label>Meta Tx Total</label>
                                                 <input
                                                     type="number"
                                                     min="0"
                                                     value={agregadoresConfig.metaTx}
                                                     onChange={(e) => setAgregadoresConfig({ ...agregadoresConfig, metaTx: parseInt(e.target.value) || 0 })}
+                                                    placeholder="Meta Total"
+                                                />
+                                            </div>
+                                            <div className="input-group">
+                                                <label>Meta Tx Centro</label>
+                                                <input
+                                                    type="number"
+                                                    min="0"
+                                                    value={agregadoresConfig.metaTxCentro}
+                                                    onChange={(e) => setAgregadoresConfig({ ...agregadoresConfig, metaTxCentro: parseInt(e.target.value) || 0 })}
+                                                    placeholder="Meta Centro"
+                                                />
+                                            </div>
+                                            <div className="input-group">
+                                                <label>Meta Tx Norte</label>
+                                                <input
+                                                    type="number"
+                                                    min="0"
+                                                    value={agregadoresConfig.metaTxNorte}
+                                                    onChange={(e) => setAgregadoresConfig({ ...agregadoresConfig, metaTxNorte: parseInt(e.target.value) || 0 })}
+                                                    placeholder="Meta Norte"
                                                 />
                                             </div>
                                             <div className="input-group">

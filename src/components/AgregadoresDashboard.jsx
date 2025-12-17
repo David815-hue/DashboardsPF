@@ -34,7 +34,7 @@ const CustomTooltip = ({ active, payload, label }) => {
 };
 
 // KPI Card Component with premium styling
-const KPICard = ({ title, value, format, icon: Icon, subtitle }) => {
+const KPICard = ({ title, value, format, icon: Icon, subtitle, chart }) => {
     const formatValue = (val) => {
         if (format === 'currency') {
             return `L ${Math.round(val).toLocaleString('es-HN')}`;
@@ -49,7 +49,7 @@ const KPICard = ({ title, value, format, icon: Icon, subtitle }) => {
     };
 
     return (
-        <div className="agregadores-kpi-card">
+        <div className="agregadores-kpi-card" style={{ position: 'relative' }}>
             <div className="kpi-header">
                 {Icon && <Icon size={20} className="kpi-icon" />}
                 <span className="kpi-title">{title}</span>
@@ -60,12 +60,17 @@ const KPICard = ({ title, value, format, icon: Icon, subtitle }) => {
                     <span className="kpi-subtitle">{subtitle}</span>
                 </div>
             )}
+            {chart && (
+                <div style={{ position: 'absolute', right: '5px', top: '55%', transform: 'translateY(-50%)' }}>
+                    {chart}
+                </div>
+            )}
         </div>
     );
 };
 
 // Circular Progress Component
-const CircularProgress = ({ percentage, size = 120, strokeWidth = 10 }) => {
+const CircularProgress = ({ percentage, size = 120, strokeWidth = 10, minimal = false }) => {
     const radius = (size - strokeWidth) / 2;
     const circumference = radius * 2 * Math.PI;
     const offset = circumference - (Math.min(percentage, 100) / 100) * circumference;
@@ -106,9 +111,9 @@ const CircularProgress = ({ percentage, size = 120, strokeWidth = 10 }) => {
                     transform={`rotate(-90 ${size / 2} ${size / 2})`}
                 />
             </svg>
-            <div className="progress-text">
-                <span className="progress-value">{percentage.toFixed(1)}%</span>
-                <span className="progress-label">Cumplimiento</span>
+            <div className="progress-text" style={minimal ? { gap: '0' } : {}}>
+                <span className="progress-value" style={minimal ? { fontSize: `${size * 0.28}px` } : {}}>{percentage.toFixed(1)}%</span>
+                {!minimal && <span className="progress-label">Cumplimiento</span>}
             </div>
         </div>
     );
@@ -263,7 +268,22 @@ const AgregadoresDashboard = ({ metrics, config = {}, zoneFilter = 'all', setZon
                         <div className="agregadores-kpi-grid">
                             <TiltedCard><KPICard title="Venta Total" value={kpis.ventaTotal} format="currency" icon={DollarSign} /></TiltedCard>
                             <TiltedCard><KPICard title="Presupuesto" value={kpis.presupuesto} format="currency" icon={Target} /></TiltedCard>
-                            <TiltedCard><KPICard title="Cantidad Tx" value={kpis.cantidadTx} format="number" icon={ShoppingCart} /></TiltedCard>
+                            <TiltedCard>
+                                <KPICard
+                                    title="Cantidad Tx"
+                                    value={kpis.cantidadTx}
+                                    format="number"
+                                    icon={ShoppingCart}
+                                    chart={
+                                        <CircularProgress
+                                            percentage={kpis.cumplimientoTxMTDPct}
+                                            size={55}
+                                            strokeWidth={5}
+                                            minimal={true}
+                                        />
+                                    }
+                                />
+                            </TiltedCard>
                             <TiltedCard><KPICard title="Ticket Promedio" value={kpis.ticketPromedio} format="currency" icon={DollarSign} /></TiltedCard>
                         </div>
 
