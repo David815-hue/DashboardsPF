@@ -95,14 +95,14 @@ export const calculateAgregadoresMetrics = (processedData, config = {}, zoneFilt
         topProductos = Object.values(productosMap).sort((a, b) => b.cantidad - a.cantidad);
     }
 
-    // Calculate compliance percentage using zone-specific budget
-    const cumplimientoPct = activePresupuesto > 0 ? (ventaTotal / activePresupuesto) * 100 : 0;
-
     // Calculate prorated target (meta prorrateada)
     const today = new Date();
     const dayOfMonth = today.getDate();
     const daysInMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0).getDate();
     const metaProrrateada = activePresupuesto > 0 ? (activePresupuesto / daysInMonth) * dayOfMonth : 0;
+
+    // Calculate compliance percentage MTD (venta vs meta prorrateada)
+    const cumplimientoPct = metaProrrateada > 0 ? (ventaTotal / metaProrrateada) * 100 : 0;
 
     // Difference from prorated target
     const diferenciaProrrateada = ventaTotal - metaProrrateada;
