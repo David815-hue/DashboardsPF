@@ -112,7 +112,14 @@ const CircularProgress = ({ percentage, size = 120, strokeWidth = 10, minimal = 
                 />
             </svg>
             <div className="progress-text" style={minimal ? { gap: '0' } : {}}>
-                <span className="progress-value" style={minimal ? { fontSize: `${size * 0.28}px` } : {}}>{percentage.toFixed(1)}%</span>
+                <span
+                    className="progress-value"
+                    style={minimal ? {
+                        fontSize: `${size * 0.28}px`,
+                    } : {}}
+                >
+                    {percentage.toFixed(1)}%
+                </span>
                 {!minimal && <span className="progress-label">Cumplimiento</span>}
             </div>
         </div>
