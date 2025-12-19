@@ -179,7 +179,7 @@ const WhatsAppDashboard = ({ metrics, trends, topProductsCount = 5, keywordCount
                                             tickFormatter={(val) => val.length > 10 ? val.substring(0, 10) + '...' : val}
                                         />
                                         <Tooltip content={<CustomTooltip />} cursor={{ fill: 'transparent' }} />
-                                        <Bar dataKey="value" fill="url(#whatsappBarGradient)">
+                                        <Bar dataKey="value" fill="url(#whatsappBarGradient)" radius={[8, 8, 0, 0]}>
                                             {topProductosData.map((entry, index) => (
                                                 <Cell key={`cell-${index}`} fill="url(#whatsappBarGradient)" />
                                             ))}
