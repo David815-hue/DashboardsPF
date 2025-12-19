@@ -25,18 +25,24 @@ const CustomTooltip = ({ active, payload, label }) => {
     return null;
 };
 
+import { useCountUp } from '../hooks/useCountUp';
+
 // Custom Card Component to match the design (Value Top, Title Bottom)
 const StatCard = ({ title, value, subValue, format = 'number', suffix = '', variant = 'white' }) => {
-    let displayValue = value;
+    const numericValue = parseFloat(value) || 0;
+    const animatedValue = useCountUp(numericValue, 1200);
+
+    let displayValue;
 
     if (format === 'currency') {
-        const val = parseFloat(value) || 0;
         // Show full number with comma separators and L prefix
-        displayValue = 'L ' + Math.round(val).toLocaleString('es-HN');
+        displayValue = 'L ' + Math.round(animatedValue).toLocaleString('es-HN');
     } else if (format === 'percent') {
-        displayValue = (parseFloat(value) || 0).toFixed(2);
+        displayValue = animatedValue.toFixed(2);
     } else if (format === 'decimal') {
-        displayValue = (parseFloat(value) || 0).toFixed(2);
+        displayValue = animatedValue.toFixed(2);
+    } else {
+        displayValue = Math.round(animatedValue).toLocaleString('es-HN');
     }
 
     const cardClass = `wa-stat-card ${variant}`;

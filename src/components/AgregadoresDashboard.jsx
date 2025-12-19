@@ -33,8 +33,13 @@ const CustomTooltip = ({ active, payload, label }) => {
     return null;
 };
 
+import { useCountUp } from '../hooks/useCountUp';
+
 // KPI Card Component with premium styling
 const KPICard = ({ title, value, format, icon: Icon, subtitle, chart }) => {
+    const numericValue = parseFloat(value) || 0;
+    const animatedValue = useCountUp(numericValue, 1200);
+
     const formatValue = (val) => {
         if (format === 'currency') {
             return `L ${Math.round(val).toLocaleString('es-HN')}`;
@@ -43,9 +48,9 @@ const KPICard = ({ title, value, format, icon: Icon, subtitle, chart }) => {
             return `${val.toFixed(1)}%`;
         }
         if (format === 'number') {
-            return val.toLocaleString('es-HN');
+            return Math.round(val).toLocaleString('es-HN');
         }
-        return val;
+        return Math.round(val).toLocaleString('es-HN');
     };
 
     return (
@@ -54,7 +59,7 @@ const KPICard = ({ title, value, format, icon: Icon, subtitle, chart }) => {
                 {Icon && <Icon size={20} className="kpi-icon" />}
                 <span className="kpi-title">{title}</span>
             </div>
-            <div className="kpi-value">{formatValue(value)}</div>
+            <div className="kpi-value">{formatValue(animatedValue)}</div>
             {subtitle && (
                 <div className="kpi-footer">
                     <span className="kpi-subtitle">{subtitle}</span>
