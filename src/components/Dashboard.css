@@ -803,9 +803,11 @@ body {
   /* Empezamos 'escondidos' detrás del botón */
   padding-left: 30px;
   /* Compensamos para el contenido */
-  padding-right: 10px;
-  height: 48px;
-  /* Misma altura que el botón */
+  padding-right: 15px;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  min-height: 48px;
+  /* Misma altura mínima que el botón */
 
   max-width: 0;
   opacity: 0;

@@ -41,14 +41,14 @@ const PeriodSelector = ({
     };
 
     return (
-        <div className={`period-selector-component ${className}`}>
+        <div className={`period-selector-component ${className}`} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             {label && (
-                <div className="selector-label" style={{ fontSize: '0.7rem', color: '#888', marginBottom: '2px', paddingLeft: '4px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                <div className="selector-label" style={{ fontSize: '0.65rem', color: '#666', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px', whiteSpace: 'nowrap' }}>
                     {label}
                 </div>
             )}
 
-            <div className="period-selectors-content" style={{ display: 'flex', gap: '8px' }}>
+            <div style={{ display: 'flex', gap: '6px' }}>
                 {/* Month Selector */}
                 <div className="selector-group" style={{ position: 'relative' }}>
                     <button
