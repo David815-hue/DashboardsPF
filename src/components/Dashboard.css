@@ -851,7 +851,7 @@ body {
 
 .period-selectors-wrapper:hover .period-selectors-content,
 .period-selectors-container.locked .period-selectors-content {
-  max-width: 500px;
+  max-width: 600px;
   margin-left: 0;
   padding-left: 15px;
   /* Espacio visual entre botón y contenido */
@@ -861,6 +861,48 @@ body {
   background: rgba(255, 255, 255, 0.45);
   /* Más sólido al expandir */
   box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+}
+
+/* Expand more when comparison mode is active */
+.period-selectors-container.comparison-active.locked .period-selectors-content,
+.period-selectors-container.comparison-active .period-selectors-wrapper:hover .period-selectors-content {
+  max-width: 900px;
+}
+
+/* Comparison Toggle Button */
+.comparison-toggle-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  min-width: 36px;
+  background: rgba(99, 102, 241, 0.1);
+  border: 1px solid rgba(99, 102, 241, 0.3);
+  border-radius: 10px;
+  color: #6366f1;
+  font-size: 1.1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  flex-shrink: 0;
+}
+
+.comparison-toggle-btn:hover {
+  background: rgba(99, 102, 241, 0.2);
+  transform: scale(1.1);
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.25);
+}
+
+.comparison-toggle-btn.active {
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  color: #fff;
+  border-color: transparent;
+  box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);
+}
+
+.comparison-toggle-btn.active:hover {
+  background: linear-gradient(135deg, #4f46e5, #7c3aed);
 }
 
 /* Keep the first selector connected to menu button when hovered or locked */

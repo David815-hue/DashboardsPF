@@ -2,14 +2,14 @@ import React, { useState } from 'react';
 import {
     BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend, LabelList, AreaChart, Area, PieChart, Pie, Cell, Treemap
 } from 'recharts';
-import { TrendingUp, TrendingDown, Target, ShoppingCart, DollarSign, ChevronRight, ChevronLeft, Maximize2, X } from 'lucide-react';
+import { TrendingUp, TrendingDown, Target, ShoppingCart, DollarSign, ChevronRight, ChevronLeft, Maximize2, X, Minus } from 'lucide-react';
 import TiltedCard from './TiltedCard';
 
 import CustomTooltip from './CustomTooltip';
 import { useCountUp } from '../hooks/useCountUp';
 
 // KPI Card Component with premium styling
-const KPICard = ({ title, value, format, icon: Icon, subtitle, chart }) => {
+const KPICard = ({ title, value, format, icon: Icon, subtitle, chart, trend = null }) => {
     const numericValue = parseFloat(value) || 0;
     const animatedValue = useCountUp(numericValue, 1200);
 
@@ -33,6 +33,15 @@ const KPICard = ({ title, value, format, icon: Icon, subtitle, chart }) => {
                 <span className="kpi-title">{title}</span>
             </div>
             <div className="kpi-value">{formatValue(animatedValue)}</div>
+
+            {/* Trend Indicator */}
+            {trend !== null && trend !== undefined && (
+                <div className={`trend-indicator ${trend > 0 ? 'positive' : trend < 0 ? 'negative' : 'neutral'}`} style={{ marginTop: '2px', fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '3px', color: trend > 0 ? '#10b981' : trend < 0 ? '#ef4444' : '#6b7280' }}>
+                    {trend > 0 ? <TrendingUp size={12} /> : trend < 0 ? <TrendingDown size={12} /> : <Minus size={12} />}
+                    <span>{Math.abs(trend).toFixed(1)}%</span>
+                </div>
+            )}
+
             {subtitle && (
                 <div className="kpi-footer">
                     <span className="kpi-subtitle">{subtitle}</span>
@@ -109,7 +118,7 @@ const CircularProgress = ({ percentage, size = 120, strokeWidth = 10, minimal = 
     );
 };
 
-const AgregadoresDashboard = ({ metrics, config = {}, zoneFilter = 'all', setZoneFilter }) => {
+const AgregadoresDashboard = ({ metrics, trends, config = {}, zoneFilter = 'all', setZoneFilter }) => {
     const [currentPage, setCurrentPage] = useState(1);
     const [trendMetric, setTrendMetric] = useState('venta');
     const [cityMetric, setCityMetric] = useState('venta'); // 'venta' | 'pedidos'
@@ -204,8 +213,6 @@ const AgregadoresDashboard = ({ metrics, config = {}, zoneFilter = 'all', setZon
                 </div>
             )}
 
-            {/* HEADER REMOVED: Now handled by Dashboard.jsx */}
-
             {/* Navigation Buttons (Floating) */}
             {currentPage === 1 && (
                 <button
@@ -232,14 +239,15 @@ const AgregadoresDashboard = ({ metrics, config = {}, zoneFilter = 'all', setZon
                     {/* Page 1: KPIs + Top Charts */}
                     <div className="agregadores-top-section">
                         <div className="agregadores-kpi-grid">
-                            <TiltedCard><KPICard title="Venta Total" value={kpis.ventaTotal} format="currency" icon={DollarSign} /></TiltedCard>
-                            <TiltedCard><KPICard title="Presupuesto" value={kpis.presupuesto} format="currency" icon={Target} /></TiltedCard>
+                            <TiltedCard><KPICard title="Venta Total" value={kpis.ventaTotal} format="currency" icon={DollarSign} trend={trends?.ventaTotal} /></TiltedCard>
+                            <TiltedCard><KPICard title="Presupuesto" value={kpis.presupuesto} format="currency" icon={Target} trend={trends?.presupuesto} /></TiltedCard>
                             <TiltedCard>
                                 <KPICard
                                     title="Cantidad Tx"
                                     value={kpis.cantidadTx}
                                     format="number"
                                     icon={ShoppingCart}
+                                    trend={trends?.cantidadTx}
                                     chart={
                                         <CircularProgress
                                             percentage={kpis.cumplimientoTxMTDPct}
@@ -250,7 +258,7 @@ const AgregadoresDashboard = ({ metrics, config = {}, zoneFilter = 'all', setZon
                                     }
                                 />
                             </TiltedCard>
-                            <TiltedCard><KPICard title="Ticket Promedio" value={kpis.ticketPromedio} format="currency" icon={DollarSign} /></TiltedCard>
+                            <TiltedCard><KPICard title="Ticket Promedio" value={kpis.ticketPromedio} format="currency" icon={DollarSign} trend={trends?.ticketPromedio} /></TiltedCard>
                         </div>
 
                         {/* Flip Card: Compliance (front) / City Chart (back) */}

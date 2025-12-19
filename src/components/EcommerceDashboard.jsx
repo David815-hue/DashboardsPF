@@ -7,7 +7,7 @@ const COLORS = ['#FE0000', '#0ea5e9', '#22c55e', '#f59e0b', '#8b5cf6', '#ec4899'
 
 import CustomTooltip from './CustomTooltip';
 
-const EcommerceDashboard = ({ metrics, topProductsCount = 6 }) => {
+const EcommerceDashboard = ({ metrics, trends, topProductsCount = 6 }) => {
     if (!metrics) {
         return (
             <div className="empty-state">
@@ -25,12 +25,12 @@ const EcommerceDashboard = ({ metrics, topProductsCount = 6 }) => {
                 {/* Quadrant 1 (Top-Left): KPIs */}
                 <div className="ecommerce-quadrant">
                     <div className="ecommerce-kpi-grid-quadrant">
-                        <TiltedCard><KPICard title="Venta Total" value={kpis.ventaTotal} format="currency" suffix="" /></TiltedCard>
-                        <TiltedCard><KPICard title="Cantidad de Pedidos" value={kpis.cantidadPedidos} format="number" /></TiltedCard>
-                        <TiltedCard><KPICard title="Venta APP" value={kpis.ventaAPP} format="currency" suffix="" /></TiltedCard>
-                        <TiltedCard><KPICard title="Ticket Promedio" value={kpis.ticketPromedio} format="currency" /></TiltedCard>
-                        <TiltedCard><KPICard title="Venta Ecommerce" value={kpis.ventaEcommerce} format="currency" suffix="" /></TiltedCard>
-                        <TiltedCard><KPICard title="Pedidos Cancelados" value={kpis.pedidosCancelados} format="number" /></TiltedCard>
+                        <TiltedCard><KPICard title="Venta Total" value={kpis.ventaTotal} format="currency" suffix="" trend={trends?.ventaTotal} /></TiltedCard>
+                        <TiltedCard><KPICard title="Cantidad de Pedidos" value={kpis.cantidadPedidos} format="number" trend={trends?.cantidadPedidos} /></TiltedCard>
+                        <TiltedCard><KPICard title="Venta APP" value={kpis.ventaAPP} format="currency" suffix="" trend={trends?.ventaAPP} /></TiltedCard>
+                        <TiltedCard><KPICard title="Ticket Promedio" value={kpis.ticketPromedio} format="currency" trend={trends?.ticketPromedio} /></TiltedCard>
+                        <TiltedCard><KPICard title="Venta Ecommerce" value={kpis.ventaEcommerce} format="currency" suffix="" trend={trends?.ventaEcommerce} /></TiltedCard>
+                        <TiltedCard><KPICard title="Pedidos Cancelados" value={kpis.pedidosCancelados} format="number" trend={trends?.pedidosCancelados} /></TiltedCard>
                     </div>
                 </div>
 

@@ -1,17 +1,14 @@
 import React, { useState } from 'react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, PieChart, Pie, Legend } from 'recharts';
-import { ChevronRight, ChevronLeft } from 'lucide-react';
+import { ChevronRight, ChevronLeft, TrendingUp, TrendingDown, Minus } from 'lucide-react';
 import TiltedCard from './TiltedCard';
-
-const COLORS = ['#22d3ee', '#374151']; // Teal and Dark Gray for Pie
-const BAR_COLOR = '#22d3ee'; // Teal for bars
 
 import CustomTooltip from './CustomTooltip';
 
 import { useCountUp } from '../hooks/useCountUp';
 
 // Custom Card Component to match the design (Value Top, Title Bottom)
-const StatCard = ({ title, value, subValue, format = 'number', suffix = '', variant = 'white' }) => {
+const StatCard = ({ title, value, subValue, format = 'number', suffix = '', variant = 'white', trend = null }) => {
     const numericValue = parseFloat(value) || 0;
     const animatedValue = useCountUp(numericValue, 1200);
 
@@ -36,12 +33,21 @@ const StatCard = ({ title, value, subValue, format = 'number', suffix = '', vari
                 {displayValue} <span className="wa-stat-suffix">{suffix}</span>
             </div>
             <div className="wa-stat-title">{title}</div>
+
+            {/* Trend Indicator */}
+            {trend !== null && trend !== undefined && (
+                <div className={`trend-indicator ${trend > 0 ? 'positive' : trend < 0 ? 'negative' : 'neutral'}`} style={{ marginTop: '4px', fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '3px', color: trend > 0 ? '#10b981' : trend < 0 ? '#ef4444' : '#6b7280' }}>
+                    {trend > 0 ? <TrendingUp size={12} /> : trend < 0 ? <TrendingDown size={12} /> : <Minus size={12} />}
+                    <span>{Math.abs(trend).toFixed(1)}%</span>
+                </div>
+            )}
+
             {subValue && <div className="wa-stat-sub">{subValue}</div>}
         </div>
     );
 };
 
-const WhatsAppDashboard = ({ metrics, topProductsCount = 5, keywordCount = 5 }) => {
+const WhatsAppDashboard = ({ metrics, trends, topProductsCount = 5, keywordCount = 5 }) => {
     const [currentPage, setCurrentPage] = useState(1);
 
     if (!metrics) {
@@ -126,10 +132,10 @@ const WhatsAppDashboard = ({ metrics, topProductsCount = 5, keywordCount = 5 }) 
 
                         {/* Row 1: Main KPIs */}
                         <div className="wa-row-main">
-                            <TiltedCard><StatCard title="Total Venta" value={page1.kpis.totalVenta} format="currency" suffix="" /></TiltedCard>
-                            <TiltedCard><StatCard title="Tasa Conversion" value={page1.kpis.tasaConversion} format="percent" suffix="%" /></TiltedCard>
-                            <TiltedCard><StatCard title="Ticket Promedio" value={page1.kpis.ticketPromedio} format="currency" suffix="" /></TiltedCard>
-                            <TiltedCard><StatCard title="ROAS" value={page1.kpis.roas} format="decimal" /></TiltedCard>
+                            <TiltedCard><StatCard title="Total Venta" value={page1.kpis.totalVenta} format="currency" suffix="" trend={trends?.totalVenta} /></TiltedCard>
+                            <TiltedCard><StatCard title="Tasa Conversion" value={page1.kpis.tasaConversion} format="percent" suffix="%" trend={trends?.tasaConversion} /></TiltedCard>
+                            <TiltedCard><StatCard title="Ticket Promedio" value={page1.kpis.ticketPromedio} format="currency" suffix="" trend={trends?.ticketPromedio} /></TiltedCard>
+                            <TiltedCard><StatCard title="ROAS" value={page1.kpis.roas} format="decimal" trend={trends?.roas} /></TiltedCard>
                         </div>
 
                         {/* Row 2: TGU */}
@@ -137,10 +143,10 @@ const WhatsAppDashboard = ({ metrics, topProductsCount = 5, keywordCount = 5 }) 
                             <div className="city-tag tgu">
                                 <span>ZC</span>
                             </div>
-                            <TiltedCard><StatCard title="Total Venta TGU" value={page1.kpis.totalVentaTGU} format="currency" suffix="" variant="teal" /></TiltedCard>
-                            <TiltedCard><StatCard title="Tasa Conversión TGU" value={page1.kpis.tasaConversionTGU} format="percent" suffix="%" variant="teal" /></TiltedCard>
-                            <TiltedCard><StatCard title="Ticket Promedio TGU" value={page1.kpis.ticketPromedioTGU} format="currency" suffix="" variant="teal" /></TiltedCard>
-                            <TiltedCard><StatCard title="Cantidad Venta" value={page1.kpis.cantidadVenta} format="number" /></TiltedCard>
+                            <TiltedCard><StatCard title="Total Venta TGU" value={page1.kpis.totalVentaTGU} format="currency" suffix="" variant="teal" trend={trends?.totalVentaTGU} /></TiltedCard>
+                            <TiltedCard><StatCard title="Tasa Conversión TGU" value={page1.kpis.tasaConversionTGU} format="percent" suffix="%" variant="teal" trend={trends?.tasaConversionTGU} /></TiltedCard>
+                            <TiltedCard><StatCard title="Ticket Promedio TGU" value={page1.kpis.ticketPromedioTGU} format="currency" suffix="" variant="teal" trend={trends?.ticketPromedioTGU} /></TiltedCard>
+                            <TiltedCard><StatCard title="Cantidad Venta" value={page1.kpis.cantidadVenta} format="number" trend={trends?.cantidadVenta} /></TiltedCard>
                         </div>
 
                         {/* Row 3: SPS */}
@@ -148,10 +154,10 @@ const WhatsAppDashboard = ({ metrics, topProductsCount = 5, keywordCount = 5 }) 
                             <div className="city-tag sps">
                                 <span>ZN</span>
                             </div>
-                            <TiltedCard><StatCard title="Total Venta SPS" value={page1.kpis.totalVentaSPS} format="currency" suffix="" variant="teal" /></TiltedCard>
-                            <TiltedCard><StatCard title="Tasa Conversión SPS" value={page1.kpis.tasaConversionSPS} format="percent" suffix="%" variant="teal" /></TiltedCard>
-                            <TiltedCard><StatCard title="Ticket Promedio SPS" value={page1.kpis.ticketPromedioSPS} format="currency" suffix="" variant="teal" /></TiltedCard>
-                            <TiltedCard><StatCard title="Tasa de Respuesta" value={page1.kpis.tasaRespuesta} format="percent" suffix="%" /></TiltedCard>
+                            <TiltedCard><StatCard title="Total Venta SPS" value={page1.kpis.totalVentaSPS} format="currency" suffix="" variant="teal" trend={trends?.totalVentaSPS} /></TiltedCard>
+                            <TiltedCard><StatCard title="Tasa Conversión SPS" value={page1.kpis.tasaConversionSPS} format="percent" suffix="%" variant="teal" trend={trends?.tasaConversionSPS} /></TiltedCard>
+                            <TiltedCard><StatCard title="Ticket Promedio SPS" value={page1.kpis.ticketPromedioSPS} format="currency" suffix="" variant="teal" trend={trends?.ticketPromedioSPS} /></TiltedCard>
+                            <TiltedCard><StatCard title="Tasa de Respuesta" value={page1.kpis.tasaRespuesta} format="percent" suffix="%" trend={trends?.tasaRespuesta} /></TiltedCard>
                         </div>
 
                         {/* Row 4: Top Productos (Full Width) */}

@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
 import { Settings, X, Save, Calendar, ChevronDown, Trash2, Maximize2, Minimize2, Menu } from 'lucide-react';
+import PeriodSelector from './PeriodSelector';
 import KPICard from './KPICard';
 import TopProductsChart from './TopProductsChart';
 import FunnelChart from './FunnelChart';
@@ -112,6 +113,11 @@ const Dashboard = () => {
     const [selectedWeek, setSelectedWeek] = useState(null);
     const [isMonthDropdownOpen, setIsMonthDropdownOpen] = useState(false);
     const [isWeekDropdownOpen, setIsWeekDropdownOpen] = useState(false);
+
+    // Comparison Mode State
+    const [isComparisonMode, setIsComparisonMode] = useState(false);
+    const [selectedMonthB, setSelectedMonthB] = useState(null);
+    const [selectedWeekB, setSelectedWeekB] = useState(null);
 
     // Dashboard tabs
     const [activeTab, setActiveTab] = useState('venta-meta');
@@ -324,7 +330,7 @@ const Dashboard = () => {
     };
 
     const handleSelectMonth = (monthKey) => {
-        if (monthKey === 'current') {
+        if (!monthKey) { // 'current' or null logic mapped to null inside component
             setSelectedMonth(null);
             setSelectedWeek(null);
         } else {
@@ -335,7 +341,7 @@ const Dashboard = () => {
     };
 
     const handleSelectWeek = async (weekId) => {
-        if (weekId === 'aggregate') {
+        if (!weekId) { // 'aggregate' or null
             setSelectedWeek(null);
         } else {
             // Use correct load function based on activeTab
@@ -380,6 +386,46 @@ const Dashboard = () => {
         setIsWeekDropdownOpen(false);
     };
 
+    // Helper to fetch data for Period B (Comparison)
+    const [dataB, setDataB] = useState(null);
+    const [ecommerceDataB, setEcommerceDataB] = useState(null);
+    const [whatsappDataB, setWhatsappDataB] = useState(null);
+    const [agregadoresDataB, setAgregadoresDataB] = useState(null);
+
+    // Fetch B Data when selection B changes
+    useEffect(() => {
+        const loadB = async () => {
+            if (!isComparisonMode || (!selectedMonthB && !selectedWeekB)) {
+                setDataB(null); setEcommerceDataB(null); setWhatsappDataB(null); setAgregadoresDataB(null);
+                return;
+            }
+
+            // Define load function
+            const getLoadFn = () => {
+                if (activeTab === 'ecommerce') return loadEcommerceSnapshot;
+                if (activeTab === 'whatsapp') return loadWhatsAppSnapshot;
+                if (activeTab === 'agregadores') return loadAgregadoresSnapshot;
+                return loadSnapshot;
+            };
+
+            const loadFn = getLoadFn();
+
+            // If week selected, load specific snapshot
+            if (selectedWeekB) {
+                const result = await loadFn(selectedWeekB);
+                if (result.success) {
+                    if (activeTab === 'ecommerce') setEcommerceDataB({ _isSnapshot: true, _snapshotMetrics: result.data });
+                    else if (activeTab === 'whatsapp') setWhatsappDataB({ _isSnapshot: true, _snapshotMetrics: result.data });
+                    else if (activeTab === 'agregadores') setAgregadoresDataB({ _isSnapshot: true, _snapshotMetrics: result.data });
+                    else setDataB({ _isSnapshot: true, _snapshotMetrics: result.data.metrics });
+                }
+            } else if (selectedMonthB) {
+                // For aggregates, we rely on metrics calculation using snapshotsByMonth
+            }
+        };
+        loadB();
+    }, [isComparisonMode, selectedMonthB, selectedWeekB, activeTab]);
+
     const handleDeleteSnapshot = async (snapshotId, e) => {
         e.stopPropagation();
         if (confirm(`¿Eliminar snapshot del ${snapshotId}?`)) {
@@ -402,11 +448,16 @@ const Dashboard = () => {
         }
     };
 
-    // Calculate metrics based on selection
-    const metrics = useMemo(() => {
+    // --- Metric Calculation Helper ---
+    const getMetricsForPeriod = (d, mSelected, wSelected, snapshotsMap) => {
         // Current data (freshly processed)
-        if (!selectedMonth && data && !data._isSnapshot) {
-            const metricsResult = calculateMetrics(data, config);
+        if (!mSelected && d && !d._isSnapshot) {
+            if (activeTab === 'ecommerce') return calculateEcommerceMetrics(d);
+            if (activeTab === 'whatsapp') return calculateWhatsAppMetrics(d, config);
+            if (activeTab === 'agregadores') return calculateAgregadoresMetrics(d, agregadoresConfig, agregadoresZoneFilter);
+
+            // Venta Meta
+            const metricsResult = calculateMetrics(d, config);
             return {
                 ...metricsResult.kpis,
                 embudoData: metricsResult.charts.funnelData,
@@ -415,93 +466,94 @@ const Dashboard = () => {
         }
 
         // Loaded snapshot (specific week)
-        if (data && data._isSnapshot) {
-            return data._snapshotMetrics;
+        if (d && d._isSnapshot) {
+            const snap = d._snapshotMetrics;
+            if (activeTab === 'ecommerce') return { kpis: snap.metrics, charts: snap.charts };
+            if (activeTab === 'whatsapp') return { page1: { kpis: snap.kpis, charts: snap.charts }, page2: { ...snap.page2 } };
+            if (activeTab === 'agregadores') {
+                if (snap.rawProcessedData) {
+                    return calculateAgregadoresMetrics(snap.rawProcessedData, snap.config || agregadoresConfig, agregadoresZoneFilter);
+                }
+                return { kpis: snap.kpis, charts: snap.charts };
+            }
+            // Venta Meta
+            return snap;
         }
 
         // Month aggregate
-        if (selectedMonth && !selectedWeek && snapshotsByMonth[selectedMonth]) {
-            return calculateMonthlyAggregate(snapshotsByMonth[selectedMonth]);
+        if (mSelected && !wSelected && snapshotsMap[mSelected]) {
+            if (activeTab === 'ecommerce') return calculateEcommerceMonthlyAggregate(snapshotsMap[mSelected]);
+            if (activeTab === 'whatsapp') return calculateWhatsAppMonthlyAggregate(snapshotsMap[mSelected]);
+            if (activeTab === 'agregadores') return calculateAgregadoresMonthlyAggregate(snapshotsMap[mSelected], agregadoresConfig, agregadoresZoneFilter);
+            return calculateMonthlyAggregate(snapshotsMap[mSelected]);
         }
 
         return null;
-    }, [data, config, selectedMonth, selectedWeek, snapshotsByMonth]);
+    };
 
-    // E-commerce metrics calculation
-    const ecommerceMetrics = useMemo(() => {
-        // Loaded E-commerce snapshot (specific week)
-        if (ecommerceData && ecommerceData._isSnapshot) {
-            const snap = ecommerceData._snapshotMetrics;
-            return {
-                kpis: snap.metrics,
-                charts: snap.charts
-            };
-        }
+    // Calculate metrics based on selection A
+    const metrics = useMemo(() => {
+        const d = activeTab === 'ecommerce' ? ecommerceData : activeTab === 'whatsapp' ? whatsappData : activeTab === 'agregadores' ? agregadoresData : data;
+        const map = activeTab === 'ecommerce' ? ecommerceSnapshotsByMonth : activeTab === 'whatsapp' ? whatsappSnapshotsByMonth : activeTab === 'agregadores' ? agregadoresSnapshotsByMonth : snapshotsByMonth;
+        return getMetricsForPeriod(d, selectedMonth, selectedWeek, map);
+    }, [data, ecommerceData, whatsappData, agregadoresData, config, activeTab, selectedMonth, selectedWeek, snapshotsByMonth, ecommerceSnapshotsByMonth, whatsappSnapshotsByMonth, agregadoresSnapshotsByMonth, agregadoresZoneFilter]);
 
-        // E-commerce month aggregate
-        if (activeTab === 'ecommerce' && selectedMonth && !selectedWeek && ecommerceSnapshotsByMonth[selectedMonth]) {
-            return calculateEcommerceMonthlyAggregate(ecommerceSnapshotsByMonth[selectedMonth]);
-        }
+    // Calculate metrics based on selection B
+    const metricsB = useMemo(() => {
+        if (!isComparisonMode) return null;
+        const d = activeTab === 'ecommerce' ? ecommerceDataB : activeTab === 'whatsapp' ? whatsappDataB : activeTab === 'agregadores' ? agregadoresDataB : dataB;
+        const map = activeTab === 'ecommerce' ? ecommerceSnapshotsByMonth : activeTab === 'whatsapp' ? whatsappSnapshotsByMonth : activeTab === 'agregadores' ? agregadoresSnapshotsByMonth : snapshotsByMonth;
+        return getMetricsForPeriod(d, selectedMonthB, selectedWeekB, map);
+    }, [isComparisonMode, dataB, ecommerceDataB, whatsappDataB, agregadoresDataB, config, activeTab, selectedMonthB, selectedWeekB, snapshotsByMonth, ecommerceSnapshotsByMonth, whatsappSnapshotsByMonth, agregadoresSnapshotsByMonth, agregadoresZoneFilter]);
 
-        // Fresh E-commerce data
-        if (!ecommerceData) return null;
-        return calculateEcommerceMetrics(ecommerceData);
-    }, [ecommerceData, activeTab, selectedMonth, selectedWeek, ecommerceSnapshotsByMonth]);
+    // Calculate Trends: ((A - B) / B) * 100
+    const trends = useMemo(() => {
+        if (!metrics || !metricsB) return null;
 
-    // WhatsApp Marketing metrics calculation
-    const whatsappMetrics = useMemo(() => {
-        // If snapshot is loaded, use snapshot metrics
-        if (whatsappData?._isSnapshot && whatsappData._snapshotMetrics) {
-            const snapshot = whatsappData._snapshotMetrics;
-            return {
-                page1: {
-                    kpis: snapshot.kpis,
-                    charts: snapshot.charts
-                },
-                page2: {
-                    tablaAsesores: snapshot.page2?.tablaAsesores || [],
-                    ventaPorPalabraClave: snapshot.page2?.ventaPorPalabraClave || []
+        const calculateTrend = (valA, valB) => {
+            const a = parseFloat(valA) || 0;
+            const b = parseFloat(valB) || 0;
+            if (b === 0) return 0;
+            return ((a - b) / b) * 100;
+        };
+
+        const result = {};
+
+        // Flatten metrics to support nested structures (like page1.kpis for whatsapp)
+        if (activeTab === 'ecommerce') {
+            const kpisA = metrics.kpis || {};
+            const kpisB = metricsB.kpis || {};
+            Object.keys(kpisA).forEach(key => {
+                result[key] = calculateTrend(kpisA[key], kpisB[key]);
+            });
+        } else if (activeTab === 'whatsapp') {
+            const kpisA = metrics.page1?.kpis || {};
+            const kpisB = metricsB.page1?.kpis || {};
+            Object.keys(kpisA).forEach(key => {
+                result[key] = calculateTrend(kpisA[key], kpisB[key]);
+            });
+        } else if (activeTab === 'agregadores') {
+            const kpisA = metrics.kpis || {};
+            const kpisB = metricsB.kpis || {};
+            Object.keys(kpisA).forEach(key => {
+                result[key] = calculateTrend(kpisA[key], kpisB[key]);
+            });
+        } else {
+            // Venta Meta
+            Object.keys(metrics).forEach(key => {
+                if (typeof metrics[key] === 'number' || typeof metrics[key] === 'string') {
+                    result[key] = calculateTrend(metrics[key], metricsB[key]);
                 }
-            };
+            });
         }
 
-        // Month aggregate for WhatsApp
-        if (activeTab === 'whatsapp' && selectedMonth && !selectedWeek && whatsappSnapshotsByMonth[selectedMonth]) {
-            return calculateWhatsAppMonthlyAggregate(whatsappSnapshotsByMonth[selectedMonth]);
-        }
+        return result;
+    }, [metrics, metricsB, activeTab]);
 
-        // Fresh WhatsApp data
-        if (!whatsappData) return null;
-        return calculateWhatsAppMetrics(whatsappData, config);
-    }, [whatsappData, config, activeTab, selectedMonth, selectedWeek, whatsappSnapshotsByMonth]);
-
-    // Agregadores metrics calculation
-    const agregadoresMetrics = useMemo(() => {
-        // Loaded Agregadores snapshot (specific week) - recalculate with zone filter
-        if (agregadoresData && agregadoresData._isSnapshot) {
-            const snap = agregadoresData._snapshotMetrics;
-            console.log('[Agregadores Snapshot] Loading, has rawProcessedData:', !!snap.rawProcessedData, 'zoneFilter:', agregadoresZoneFilter);
-            // If rawProcessedData exists, recalculate with current zone filter
-            if (snap.rawProcessedData) {
-                console.log('[Agregadores Snapshot] Recalculating with zone filter:', agregadoresZoneFilter);
-                return calculateAgregadoresMetrics(snap.rawProcessedData, snap.config || agregadoresConfig, agregadoresZoneFilter);
-            }
-            // Fallback for old snapshots without rawProcessedData
-            return {
-                kpis: snap.kpis,
-                charts: snap.charts
-            };
-        }
-
-        // Agregadores month aggregate - recalculate with zone filter
-        if (activeTab === 'agregadores' && selectedMonth && !selectedWeek && agregadoresSnapshotsByMonth[selectedMonth]) {
-            return calculateAgregadoresMonthlyAggregate(agregadoresSnapshotsByMonth[selectedMonth], agregadoresConfig, agregadoresZoneFilter);
-        }
-
-        // Fresh Agregadores data
-        if (!agregadoresData) return null;
-        return calculateAgregadoresMetrics(agregadoresData, agregadoresConfig, agregadoresZoneFilter);
-    }, [agregadoresData, agregadoresConfig, agregadoresZoneFilter, activeTab, selectedMonth, selectedWeek, agregadoresSnapshotsByMonth]);
+    // Redundant definitions to keep compatibility with existing render code
+    const ecommerceMetrics = activeTab === 'ecommerce' ? metrics : null;
+    const whatsappMetrics = activeTab === 'whatsapp' ? metrics : null;
+    const agregadoresMetrics = activeTab === 'agregadores' ? metrics : null;
 
     const formatMonthLabel = (monthKey) => {
         const [year, month] = monthKey.split('-');
@@ -556,7 +608,7 @@ const Dashboard = () => {
 
             {/* Period Selectors - Bottom Left - Collapsible on Hover (Hidden in Zen Mode) */}
             {!isZenMode && (
-                <div className={`period-selectors-container ${isMenuLocked ? 'locked' : ''}`}>
+                <div className={`period-selectors-container ${isMenuLocked ? 'locked' : ''} ${isComparisonMode ? 'comparison-active' : ''}`}>
                     <div className="period-selectors-wrapper">
                         {/* Menu Toggle Button */}
                         <div
@@ -568,78 +620,42 @@ const Dashboard = () => {
 
                         {/* Expandable Controls */}
                         <div className="period-selectors-content">
-                            {/* Month Selector */}
-                            <div className="selector-group">
-                                <button
-                                    className="selector-btn"
-                                    onClick={() => { setIsMonthDropdownOpen(!isMonthDropdownOpen); setIsWeekDropdownOpen(false); }}
-                                >
-                                    <Calendar size={16} />
-                                    {selectedMonth ? formatMonthLabel(selectedMonth) : 'Datos Actuales'}
-                                    <ChevronDown size={16} />
-                                </button>
+                            {/* Primary Period Selector */}
+                            <PeriodSelector
+                                label={isComparisonMode ? "Periodo A" : ""}
+                                selectedMonth={selectedMonth}
+                                selectedWeek={selectedWeek}
+                                snapshotsByMonth={currentSnapshotsByMonth}
+                                onSelectMonth={handleSelectMonth}
+                                onSelectWeek={handleSelectWeek}
+                                onDeleteSnapshot={handleDeleteSnapshot}
+                                formatMonthLabel={formatMonthLabel}
+                                formatWeekLabel={formatWeekLabel}
+                                allowCurrentData={true}
+                            />
 
-                                {isMonthDropdownOpen && (
-                                    <div className="selector-dropdown">
-                                        <div
-                                            className={`selector-option ${!selectedMonth ? 'active' : ''}`}
-                                            onClick={() => handleSelectMonth('current')}
-                                        >
-                                            📊 Datos Actuales
-                                        </div>
-                                        {availableMonths.length > 0 && <div className="selector-divider"></div>}
-                                        {availableMonths.map(monthKey => (
-                                            <div
-                                                key={monthKey}
-                                                className={`selector-option ${selectedMonth === monthKey ? 'active' : ''}`}
-                                                onClick={() => handleSelectMonth(monthKey)}
-                                            >
-                                                📆 {formatMonthLabel(monthKey)}
-                                                <span className="week-count">{currentSnapshotsByMonth[monthKey].length} sem</span>
-                                            </div>
-                                        ))}
-                                    </div>
-                                )}
+                            {/* Comparison Mode Toggle - Inline */}
+                            <div
+                                className={`comparison-toggle-btn ${isComparisonMode ? 'active' : ''}`}
+                                onClick={() => setIsComparisonMode(!isComparisonMode)}
+                                title={isComparisonMode ? "Desactivar comparación" : "Comparar con otro periodo"}
+                            >
+                                {isComparisonMode ? '−' : '⇄'}
                             </div>
 
-                            {/* Week Selector */}
-                            {selectedMonth && currentSnapshotsByMonth[selectedMonth] && (
-                                <div className="selector-group">
-                                    <button
-                                        className="selector-btn week-btn"
-                                        onClick={() => { setIsWeekDropdownOpen(!isWeekDropdownOpen); setIsMonthDropdownOpen(false); }}
-                                    >
-                                        {selectedWeek ? formatWeekLabel(selectedWeek) : 'Acumulado Mensual'}
-                                        <ChevronDown size={16} />
-                                    </button>
-
-                                    {isWeekDropdownOpen && (
-                                        <div className="selector-dropdown">
-                                            <div
-                                                className={`selector-option ${!selectedWeek ? 'active' : ''}`}
-                                                onClick={() => handleSelectWeek('aggregate')}
-                                            >
-                                                📊 Acumulado Mensual
-                                            </div>
-                                            <div className="selector-divider"></div>
-                                            {currentSnapshotsByMonth[selectedMonth].map(snap => (
-                                                <div
-                                                    key={snap.dateId || snap.id}
-                                                    className={`selector-option ${selectedWeek === (snap.dateId || snap.id) ? 'active' : ''}`}
-                                                    onClick={() => handleSelectWeek(snap.dateId || snap.id)}
-                                                >
-                                                    <span>📅 {formatWeekLabel(snap.dateId || snap.id)}</span>
-                                                    <button
-                                                        className="snapshot-delete-btn"
-                                                        onClick={(e) => handleDeleteSnapshot(snap.dateId || snap.id, e)}
-                                                    >
-                                                        <Trash2 size={14} />
-                                                    </button>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    )}
-                                </div>
+                            {/* Secondary Period Selector (Only in Comparison Mode) */}
+                            {isComparisonMode && (
+                                <PeriodSelector
+                                    label="Periodo B"
+                                    selectedMonth={selectedMonthB}
+                                    selectedWeek={selectedWeekB}
+                                    snapshotsByMonth={currentSnapshotsByMonth}
+                                    onSelectMonth={(m) => { setSelectedMonthB(m); setSelectedWeekB(null); }}
+                                    onSelectWeek={(w) => setSelectedWeekB(w)}
+                                    formatMonthLabel={formatMonthLabel}
+                                    formatWeekLabel={formatWeekLabel}
+                                    allowCurrentData={false}
+                                />
                             )}
                         </div>
                     </div>
@@ -819,13 +835,23 @@ const Dashboard = () => {
                                                     placeholder="Meta Norte"
                                                 />
                                             </div>
-                                            {/* Cumplimiento Tx removed as requested */}
+                                            <div className="input-group">
+                                                <label>Meta Pedidos/Tienda</label>
+                                                <input
+                                                    type="number"
+                                                    min="0"
+                                                    value={agregadoresConfig.metaPedidosPorTienda}
+                                                    onChange={(e) => setAgregadoresConfig({ ...agregadoresConfig, metaPedidosPorTienda: parseInt(e.target.value) || 0 })}
+                                                />
+                                            </div>
                                         </div>
                                     </div>
                                     <div className="divider"></div>
                                 </>
                             )}
 
+
+                            {/* Snapshot Save Section */}
                             <div className="snapshot-section">
                                 <h3 className="inputs-title">
                                     <Save size={20} />
@@ -895,7 +921,7 @@ const Dashboard = () => {
                 </div>
             ) : activeTab === 'ecommerce' ? (
                 ecommerceMetrics ? (
-                    <EcommerceDashboard metrics={ecommerceMetrics} topProductsCount={topProductsConfig.ecommerceTopProductos} />
+                    <EcommerceDashboard metrics={ecommerceMetrics} trends={trends} topProductsCount={topProductsConfig.ecommerceTopProductos} />
                 ) : (
                     <div className="empty-state">
                         <p>⚠️ No hay datos de E-commerce cargados</p>
@@ -908,14 +934,14 @@ const Dashboard = () => {
                         <div className="dashboard-layout">
                             <div className="left-column">
                                 <div className="kpi-grid-container">
-                                    <TiltedCard><KPICard title="Total Venta" value={metrics.totalVenta} format="currency" suffix="" /></TiltedCard>
-                                    <TiltedCard><KPICard title="Cantidad de Pedidos" value={metrics.cantidadPedidos} format="number" /></TiltedCard>
-                                    <TiltedCard><KPICard title="Venta TGU" value={metrics.ventaTGU} format="currency" /></TiltedCard>
-                                    <TiltedCard><KPICard title="Ticket Promedio" value={metrics.ticketPromedio} format="currency" /></TiltedCard>
-                                    <TiltedCard><KPICard title="Venta SPS" value={metrics.ventaSPS} format="currency" suffix="" /></TiltedCard>
-                                    <TiltedCard><KPICard title="Tasa de Conversion" value={metrics.tasaConversion} format="percent" suffix="%" /></TiltedCard>
+                                    <TiltedCard><KPICard title="Total Venta" value={metrics.totalVenta} format="currency" suffix="" trend={trends?.totalVenta} /></TiltedCard>
+                                    <TiltedCard><KPICard title="Cantidad de Pedidos" value={metrics.cantidadPedidos} format="number" trend={trends?.cantidadPedidos} /></TiltedCard>
+                                    <TiltedCard><KPICard title="Venta TGU" value={metrics.ventaTGU} format="currency" trend={trends?.ventaTGU} /></TiltedCard>
+                                    <TiltedCard><KPICard title="Ticket Promedio" value={metrics.ticketPromedio} format="currency" trend={trends?.ticketPromedio} /></TiltedCard>
+                                    <TiltedCard><KPICard title="Venta SPS" value={metrics.ventaSPS} format="currency" suffix="" trend={trends?.ventaSPS} /></TiltedCard>
+                                    <TiltedCard><KPICard title="Tasa de Conversion" value={metrics.tasaConversion} format="percent" suffix="%" trend={trends?.tasaConversion} /></TiltedCard>
                                     <div className="kpi-centered-row">
-                                        <TiltedCard><KPICard title="ROAS" value={typeof metrics.roas === 'number' ? metrics.roas.toFixed(2) : metrics.roas} format="decimal" /></TiltedCard>
+                                        <TiltedCard><KPICard title="ROAS" value={typeof metrics.roas === 'number' ? metrics.roas.toFixed(2) : metrics.roas} format="decimal" trend={trends?.roas} /></TiltedCard>
                                     </div>
                                 </div>
                             </div>
@@ -939,7 +965,12 @@ const Dashboard = () => {
                 )
             ) : activeTab === 'whatsapp' ? (
                 whatsappMetrics ? (
-                    <WhatsAppDashboard metrics={whatsappMetrics} topProductsCount={topProductsConfig.whatsappTopProductos} keywordCount={topProductsConfig.whatsappPalabraClave} />
+                    <WhatsAppDashboard
+                        metrics={whatsappMetrics}
+                        trends={trends}
+                        topProductsCount={topProductsConfig.whatsappTopProductos}
+                        keywordCount={topProductsConfig.whatsappPalabraClave}
+                    />
                 ) : (
                     <div className="empty-state">
                         <p>⚠️ No hay datos de WhatsApp Marketing cargados</p>
@@ -948,7 +979,13 @@ const Dashboard = () => {
                 )
             ) : activeTab === 'agregadores' ? (
                 agregadoresMetrics ? (
-                    <AgregadoresDashboard metrics={agregadoresMetrics} config={agregadoresConfig} zoneFilter={agregadoresZoneFilter} setZoneFilter={setAgregadoresZoneFilter} />
+                    <AgregadoresDashboard
+                        metrics={agregadoresMetrics}
+                        trends={trends}
+                        config={agregadoresConfig}
+                        zoneFilter={agregadoresZoneFilter}
+                        setZoneFilter={setAgregadoresZoneFilter}
+                    />
                 ) : (
                     <div className="empty-state">
                         <p>⚠️ No hay datos de Agregadores cargados</p>
