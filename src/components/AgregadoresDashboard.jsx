@@ -5,34 +5,7 @@ import {
 import { TrendingUp, TrendingDown, Target, ShoppingCart, DollarSign, ChevronRight, ChevronLeft, Maximize2, X } from 'lucide-react';
 import TiltedCard from './TiltedCard';
 
-// Custom tooltip with glassmorphism
-const CustomTooltip = ({ active, payload, label }) => {
-    if (active && payload && payload.length) {
-        return (
-            <div style={{
-                background: 'rgba(36, 36, 36, 0.95)',
-                backdropFilter: 'blur(10px)',
-                padding: '12px 16px',
-                borderRadius: '12px',
-                border: '1px solid rgba(255,255,255,0.1)',
-                boxShadow: '0 8px 32px rgba(0,0,0,0.3)'
-            }}>
-                <p style={{ margin: 0, fontSize: '0.85rem', color: '#aaa', marginBottom: '4px' }}>
-                    {label || payload[0]?.payload?.fullName || payload[0]?.name}
-                </p>
-                {payload.map((entry, idx) => (
-                    <p key={idx} style={{ margin: 0, fontWeight: 'bold', color: entry.color || '#fff' }}>
-                        {entry.name}: {typeof entry.value === 'number'
-                            ? entry.value.toLocaleString('es-HN', { minimumFractionDigits: entry.dataKey === 'value' ? 0 : 2 })
-                            : entry.value}
-                    </p>
-                ))}
-            </div>
-        );
-    }
-    return null;
-};
-
+import CustomTooltip from './CustomTooltip';
 import { useCountUp } from '../hooks/useCountUp';
 
 // KPI Card Component with premium styling

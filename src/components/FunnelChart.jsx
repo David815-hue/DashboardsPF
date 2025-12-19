@@ -76,18 +76,20 @@ const FunnelChart = ({ data }) => {
                     position: 'fixed',
                     left: tooltipPos.x + 15,
                     top: tooltipPos.y - 15,
-                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                    color: 'white',
-                    padding: '8px 12px',
-                    borderRadius: '6px',
-                    fontSize: '0.8rem',
+                    background: 'rgba(36, 36, 36, 0.95)',
+                    backdropFilter: 'blur(10px)',
+                    padding: '12px 16px',
+                    borderRadius: '12px',
+                    border: '1px solid rgba(255,255,255,0.1)',
+                    boxShadow: '0 8px 32px rgba(0,0,0,0.3)',
+                    color: '#fff',
+                    fontSize: '0.85rem',
                     pointerEvents: 'none',
-                    zIndex: 1000,
-                    boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
+                    zIndex: 1000
                 }}>
-                    <div style={{ fontWeight: 'bold', marginBottom: '4px' }}>{hoveredItem.name}</div>
-                    <div>Cantidad: {hoveredItem.value.toLocaleString()}</div>
-                    <div style={{ opacity: 0.8 }}>Porcentaje: {hoveredItem.percentage}</div>
+                    <div style={{ fontWeight: 'bold', marginBottom: '4px', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '4px' }}>{hoveredItem.name}</div>
+                    <div style={{ marginBottom: '2px' }}>Cantidad: {hoveredItem.value.toLocaleString()}</div>
+                    <div style={{ opacity: 0.8, fontSize: '0.8rem' }}>Porcentaje: {hoveredItem.percentage}</div>
                 </div>
             )}
         </div>

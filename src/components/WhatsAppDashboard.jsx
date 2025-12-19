@@ -6,24 +6,7 @@ import TiltedCard from './TiltedCard';
 const COLORS = ['#22d3ee', '#374151']; // Teal and Dark Gray for Pie
 const BAR_COLOR = '#22d3ee'; // Teal for bars
 
-const CustomTooltip = ({ active, payload, label }) => {
-    if (active && payload && payload.length) {
-        return (
-            <div style={{ backgroundColor: '#242424', padding: '10px', borderRadius: '5px', color: '#fff', border: 'none' }}>
-                <p style={{ margin: 0, fontSize: '0.8rem' }}>{label || payload[0]?.name}</p>
-                <p style={{ margin: 0, fontWeight: 'bold' }}>
-                    {payload[0]?.value?.toLocaleString('es-HN', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}
-                </p>
-                {payload[0]?.payload?.percent && (
-                    <p style={{ margin: 0, fontSize: '0.7rem', opacity: 0.8 }}>
-                        {payload[0].payload.percent}
-                    </p>
-                )}
-            </div>
-        );
-    }
-    return null;
-};
+import CustomTooltip from './CustomTooltip';
 
 import { useCountUp } from '../hooks/useCountUp';
 

@@ -5,19 +5,7 @@ import TiltedCard from './TiltedCard';
 
 const COLORS = ['#FE0000', '#0ea5e9', '#22c55e', '#f59e0b', '#8b5cf6', '#ec4899'];
 
-const CustomTooltip = ({ active, payload, label }) => {
-    if (active && payload && payload.length) {
-        return (
-            <div style={{ backgroundColor: '#242424', padding: '10px', borderRadius: '5px', color: '#fff' }}>
-                <p style={{ margin: 0, fontSize: '0.8rem' }}>{label || payload[0]?.name}</p>
-                <p style={{ margin: 0, fontWeight: 'bold' }}>
-                    {payload[0]?.value?.toLocaleString('es-HN', { minimumFractionDigits: 2 })}
-                </p>
-            </div>
-        );
-    }
-    return null;
-};
+import CustomTooltip from './CustomTooltip';
 
 const EcommerceDashboard = ({ metrics, topProductsCount = 6 }) => {
     if (!metrics) {
@@ -70,7 +58,7 @@ const EcommerceDashboard = ({ metrics, topProductsCount = 6 }) => {
                                     />
                                     <YAxis tick={{ fontSize: 10, fill: '#666' }} />
                                     <Tooltip content={<CustomTooltip />} />
-                                    <Bar dataKey="value" radius={[8, 8, 0, 0]} fill="url(#ecommerceBarGradient)">
+                                    <Bar dataKey="value" name="Cantidad" radius={[8, 8, 0, 0]} fill="url(#ecommerceBarGradient)">
                                         {topProductosData.map((entry, index) => (
                                             <Cell key={`cell-${index}`} fill="url(#ecommerceBarGradient)" />
                                         ))}
@@ -82,8 +70,8 @@ const EcommerceDashboard = ({ metrics, topProductsCount = 6 }) => {
                 </div>
 
                 {/* Quadrant 3 (Bottom-Left): Motivo de Cancelación */}
-                <div className="ecommerce-quadrant" style={{ overflow: 'hidden' }}>
-                    <div className="chart-wrapper" style={{ maxHeight: '100%', overflow: 'hidden' }}>
+                <div className="ecommerce-quadrant" style={{ overflow: 'visible' }}>
+                    <div className="chart-wrapper" style={{ maxHeight: '100%', overflow: 'visible' }}>
                         <h3 className="chart-title">Motivo de Cancelación</h3>
                         <div className="chart-container">
                             <ResponsiveContainer width="100%" height="100%">
@@ -104,7 +92,7 @@ const EcommerceDashboard = ({ metrics, topProductsCount = 6 }) => {
                                     />
                                     <YAxis tick={{ fontSize: 10, fill: '#666' }} />
                                     <Tooltip content={<CustomTooltip />} />
-                                    <Bar dataKey="value" radius={[8, 8, 0, 0]} fill="url(#ecommerceBarGradient)">
+                                    <Bar dataKey="value" name="Cantidad" radius={[8, 8, 0, 0]} fill="url(#ecommerceBarGradient)">
                                         {charts.motivosCancelacion.map((entry, index) => (
                                             <Cell key={`cell-${index}`} fill="url(#ecommerceBarGradient)" />
                                         ))}
