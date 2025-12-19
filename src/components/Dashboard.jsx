@@ -749,7 +749,7 @@ const Dashboard = () => {
                                 <>
                                     <div className="snapshot-section">
                                         <h3 className="inputs-title">🚀 Configuración Agregadores</h3>
-                                        <div className="input-row" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '12px' }}>
+                                        <div className="input-row" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                                             <div className="input-group">
                                                 <label>Presupuesto Total (L)</label>
                                                 <input
@@ -819,16 +819,7 @@ const Dashboard = () => {
                                                     placeholder="Meta Norte"
                                                 />
                                             </div>
-                                            <div className="input-group">
-                                                <label>Cumplimiento Tx (%)</label>
-                                                <input
-                                                    type="number"
-                                                    min="0"
-                                                    max="200"
-                                                    value={agregadoresConfig.cumplimientoTx}
-                                                    onChange={(e) => setAgregadoresConfig({ ...agregadoresConfig, cumplimientoTx: parseFloat(e.target.value) || 0 })}
-                                                />
-                                            </div>
+                                            {/* Cumplimiento Tx removed as requested */}
                                         </div>
                                     </div>
                                     <div className="divider"></div>

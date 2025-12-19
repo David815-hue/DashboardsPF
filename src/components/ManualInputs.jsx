@@ -38,9 +38,6 @@ const ManualInputs = ({ config, onConfigChange }) => {
                     />
                 </div>
 
-                {/* WhatsApp */}
-                <div className="config-section-header" style={{ gridColumn: '1 / -1', fontSize: '0.75rem', fontWeight: '600', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '-4px', marginTop: '8px' }}>WhatsApp</div>
-
                 <div className="input-group">
                     <label>Clics</label>
                     <input
@@ -49,6 +46,11 @@ const ManualInputs = ({ config, onConfigChange }) => {
                         onChange={(e) => handleChange('clics', e.target.value)}
                     />
                 </div>
+
+                {/* WhatsApp */}
+                <div className="config-section-header" style={{ gridColumn: '1 / -1', fontSize: '0.75rem', fontWeight: '600', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '-4px', marginTop: '8px' }}>WhatsApp</div>
+
+
 
                 <div className="input-group">
                     <label>Total Envíos</label>
