@@ -2174,6 +2174,15 @@ body {
   height: 100%;
 }
 
+/* Remove duplicate styles when chart-card is also a flip-card */
+.flip-card.chart-card {
+  background: none;
+  border: none;
+  padding: 0;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
 .flip-card-inner {
   position: relative;
   width: 100%;
