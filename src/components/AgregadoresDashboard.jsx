@@ -157,17 +157,17 @@ const AgregadoresDashboard = ({ metrics, config = {}, zoneFilter = 'all', setZon
                 <div style={{
                     position: 'absolute',
                     top: '15px',
-                    right: '140px',
-                    zIndex: 100,
+                    right: '140px', /* Increased to 140px to fully clear Zen/Config buttons */
+                    zIndex: 90,
                     display: 'flex',
-                    gap: '3px',
-                    background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.7), rgba(255, 255, 255, 0.4))',
+                    gap: '4px',
+                    background: 'var(--glass-surface)',
                     backdropFilter: 'blur(20px)',
                     WebkitBackdropFilter: 'blur(20px)',
-                    border: '1px solid rgba(255, 255, 255, 0.6)',
+                    border: '1px solid var(--glass-border)',
                     borderRadius: '16px',
                     padding: '5px 6px',
-                    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.12), inset 0 1px 0 rgba(255,255,255,0.8)'
+                    boxShadow: 'var(--shadow-md)'
                 }}>
                     <button
                         onClick={() => setZoneFilter('all')}
@@ -178,11 +178,11 @@ const AgregadoresDashboard = ({ metrics, config = {}, zoneFilter = 'all', setZon
                             fontSize: '0.75rem',
                             fontWeight: '600',
                             cursor: 'pointer',
-                            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                            transition: 'var(--transition)',
                             transform: zoneFilter === 'all' ? 'scale(1.05)' : 'scale(1)',
-                            background: zoneFilter === 'all' ? 'linear-gradient(135deg, #8b5cf6, #a78bfa)' : 'rgba(255,255,255,0.3)',
-                            color: zoneFilter === 'all' ? '#fff' : '#555',
-                            boxShadow: zoneFilter === 'all' ? '0 4px 15px rgba(139, 92, 246, 0.4)' : 'none'
+                            background: zoneFilter === 'all' ? 'linear-gradient(135deg, var(--secondary-brand), #6366f1)' : 'transparent',
+                            color: zoneFilter === 'all' ? '#fff' : 'var(--text-secondary)',
+                            boxShadow: zoneFilter === 'all' ? 'var(--shadow-sm)' : 'none'
                         }}
                     >
                         Todo
@@ -196,11 +196,11 @@ const AgregadoresDashboard = ({ metrics, config = {}, zoneFilter = 'all', setZon
                             fontSize: '0.75rem',
                             fontWeight: '600',
                             cursor: 'pointer',
-                            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                            transition: 'var(--transition)',
                             transform: zoneFilter === 'centro' ? 'scale(1.05)' : 'scale(1)',
-                            background: zoneFilter === 'centro' ? 'linear-gradient(135deg, #8b5cf6, #a78bfa)' : 'rgba(255,255,255,0.3)',
-                            color: zoneFilter === 'centro' ? '#fff' : '#555',
-                            boxShadow: zoneFilter === 'centro' ? '0 4px 15px rgba(139, 92, 246, 0.4)' : 'none'
+                            background: zoneFilter === 'centro' ? 'linear-gradient(135deg, var(--secondary-brand), #6366f1)' : 'transparent',
+                            color: zoneFilter === 'centro' ? '#fff' : 'var(--text-secondary)',
+                            boxShadow: zoneFilter === 'centro' ? 'var(--shadow-sm)' : 'none'
                         }}
                     >
                         Centro
@@ -214,11 +214,11 @@ const AgregadoresDashboard = ({ metrics, config = {}, zoneFilter = 'all', setZon
                             fontSize: '0.75rem',
                             fontWeight: '600',
                             cursor: 'pointer',
-                            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                            transition: 'var(--transition)',
                             transform: zoneFilter === 'norte' ? 'scale(1.05)' : 'scale(1)',
-                            background: zoneFilter === 'norte' ? 'linear-gradient(135deg, #8b5cf6, #a78bfa)' : 'rgba(255,255,255,0.3)',
-                            color: zoneFilter === 'norte' ? '#fff' : '#555',
-                            boxShadow: zoneFilter === 'norte' ? '0 4px 15px rgba(139, 92, 246, 0.4)' : 'none'
+                            background: zoneFilter === 'norte' ? 'linear-gradient(135deg, var(--secondary-brand), #6366f1)' : 'transparent',
+                            color: zoneFilter === 'norte' ? '#fff' : 'var(--text-secondary)',
+                            boxShadow: zoneFilter === 'norte' ? 'var(--shadow-sm)' : 'none'
                         }}
                     >
                         Norte
@@ -226,31 +226,7 @@ const AgregadoresDashboard = ({ metrics, config = {}, zoneFilter = 'all', setZon
                 </div>
             )}
 
-            {/* Small Header */}
-            <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '8px',
-                position: 'absolute',
-                top: '15px',
-                left: '50%',
-                transform: 'translateX(-50%)',
-                zIndex: 50
-            }}>
-                <span style={{
-                    fontSize: '1.6rem',
-                    fontWeight: '700',
-                    color: '#333'
-                }}>
-                    Agregadores
-                </span>
-                <img
-                    src="/PuntoFarma.png"
-                    alt="Logo"
-                    style={{ height: '28px' }}
-                />
-            </div>
+            {/* HEADER REMOVED: Now handled by Dashboard.jsx */}
 
             {/* Navigation Buttons (Floating) */}
             {currentPage === 1 && (

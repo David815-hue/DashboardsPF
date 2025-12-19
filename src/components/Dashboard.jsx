@@ -884,8 +884,14 @@ const Dashboard = () => {
                 )}
                 {activeTab === 'whatsapp' && (
                     <div className="logo">
-                        <span className="logo-text" style={{ color: '#000' }}>WhatsApp Marketing</span>
+                        <span className="logo-text" style={{ color: 'var(--text-primary)' }}>WhatsApp Marketing</span>
                         <div className="logo-icon"><img src="/DomiciliosPF.png" alt="Logo" /></div>
+                    </div>
+                )}
+                {activeTab === 'agregadores' && (
+                    <div className="logo">
+                        <span className="logo-text" style={{ color: 'var(--text-primary)' }}>Agregadores</span>
+                        <div className="logo-icon"><img src="/PuntoFarma.png" alt="Logo" /></div>
                     </div>
                 )}
             </header>
