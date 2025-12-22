@@ -32,15 +32,17 @@ const KPICard = ({ title, value, format, icon: Icon, subtitle, chart, trend = nu
                 {Icon && <Icon size={20} className="kpi-icon" />}
                 <span className="kpi-title">{title}</span>
             </div>
-            <div className="kpi-value">{formatValue(animatedValue)}</div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <div className="kpi-value">{formatValue(animatedValue)}</div>
 
-            {/* Trend Indicator */}
-            {trend !== null && trend !== undefined && (
-                <div className={`trend-indicator ${trend > 0 ? 'positive' : trend < 0 ? 'negative' : 'neutral'}`} style={{ marginTop: '2px', fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '3px', color: trend > 0 ? '#10b981' : trend < 0 ? '#ef4444' : '#6b7280' }}>
-                    {trend > 0 ? <TrendingUp size={12} /> : trend < 0 ? <TrendingDown size={12} /> : <Minus size={12} />}
-                    <span>{Math.abs(trend).toFixed(1)}%</span>
-                </div>
-            )}
+                {/* Trend Indicator */}
+                {trend !== null && trend !== undefined && (
+                    <div className={`trend-indicator ${trend > 0 ? 'positive' : trend < 0 ? 'negative' : 'neutral'}`} style={{ fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '3px', color: trend > 0 ? '#10b981' : trend < 0 ? '#ef4444' : '#6b7280' }}>
+                        {trend > 0 ? <TrendingUp size={12} /> : trend < 0 ? <TrendingDown size={12} /> : <Minus size={12} />}
+                        <span>{Math.abs(trend).toFixed(1)}%</span>
+                    </div>
+                )}
+            </div>
 
             {subtitle && (
                 <div className="kpi-footer">
