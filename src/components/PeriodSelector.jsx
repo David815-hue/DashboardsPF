@@ -106,7 +106,7 @@ const CalendarView = ({
                 <div style={{ marginTop: '12px', borderTop: '1px solid #eee', paddingTop: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <span style={{ fontSize: '11px', color: '#666' }}>Semana: {selectedWeek}</span>
                     <button
-                        onClick={(e) => onDeleteSnapshot(e, selectedWeek)}
+                        onClick={(e) => onDeleteSnapshot(selectedWeek, e)}
                         style={{ background: 'none', border: 'none', color: '#ff4444', cursor: 'pointer', padding: '4px', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '11px' }}
                     >
                         <Trash2 size={12} /> Eliminar

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, PieChart, Pie, Legend } from 'recharts';
 import KPICard from './KPICard';
 import TiltedCard from './TiltedCard';
@@ -8,6 +8,8 @@ const COLORS = ['#FE0000', '#0ea5e9', '#22c55e', '#f59e0b', '#8b5cf6', '#ec4899'
 import CustomTooltip from './CustomTooltip';
 
 const EcommerceDashboard = ({ metrics, trends, topProductsCount = 6 }) => {
+    const [topProductsMode, setTopProductsMode] = useState('pedidos'); // 'pedidos' or 'venta'
+
     if (!metrics) {
         return (
             <div className="empty-state">
@@ -17,7 +19,12 @@ const EcommerceDashboard = ({ metrics, trends, topProductsCount = 6 }) => {
     }
 
     const { kpis, charts } = metrics;
-    const topProductosData = charts.topProductos?.slice(0, topProductsCount) || [];
+    const allProductos = charts.topProductos || [];
+
+    // Prepare data based on selected mode - sort FIRST, then slice
+    const topProductosData = topProductsMode === 'pedidos'
+        ? [...allProductos].sort((a, b) => b.value - a.value).slice(0, topProductsCount)
+        : [...allProductos].sort((a, b) => (b.totalVenta || 0) - (a.totalVenta || 0)).slice(0, topProductsCount).map(p => ({ ...p, value: p.totalVenta || 0 }));
 
     return (
         <div className="dashboard-content">
@@ -37,7 +44,23 @@ const EcommerceDashboard = ({ metrics, trends, topProductsCount = 6 }) => {
                 {/* Quadrant 2 (Top-Right): Top Productos */}
                 <div className="ecommerce-quadrant">
                     <div className="chart-wrapper">
-                        <h3 className="chart-title">Top Productos</h3>
+                        <div className="chart-header-with-toggle">
+                            <h3 className="chart-title">Top Productos</h3>
+                            <div className="top-products-toggle">
+                                <button
+                                    className={`toggle-btn ${topProductsMode === 'pedidos' ? 'active' : ''}`}
+                                    onClick={() => setTopProductsMode('pedidos')}
+                                >
+                                    Pedidos
+                                </button>
+                                <button
+                                    className={`toggle-btn ${topProductsMode === 'venta' ? 'active' : ''}`}
+                                    onClick={() => setTopProductsMode('venta')}
+                                >
+                                    Venta
+                                </button>
+                            </div>
+                        </div>
                         <div className="chart-container" style={{ padding: '20px' }}>
                             <ResponsiveContainer width="100%" height="100%">
                                 <BarChart data={topProductosData} margin={{ top: 10, right: 20, left: 10, bottom: 60 }}>
@@ -56,9 +79,12 @@ const EcommerceDashboard = ({ metrics, trends, topProductsCount = 6 }) => {
                                         height={80}
                                         tickFormatter={(val) => val.length > 20 ? val.substring(0, 20) + '...' : val}
                                     />
-                                    <YAxis tick={{ fontSize: 10, fill: '#666' }} />
+                                    <YAxis
+                                        tick={{ fontSize: 10, fill: '#666' }}
+                                        tickFormatter={topProductsMode === 'venta' ? (val) => `L ${val.toLocaleString()}` : undefined}
+                                    />
                                     <Tooltip content={<CustomTooltip />} />
-                                    <Bar dataKey="value" name="Cantidad" radius={[8, 8, 0, 0]} fill="url(#ecommerceBarGradient)">
+                                    <Bar dataKey="value" name={topProductsMode === 'pedidos' ? 'Cantidad' : 'Venta'} radius={[8, 8, 0, 0]} fill="url(#ecommerceBarGradient)">
                                         {topProductosData.map((entry, index) => (
                                             <Cell key={`cell-${index}`} fill="url(#ecommerceBarGradient)" />
                                         ))}
@@ -77,7 +103,7 @@ const EcommerceDashboard = ({ metrics, trends, topProductsCount = 6 }) => {
                             <ResponsiveContainer width="100%" height="100%">
                                 <BarChart data={charts.motivosCancelacion} margin={{ top: 20, right: 20, left: 10, bottom: 20 }}>
                                     <defs>
-                                        <linearGradient id="ecommerceBarGradient" x1="0" y1="0" x2="0" y2="1">
+                                        <linearGradient id="ecommerceBarGradient2" x1="0" y1="0" x2="0" y2="1">
                                             <stop offset="0%" stopColor="#FE0000" stopOpacity={1} />
                                             <stop offset="100%" stopColor="#990000" stopOpacity={1} />
                                         </linearGradient>
@@ -92,9 +118,9 @@ const EcommerceDashboard = ({ metrics, trends, topProductsCount = 6 }) => {
                                     />
                                     <YAxis tick={{ fontSize: 10, fill: '#666' }} />
                                     <Tooltip content={<CustomTooltip />} />
-                                    <Bar dataKey="value" name="Cantidad" radius={[8, 8, 0, 0]} fill="url(#ecommerceBarGradient)">
+                                    <Bar dataKey="value" name="Cantidad" radius={[8, 8, 0, 0]} fill="url(#ecommerceBarGradient2)">
                                         {charts.motivosCancelacion.map((entry, index) => (
-                                            <Cell key={`cell-${index}`} fill="url(#ecommerceBarGradient)" />
+                                            <Cell key={`cell-${index}`} fill="url(#ecommerceBarGradient2)" />
                                         ))}
                                     </Bar>
                                 </BarChart>

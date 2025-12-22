@@ -31,11 +31,11 @@ export const calculateEcommerceMetrics = (data) => {
 
     // === Charts Data ===
 
-    // Top Productos (top 6 by Quantity)
-    const topProductosChart = topProductos.slice(0, 6).map(p => ({
+    // Top Productos - pass more products so dashboard can sort by quantity OR sales
+    const topProductosChart = topProductos.slice(0, 50).map(p => ({
         name: p.descripcion || p.codigo,
-        value: p.cantidad, // Showing Quantity
-        totalVenta: p.total
+        value: p.cantidad, // Quantity (pedidos)
+        totalVenta: p.total // Sales in LPS
     }));
 
     // Venta por Ciudad (pie chart) - Exclude 'OTROS'
