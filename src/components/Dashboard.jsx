@@ -137,6 +137,42 @@ const Dashboard = () => {
         loadAvailableSnapshots();
     }, []);
 
+    // Auto-select current month when switching dashboards
+    useEffect(() => {
+        // Reset comparison mode and period B selection
+        setIsComparisonMode(false);
+        setSelectedMonthB(null);
+        setSelectedWeekB(null);
+
+        // Get the correct snapshots for the new dashboard
+        const getCurrentDashboardSnapshots = () => {
+            if (activeTab === 'ecommerce') return ecommerceSnapshotsByMonth;
+            if (activeTab === 'whatsapp') return whatsappSnapshotsByMonth;
+            if (activeTab === 'agregadores') return agregadoresSnapshotsByMonth;
+            return snapshotsByMonth;
+        };
+
+        const dashboardSnapshots = getCurrentDashboardSnapshots();
+        const now = new Date();
+        const currentMonthKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+
+        // Auto-select current month if this dashboard has data for it
+        if (dashboardSnapshots[currentMonthKey]) {
+            setSelectedMonth(currentMonthKey);
+            setSelectedWeek(null); // Show aggregate
+        } else {
+            // If no current month, select the most recent month available
+            const availableMonths = Object.keys(dashboardSnapshots).sort().reverse();
+            if (availableMonths.length > 0) {
+                setSelectedMonth(availableMonths[0]);
+                setSelectedWeek(null);
+            } else {
+                setSelectedMonth(null);
+                setSelectedWeek(null);
+            }
+        }
+    }, [activeTab, snapshotsByMonth, ecommerceSnapshotsByMonth, whatsappSnapshotsByMonth, agregadoresSnapshotsByMonth]);
+
     const loadAvailableSnapshots = async () => {
         setIsLoading(true);
         try {
@@ -595,7 +631,7 @@ const Dashboard = () => {
                                 <div
                                     key={tab.id}
                                     className={`dashboard-option ${activeTab === tab.id ? 'active' : ''}`}
-                                    onClick={() => { setActiveTab(tab.id); setIsDashboardDropdownOpen(false); setIsComparisonMode(false); setSelectedMonth(null); setSelectedWeek(null); setSelectedMonthB(null); setSelectedWeekB(null); }}
+                                    onClick={() => { setActiveTab(tab.id); setIsDashboardDropdownOpen(false); }}
                                 >
                                     <span className="tab-icon">{tab.icon}</span>
                                     {tab.label}
