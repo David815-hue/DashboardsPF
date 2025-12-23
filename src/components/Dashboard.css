@@ -1628,23 +1628,24 @@ body {
   width: 50px;
   height: 50px;
   border-radius: 50%;
-  border: none;
-  background: white;
+  background: rgba(255, 255, 255, 0.25);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.4);
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   z-index: 50;
-  color: #555;
-  transition: all 0.2s ease;
+  color: #333;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .wa-nav-btn:hover {
-  background: #f3f4f6;
   transform: translateY(-50%) scale(1.1);
-  color: #0ea5e9;
-  box-shadow: 0 6px 20px rgba(14, 165, 233, 0.2);
+  box-shadow: var(--shadow-hover);
+  color: var(--primary-red);
 }
 
 .wa-nav-btn.next {
@@ -2135,36 +2136,40 @@ body {
 }
 
 /* Toggle Switcher for Charts */
+/* Toggle Switcher for Charts - Glassmorphism */
 .chart-toggle {
   display: flex;
-  background: #f1f5f9;
-  padding: 2px;
-  border-radius: 8px;
-  border: 1px solid #e2e8f0;
+  background: rgba(255, 255, 255, 0.25);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  padding: 4px;
+  border-radius: 24px;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
 }
 
 .toggle-btn {
-  padding: 4px 12px;
+  padding: 6px 16px;
   border: none;
   background: transparent;
-  border-radius: 6px;
+  border-radius: 20px;
   font-size: 0.75rem;
-  font-weight: 500;
-  color: #64748b;
+  font-weight: 600;
+  color: #444;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.3s ease;
 }
 
 .toggle-btn.active {
-  background: white;
-  color: #0f172a;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-  font-weight: 600;
+  background: rgba(255, 255, 255, 0.6);
+  color: #000;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  font-weight: 700;
 }
 
 .toggle-btn:hover:not(.active) {
-  color: #334155;
-  background: rgba(255, 255, 255, 0.5);
+  color: #000;
+  background: rgba(255, 255, 255, 0.2);
 }
 
 /* Flip Card Styles for Agregadores */

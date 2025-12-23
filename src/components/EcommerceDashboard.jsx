@@ -22,9 +22,13 @@ const EcommerceDashboard = ({ metrics, trends, topProductsCount = 6 }) => {
     const allProductos = charts.topProductos || [];
 
     // Prepare data based on selected mode - sort FIRST, then slice
+    // Keep 'cantidad' (units) available for tooltip in both modes
     const topProductosData = topProductsMode === 'pedidos'
         ? [...allProductos].sort((a, b) => b.value - a.value).slice(0, topProductsCount)
-        : [...allProductos].sort((a, b) => (b.totalVenta || 0) - (a.totalVenta || 0)).slice(0, topProductsCount).map(p => ({ ...p, value: p.totalVenta || 0 }));
+        : [...allProductos]
+            .sort((a, b) => (b.totalVenta || 0) - (a.totalVenta || 0))
+            .slice(0, topProductsCount)
+            .map(p => ({ ...p, cantidad: p.value, value: p.totalVenta || 0 }));
 
     return (
         <div className="dashboard-content">
@@ -46,7 +50,7 @@ const EcommerceDashboard = ({ metrics, trends, topProductsCount = 6 }) => {
                     <div className="chart-wrapper">
                         <div className="chart-header-with-toggle">
                             <h3 className="chart-title">Top Productos</h3>
-                            <div className="top-products-toggle">
+                            <div className="chart-toggle">
                                 <button
                                     className={`toggle-btn ${topProductsMode === 'pedidos' ? 'active' : ''}`}
                                     onClick={() => setTopProductsMode('pedidos')}
@@ -89,6 +93,10 @@ const EcommerceDashboard = ({ metrics, trends, topProductsCount = 6 }) => {
                                             <Cell key={`cell-${index}`} fill="url(#ecommerceBarGradient)" />
                                         ))}
                                     </Bar>
+                                    {/* Hidden bar to include units in tooltip when in Venta mode */}
+                                    {topProductsMode === 'venta' && (
+                                        <Bar dataKey="cantidad" name="Unidades" hide={true} />
+                                    )}
                                 </BarChart>
                             </ResponsiveContainer>
                         </div>
