@@ -595,7 +595,7 @@ const Dashboard = () => {
                                 <div
                                     key={tab.id}
                                     className={`dashboard-option ${activeTab === tab.id ? 'active' : ''}`}
-                                    onClick={() => { setActiveTab(tab.id); setIsDashboardDropdownOpen(false); }}
+                                    onClick={() => { setActiveTab(tab.id); setIsDashboardDropdownOpen(false); setIsComparisonMode(false); setSelectedMonthB(null); setSelectedWeekB(null); }}
                                 >
                                     <span className="tab-icon">{tab.icon}</span>
                                     {tab.label}
