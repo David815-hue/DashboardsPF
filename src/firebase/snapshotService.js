@@ -121,8 +121,15 @@ export const calculateMonthlyAggregate = (weeklySnapshots) => {
     const sorted = [...weeklySnapshots].sort((a, b) => b.dateId.localeCompare(a.dateId));
     const latestSnapshot = sorted[0];
 
-    // Return the metrics from the latest snapshot directly
-    return latestSnapshot.metrics;
+    // For Venta Meta, topProducts and embudoData are stored inside metrics
+    // For other dashboards, they might be in charts or at root level
+    const metricsData = latestSnapshot.metrics || {};
+
+    return {
+        ...metricsData,
+        topProducts: metricsData.topProducts || latestSnapshot.charts?.topProducts || latestSnapshot.topProducts || [],
+        embudoData: metricsData.embudoData || latestSnapshot.charts?.funnelData || latestSnapshot.embudoData || []
+    };
 };
 
 // =============================================

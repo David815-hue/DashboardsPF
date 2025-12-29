@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
-import { Settings, X, Save, Calendar, ChevronDown, Trash2, Maximize2, Minimize2, Menu } from 'lucide-react';
+import { Settings, X, Save, Calendar, ChevronDown, Trash2, Maximize2, Minimize2, Menu, Sparkles } from 'lucide-react';
+import AIInsightsModal from './AIInsightsModal';
 import PeriodSelector from './PeriodSelector';
 import KPICard from './KPICard';
 import TopProductsChart from './TopProductsChart';
@@ -81,6 +82,7 @@ const Dashboard = () => {
     }, []);
 
     const [isConfigOpen, setIsConfigOpen] = useState(false);
+    const [isAIModalOpen, setIsAIModalOpen] = useState(false);
     const [files, setFiles] = useState({ albatross: null, rms: null, simla: null });
     const [isProcessing, setIsProcessing] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
@@ -670,6 +672,15 @@ const Dashboard = () => {
                                 allowCurrentData={true}
                             />
 
+                            {/* AI Insights Button */}
+                            <div
+                                className="ai-insights-btn"
+                                onClick={() => setIsAIModalOpen(true)}
+                                title="Generar Insights con IA"
+                            >
+                                <Sparkles size={16} />
+                            </div>
+
                             {/* Comparison Mode Toggle - Inline */}
                             <div
                                 className={`comparison-toggle-btn ${isComparisonMode ? 'active' : ''}`}
@@ -1029,6 +1040,15 @@ const Dashboard = () => {
                     </div>
                 )
             ) : null}
+
+            {/* AI Insights Modal */}
+            <AIInsightsModal
+                isOpen={isAIModalOpen}
+                onClose={() => setIsAIModalOpen(false)}
+                metrics={metrics}
+                dashboardType={activeTab}
+                trends={trends}
+            />
         </div>
     );
 };
