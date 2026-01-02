@@ -284,6 +284,7 @@ const Dashboard = () => {
             if (activeTab === 'ecommerce') {
                 // Save E-commerce snapshot
                 const snapshotData = {
+                    config: config, // Save the config
                     metrics: ecommerceMetrics.kpis,
                     charts: ecommerceMetrics.charts
                 };
@@ -307,10 +308,13 @@ const Dashboard = () => {
                 // Save Agregadores snapshot - only save summarized data (not rawData to avoid size limit)
                 // Get processed data - either from fresh data or from loaded snapshot
                 let processedDataToSave;
+                let dataMaxDate = null;
+
                 if (agregadoresData._isSnapshot && agregadoresData._snapshotMetrics?.rawProcessedData) {
                     // If already a snapshot with rawProcessedData, use that (without rawData)
                     const { rawData, ...rest } = agregadoresData._snapshotMetrics.rawProcessedData;
                     processedDataToSave = rest;
+                    dataMaxDate = agregadoresData._snapshotMetrics.dataMaxDate || null;
                 } else if (!agregadoresData._isSnapshot) {
                     // Fresh data - save summarized data only (no rawData - it's too large for Firebase)
                     processedDataToSave = {
@@ -319,18 +323,21 @@ const Dashboard = () => {
                         topProductos: agregadoresData.topProductos?.slice(0, 50), // Limit to top 50
                         topTiendas: agregadoresData.topTiendas,
                         pedidosPorTienda: agregadoresData.pedidosPorTienda,
-                        ventaPorDia: agregadoresData.ventaPorDia
+                        ventaPorDia: agregadoresData.ventaPorDia,
+                        maxDate: agregadoresData.maxDate // Save the most recent date from file
                         // Note: rawData excluded to stay under Firebase 1MB limit
                     };
+                    dataMaxDate = agregadoresData.maxDate;
                 }
 
-                console.log('[Agregadores Snapshot] Saving with processedData:', !!processedDataToSave);
+                console.log('[Agregadores Snapshot] Saving with processedData:', !!processedDataToSave, 'maxDate:', dataMaxDate);
 
                 const snapshotData = {
                     config: agregadoresConfig,
                     kpis: agregadoresMetrics.kpis,
                     charts: agregadoresMetrics.charts,
                     snapshotDate: snapshotDate,
+                    dataMaxDate: dataMaxDate ? dataMaxDate.toISOString() : null, // Save as ISO string
                     rawProcessedData: processedDataToSave
                 };
                 result = await saveAgregadoresSnapshot(snapshotDate, snapshotData);
@@ -400,21 +407,41 @@ const Dashboard = () => {
                         _isSnapshot: true,
                         _snapshotMetrics: result.data
                     });
+                    // Restore the config from the snapshot (if exists)
+                    if (result.data.config) {
+                        console.log('[E-commerce] Restoring config from snapshot:', result.data.config);
+                        setConfig(result.data.config);
+                    }
                 } else if (activeTab === 'whatsapp') {
                     setWhatsappData({
                         _isSnapshot: true,
                         _snapshotMetrics: result.data
                     });
+                    // Restore the config from the snapshot
+                    if (result.data.config) {
+                        console.log('[WhatsApp] Restoring config from snapshot:', result.data.config);
+                        setConfig(result.data.config);
+                    }
                 } else if (activeTab === 'agregadores') {
                     setAgregadoresData({
                         _isSnapshot: true,
                         _snapshotMetrics: result.data
                     });
+                    // Restore the config from the snapshot
+                    if (result.data.config) {
+                        console.log('[Agregadores] Restoring config from snapshot:', result.data.config);
+                        setAgregadoresConfig(result.data.config);
+                    }
                 } else {
                     setData({
                         _isSnapshot: true,
                         _snapshotMetrics: result.data.metrics
                     });
+                    // Restore the config from the snapshot
+                    if (result.data.config) {
+                        console.log('[Venta Meta] Restoring config from snapshot:', result.data.config);
+                        setConfig(result.data.config);
+                    }
                 }
                 setSelectedWeek(weekId);
             } else {
@@ -492,7 +519,10 @@ const Dashboard = () => {
         if (!mSelected && d && !d._isSnapshot) {
             if (activeTab === 'ecommerce') return calculateEcommerceMetrics(d);
             if (activeTab === 'whatsapp') return calculateWhatsAppMetrics(d, config);
-            if (activeTab === 'agregadores') return calculateAgregadoresMetrics(d, agregadoresConfig, agregadoresZoneFilter);
+            if (activeTab === 'agregadores') {
+                // Pass maxDate from the uploaded file for accurate MTD calculation
+                return calculateAgregadoresMetrics(d, agregadoresConfig, agregadoresZoneFilter, d.maxDate);
+            }
 
             // Venta Meta
             const metricsResult = calculateMetrics(d, config);
@@ -510,7 +540,9 @@ const Dashboard = () => {
             if (activeTab === 'whatsapp') return { page1: { kpis: snap.kpis, charts: snap.charts }, page2: { ...snap.page2 } };
             if (activeTab === 'agregadores') {
                 if (snap.rawProcessedData) {
-                    return calculateAgregadoresMetrics(snap.rawProcessedData, snap.config || agregadoresConfig, agregadoresZoneFilter);
+                    // Reconstruct the date from the stored ISO string
+                    const dataDate = snap.dataMaxDate ? new Date(snap.dataMaxDate) : null;
+                    return calculateAgregadoresMetrics(snap.rawProcessedData, snap.config || agregadoresConfig, agregadoresZoneFilter, dataDate);
                 }
                 return { kpis: snap.kpis, charts: snap.charts };
             }

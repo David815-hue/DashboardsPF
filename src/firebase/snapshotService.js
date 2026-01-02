@@ -466,7 +466,9 @@ export const calculateAgregadoresMonthlyAggregate = (snapshots, config = {}, zon
 
     // If rawProcessedData exists, recalculate with zone filter
     if (latestSnapshot.rawProcessedData) {
-        return calculateAgregadoresMetrics(latestSnapshot.rawProcessedData, latestSnapshot.config || config, zoneFilter);
+        // Reconstruct the date from the stored ISO string
+        const dataDate = latestSnapshot.dataMaxDate ? new Date(latestSnapshot.dataMaxDate) : null;
+        return calculateAgregadoresMetrics(latestSnapshot.rawProcessedData, latestSnapshot.config || config, zoneFilter, dataDate);
     }
 
     // Fallback: Return kpis and charts from the latest snapshot directly

@@ -13,9 +13,10 @@ export const ZONA_NORTE = ['SAN PEDRO SULA', 'PUERTO CORTES', 'EL PROGRESO', 'LA
  * @param {Object} processedData - Output from processPedidosYaData
  * @param {Object} config - Manual configuration (presupuesto, metaTx, cumplimientoTx, metaPedidosPorTienda)
  * @param {string} zoneFilter - 'all', 'centro', or 'norte'
+ * @param {Date} dataDate - Optional date to use for MTD calculations (defaults to today)
  * @returns {Object} - Metrics and chart data
  */
-export const calculateAgregadoresMetrics = (processedData, config = {}, zoneFilter = 'all') => {
+export const calculateAgregadoresMetrics = (processedData, config = {}, zoneFilter = 'all', dataDate = null) => {
     const {
         ventaTotal: ventaTotalRaw = 0,
         cantidadTx: cantidadTxRaw = 0,
@@ -114,10 +115,19 @@ export const calculateAgregadoresMetrics = (processedData, config = {}, zoneFilt
     }
 
     // Calculate prorated target (meta prorrateada)
-    const today = new Date();
-    const dayOfMonth = today.getDate();
-    const daysInMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0).getDate();
+    // Use dataDate if provided (from file's most recent date), otherwise use today
+    const referenceDate = dataDate || new Date();
+    const dayOfMonth = referenceDate.getDate();
+    const daysInMonth = new Date(referenceDate.getFullYear(), referenceDate.getMonth() + 1, 0).getDate();
     const metaProrrateada = activePresupuesto > 0 ? (activePresupuesto / daysInMonth) * dayOfMonth : 0;
+
+    console.log('[Agregadores MTD]', {
+        dataDate: dataDate ? dataDate.toISOString().split('T')[0] : 'not provided (using today)',
+        referenceDate: referenceDate.toISOString().split('T')[0],
+        dayOfMonth,
+        daysInMonth,
+        metaProrrateada
+    });
 
     // Select the appropriate Tx target based on zone filter
     const activeMetaTx = zoneFilter === 'centro' ? metaTxCentro

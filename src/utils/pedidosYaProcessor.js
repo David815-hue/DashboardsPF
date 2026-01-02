@@ -354,6 +354,39 @@ export const processPedidosYaData = async (files) => {
         }))
         .sort((a, b) => a.day - b.day);
 
+    // === Detect the most recent date in the file ===
+    let maxDate = null;
+    processedData.forEach(row => {
+        const fechaStr = String(row._fecha || '').trim();
+        if (!fechaStr) return;
+
+        let dateObj = null;
+
+        // Try "YYYY-MM-DD HH:MM" format (from PedidosYa)
+        const isoMatch = fechaStr.match(/^(\d{4})-(\d{2})-(\d{2})/);
+        if (isoMatch) {
+            dateObj = new Date(isoMatch[1], parseInt(isoMatch[2]) - 1, parseInt(isoMatch[3]));
+        } else {
+            // Try DD/MM/YYYY format
+            const slashMatch = fechaStr.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})/);
+            if (slashMatch) {
+                const day = parseInt(slashMatch[1]);
+                const month = parseInt(slashMatch[2]) - 1;
+                let year = parseInt(slashMatch[3]);
+                if (year < 100) year += 2000; // Handle 2-digit years
+                dateObj = new Date(year, month, day);
+            }
+        }
+
+        if (dateObj && !isNaN(dateObj.getTime())) {
+            if (!maxDate || dateObj > maxDate) {
+                maxDate = dateObj;
+            }
+        }
+    });
+
+    console.log('[PedidosYa] Fecha más reciente detectada:', maxDate ? maxDate.toISOString().split('T')[0] : 'No detectada');
+
     return {
         rawData: processedData,
         ventaTotal,
@@ -365,6 +398,7 @@ export const processPedidosYaData = async (files) => {
         ventasByStore,
         ordersByStore: Object.fromEntries(
             Object.entries(ordersByStore).map(([k, v]) => [k, v.size])
-        )
+        ),
+        maxDate: maxDate // Most recent date in the data
     };
 };
