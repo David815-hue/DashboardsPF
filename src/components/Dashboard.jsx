@@ -125,6 +125,10 @@ const Dashboard = () => {
     const [activeTab, setActiveTab] = useState('venta-meta');
     const [isMenuLocked, setIsMenuLocked] = useState(false); // New state for menu lock
     const [isDashboardDropdownOpen, setIsDashboardDropdownOpen] = useState(false);
+
+    // Last update timestamp
+    const [lastUpdateTime, setLastUpdateTime] = useState(null);
+
     const DASHBOARD_TABS = [
         { id: 'venta-meta', label: 'Venta Meta', icon: '📊' },
         { id: 'ecommerce', label: 'Venta E-commerce', icon: '🛒' },
@@ -175,6 +179,7 @@ const Dashboard = () => {
         }
     }, [activeTab, snapshotsByMonth, ecommerceSnapshotsByMonth, whatsappSnapshotsByMonth, agregadoresSnapshotsByMonth]);
 
+
     const loadAvailableSnapshots = async () => {
         setIsLoading(true);
         try {
@@ -214,6 +219,85 @@ const Dashboard = () => {
             setIsLoading(false);
         }
     };
+
+    // Update timestamp based on active dashboard (dashboard-specific)
+    useEffect(() => {
+        // Helper to find most recent timestamp in a collection
+        const findMostRecentTimestamp = (snapshotsByMonth) => {
+            let mostRecent = null;
+            Object.values(snapshotsByMonth).forEach(monthSnapshots => {
+                monthSnapshots.forEach(snapshot => {
+                    if (snapshot.savedAt) {
+                        const savedDate = new Date(snapshot.savedAt);
+                        if (!mostRecent || savedDate > mostRecent) {
+                            mostRecent = savedDate;
+                        }
+                    }
+                });
+            });
+            return mostRecent;
+        };
+
+        let dashboardTimestamp = null;
+
+        // Get timestamp for current active dashboard
+        if (activeTab === 'venta-meta' && Object.keys(snapshotsByMonth).length > 0) {
+            dashboardTimestamp = findMostRecentTimestamp(snapshotsByMonth);
+        } else if (activeTab === 'ecommerce' && Object.keys(ecommerceSnapshotsByMonth).length > 0) {
+            dashboardTimestamp = findMostRecentTimestamp(ecommerceSnapshotsByMonth);
+        } else if (activeTab === 'whatsapp' && Object.keys(whatsappSnapshotsByMonth).length > 0) {
+            dashboardTimestamp = findMostRecentTimestamp(whatsappSnapshotsByMonth);
+        } else if (activeTab === 'agregadores' && Object.keys(agregadoresSnapshotsByMonth).length > 0) {
+            dashboardTimestamp = findMostRecentTimestamp(agregadoresSnapshotsByMonth);
+        }
+
+        // Update timestamp for this dashboard
+        if (dashboardTimestamp) {
+            setLastUpdateTime(dashboardTimestamp);
+            console.log(`[Timestamp] ${activeTab} last save:`, dashboardTimestamp);
+        } else {
+            // No snapshots for this dashboard
+            setLastUpdateTime(null);
+        }
+    }, [activeTab, snapshotsByMonth, ecommerceSnapshotsByMonth, whatsappSnapshotsByMonth, agregadoresSnapshotsByMonth]);
+
+
+
+    // Auto-load configuration from current month when opening modal
+    useEffect(() => {
+        if (!isConfigOpen) return;
+
+        const now = new Date();
+        const currentMonthKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+
+        // Get the appropriate snapshots based on active tab
+        let monthSnapshots = null;
+        if (activeTab === 'venta-meta' && snapshotsByMonth[currentMonthKey]) {
+            monthSnapshots = snapshotsByMonth[currentMonthKey];
+        } else if (activeTab === 'ecommerce' && ecommerceSnapshotsByMonth[currentMonthKey]) {
+            monthSnapshots = ecommerceSnapshotsByMonth[currentMonthKey];
+        } else if (activeTab === 'whatsapp' && whatsappSnapshotsByMonth[currentMonthKey]) {
+            monthSnapshots = whatsappSnapshotsByMonth[currentMonthKey];
+        } else if (activeTab === 'agregadores' && agregadoresSnapshotsByMonth[currentMonthKey]) {
+            monthSnapshots = agregadoresSnapshotsByMonth[currentMonthKey];
+        }
+
+        if (monthSnapshots && monthSnapshots.length > 0) {
+            // Get the first snapshot to extract config
+            const firstSnapshot = monthSnapshots[0];
+
+            if (activeTab === 'agregadores' && firstSnapshot.config) {
+                // Load agregadores config
+                setAgregadoresConfig(firstSnapshot.config);
+                console.log('[Auto-load] Loaded agregadores config from current month:', firstSnapshot.config);
+            } else if (firstSnapshot.config && activeTab !== 'agregadores') {
+                // Load regular config for venta-meta, ecommerce, whatsapp
+                setConfig(firstSnapshot.config);
+                console.log(`[Auto-load] Loaded ${activeTab} config from current month:`, firstSnapshot.config);
+            }
+        }
+    }, [isConfigOpen, activeTab, snapshotsByMonth, ecommerceSnapshotsByMonth, whatsappSnapshotsByMonth, agregadoresSnapshotsByMonth]);
+
 
     const handleFileChange = (key, file) => {
         setFiles(prev => ({ ...prev, [key]: file }));
@@ -364,6 +448,8 @@ const Dashboard = () => {
                 setSuccessMessage(`Guardado: Semana del ${snapshotDate}`);
                 setTimeout(() => setSuccessMessage(null), 3000);
                 loadAvailableSnapshots();
+                // Update timestamp on successful Firebase save
+                setLastUpdateTime(new Date());
             } else {
                 setError('Error al guardar: ' + result.error);
             }
@@ -635,6 +721,17 @@ const Dashboard = () => {
         return `Semana ${date.getDate()} ${MONTH_NAMES[String(date.getMonth() + 1).padStart(2, '0')]}`;
     };
 
+    const formatLastUpdateTime = (date) => {
+        if (!date) return '';
+        const day = String(date.getDate()).padStart(2, '0');
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const year = date.getFullYear();
+        const hours = String(date.getHours()).padStart(2, '0');
+        const minutes = String(date.getMinutes()).padStart(2, '0');
+        return `${day}/${month}/${year} ${hours}:${minutes}`;
+    };
+
+
     // Get available months from correct collection based on activeTab
     const currentSnapshotsByMonth = activeTab === 'ecommerce'
         ? ecommerceSnapshotsByMonth
@@ -779,7 +876,7 @@ const Dashboard = () => {
 
             {/* Config Modal */}
             {isConfigOpen && (
-                <div className="config-modal-overlay" onClick={(e) => e.target.className === 'config-modal-overlay' && setIsConfigOpen(false)}>
+                <div className="config-modal-overlay">
                     <div className="config-modal">
                         <div className="config-modal-header">
                             <h2>Configuración</h2>
@@ -1081,6 +1178,13 @@ const Dashboard = () => {
                 dashboardType={activeTab}
                 trends={trends}
             />
+
+            {/* Last Update Timestamp */}
+            {!isZenMode && lastUpdateTime && (
+                <div className="last-update-timestamp">
+                    Última actualización: {formatLastUpdateTime(lastUpdateTime)}
+                </div>
+            )}
         </div>
     );
 };

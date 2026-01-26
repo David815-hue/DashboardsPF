@@ -2671,3 +2671,43 @@ body {
 .ai-powered-by strong {
   color: #7c3aed;
 }
+
+/* ======================= */
+/* LAST UPDATE TIMESTAMP */
+/* ======================= */
+
+.last-update-timestamp {
+  position: fixed;
+  bottom: 15px;
+  right: 15px;
+  background: rgba(255, 255, 255, 0.25);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 12px;
+  padding: 8px 14px;
+  font-size: 0.7rem;
+  color: #555;
+  opacity: 0.6;
+  z-index: 50;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  animation: fadeInTimestamp 0.5s ease-out;
+}
+
+.last-update-timestamp:hover {
+  opacity: 0.9;
+  transform: translateY(-2px);
+}
+
+@keyframes fadeInTimestamp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 0.6;
+    transform: translateY(0);
+  }
+}
