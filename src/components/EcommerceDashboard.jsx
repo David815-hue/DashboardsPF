@@ -227,7 +227,7 @@ const EcommerceDashboard = ({ metrics, trends, topProductsCount = 6 }) => {
                                                 cx="50%"
                                                 cy="50%"
                                                 innerRadius={0}
-                                                outerRadius="75%"
+                                                outerRadius="90%"
                                                 paddingAngle={2}
                                                 dataKey="value"
                                                 label={({ name, percent }) => `${(percent * 100).toFixed(1)}%`}
