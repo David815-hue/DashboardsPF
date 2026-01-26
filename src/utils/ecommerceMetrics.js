@@ -56,6 +56,66 @@ export const calculateEcommerceMetrics = (data) => {
         .map(([name, value]) => ({ name, value }))
         .sort((a, b) => b.value - a.value);
 
+    // === New Analysis: Clientes Nuevos vs Recurrentes ===
+    // Column: "¿Es primera Compra?" -> "Sí" or "No"
+    let clientesNuevosCount = 0;
+    let clientesRecurrentesCount = 0;
+    let ventaNuevos = 0;
+    let ventaRecurrentes = 0;
+
+    pedidosConsolidado.forEach(row => {
+        // Find the specific column, handling potential encoding/spacing issues
+        const isFirstPurchaseKey = Object.keys(row).find(k =>
+            k.includes('Es primera Compra') || k.includes('primera Compra')
+        );
+
+        const isFirstPurchase = isFirstPurchaseKey ? String(row[isFirstPurchaseKey]).trim().toLowerCase() : '';
+        const venta = parseFloat(row['Venta RMS']) || 0;
+
+        if (isFirstPurchase === 'sí' || isFirstPurchase === 'si') {
+            clientesNuevosCount++;
+            ventaNuevos += venta;
+        } else {
+            // Assuming anything not "Sí" is recurring or at least not new
+            clientesRecurrentesCount++;
+            ventaRecurrentes += venta;
+        }
+    });
+
+    const clientesNuevosData = [
+        { name: 'Nuevos', value: clientesNuevosCount, venta: ventaNuevos },
+        { name: 'Recurrentes', value: clientesRecurrentesCount, venta: ventaRecurrentes }
+    ];
+
+    // === City-Specific: Distribution of New Customers Only ===
+    const clientesNuevosPorCiudad = {
+        'TEGUCIGALPA D.C.': 0,
+        'SAN PEDRO SULA': 0
+    };
+
+    pedidosConsolidado.forEach(row => {
+        const ciudad = String(row['Ciudad'] || '').trim().toUpperCase();
+
+        // Only process relevant cities
+        if (clientesNuevosPorCiudad.hasOwnProperty(ciudad)) {
+            // Check if it's a new customer
+            const isFirstPurchaseKey = Object.keys(row).find(k =>
+                k.includes('Es primera Compra') || k.includes('primera Compra')
+            );
+            const isFirstPurchase = isFirstPurchaseKey ? String(row[isFirstPurchaseKey]).trim().toLowerCase() : '';
+
+            if (isFirstPurchase === 'sí' || isFirstPurchase === 'si') {
+                clientesNuevosPorCiudad[ciudad]++;
+            }
+        }
+    });
+
+    // Format for pie chart - Distribution of new customers by city
+    const clientesNuevosCiudadData = [
+        { name: 'Tegucigalpa', value: clientesNuevosPorCiudad['TEGUCIGALPA D.C.'], fill: '#00C49F' },
+        { name: 'San Pedro Sula', value: clientesNuevosPorCiudad['SAN PEDRO SULA'], fill: '#0088FE' }
+    ];
+
     return {
         kpis: {
             ventaTotal,
@@ -68,7 +128,9 @@ export const calculateEcommerceMetrics = (data) => {
         charts: {
             topProductos: topProductosChart,
             ventaPorCiudad: ciudadData,
-            motivosCancelacion: motivosData
+            motivosCancelacion: motivosData,
+            clientesNuevos: clientesNuevosData,
+            clientesNuevosCiudad: clientesNuevosCiudadData
         }
     };
 };
