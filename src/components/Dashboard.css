@@ -41,6 +41,12 @@ body {
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  /* 90% zoom simulation */
+  transform: scale(0.9);
+  transform-origin: top left;
+  width: 111.11vw;
+  /* 100 / 0.9 = 111.11 to compensate for scale */
+  height: 111.11vh;
 }
 
 @keyframes meshFlow {

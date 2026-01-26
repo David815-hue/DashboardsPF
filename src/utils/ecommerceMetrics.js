@@ -83,8 +83,8 @@ export const calculateEcommerceMetrics = (data) => {
     });
 
     const clientesNuevosData = [
-        { name: 'Nuevos', value: clientesNuevosCount, venta: ventaNuevos },
-        { name: 'Recurrentes', value: clientesRecurrentesCount, venta: ventaRecurrentes }
+        { name: 'Pedidos de nuevos clientes', value: clientesNuevosCount, venta: ventaNuevos },
+        { name: 'Ordenes de clientes recurrentes', value: clientesRecurrentesCount, venta: ventaRecurrentes }
     ];
 
     // === City-Specific: Distribution of New Customers Only ===

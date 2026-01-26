@@ -4,6 +4,14 @@
     position: relative;
     width: 100%;
     height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.chart-zoom-wrapper>*:not(.chart-zoom-btn) {
+    flex: 1;
+    min-height: 0;
+    width: 100%;
 }
 
 /* Zoom button - top right corner, appears on hover */
@@ -144,6 +152,8 @@
 .chart-fullscreen-content>.chart-zoom-wrapper,
 .chart-fullscreen-content>.chart-zoom-wrapper>*,
 .chart-fullscreen-content .chart-container,
+.chart-fullscreen-content .pie-container,
+.chart-fullscreen-content .funnel-container,
 .chart-fullscreen-content .recharts-responsive-container {
     width: 100% !important;
     height: 100% !important;

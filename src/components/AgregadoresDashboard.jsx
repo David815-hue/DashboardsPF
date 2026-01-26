@@ -4,6 +4,7 @@ import {
 } from 'recharts';
 import { TrendingUp, TrendingDown, Target, ShoppingCart, DollarSign, ChevronRight, ChevronLeft, Maximize2, X, Minus } from 'lucide-react';
 import TiltedCard from './TiltedCard';
+import ChartZoomWrapper from './ChartZoomWrapper';
 
 import CustomTooltip from './CustomTooltip';
 import { useCountUp } from '../hooks/useCountUp';
@@ -448,22 +449,24 @@ const AgregadoresDashboard = ({ metrics, trends, config = {}, zoneFilter = 'all'
 
                         <div className="chart-card">
                             <h3 className="chart-title">Tiendas</h3>
-                            <div className="chart-container horizontal-bar">
-                                <ResponsiveContainer width="100%" height="100%">
-                                    <BarChart data={charts.topTiendas} layout="vertical" margin={{ top: 5, right: 30, left: 10, bottom: 5 }}>
-                                        <defs>
-                                            <linearGradient id="storeGradient" x1="0" y1="0" x2="1" y2="0">
-                                                <stop offset="0%" stopColor="#0ea5e9" stopOpacity={0.8} />
-                                                <stop offset="100%" stopColor="#38bdf8" stopOpacity={1} />
-                                            </linearGradient>
-                                        </defs>
-                                        <XAxis type="number" tick={{ fontSize: 10, fill: '#888' }} />
-                                        <YAxis dataKey="name" type="category" width={120} tick={{ fontSize: 10, fill: '#888' }} />
-                                        <Tooltip content={<CustomTooltip />} />
-                                        <Bar dataKey="value" fill="url(#storeGradient)" radius={[0, 8, 8, 0]} name="Venta" />
-                                    </BarChart>
-                                </ResponsiveContainer>
-                            </div>
+                            <ChartZoomWrapper title="Tiendas">
+                                <div className="chart-container horizontal-bar">
+                                    <ResponsiveContainer width="100%" height="100%">
+                                        <BarChart data={charts.topTiendas} layout="vertical" margin={{ top: 5, right: 30, left: 10, bottom: 5 }}>
+                                            <defs>
+                                                <linearGradient id="storeGradient" x1="0" y1="0" x2="1" y2="0">
+                                                    <stop offset="0%" stopColor="#0ea5e9" stopOpacity={0.8} />
+                                                    <stop offset="100%" stopColor="#38bdf8" stopOpacity={1} />
+                                                </linearGradient>
+                                            </defs>
+                                            <XAxis type="number" tick={{ fontSize: 10, fill: '#888' }} />
+                                            <YAxis dataKey="name" type="category" width={120} tick={{ fontSize: 10, fill: '#888' }} />
+                                            <Tooltip content={<CustomTooltip />} />
+                                            <Bar dataKey="value" fill="url(#storeGradient)" radius={[0, 8, 8, 0]} name="Venta" />
+                                        </BarChart>
+                                    </ResponsiveContainer>
+                                </div>
+                            </ChartZoomWrapper>
                         </div>
                     </div>
                 </>
@@ -473,41 +476,43 @@ const AgregadoresDashboard = ({ metrics, trends, config = {}, zoneFilter = 'all'
                         {/* Top: Meta por Tienda (stacked bar) */}
                         <div className="chart-card">
                             <h3 className="chart-title">Meta de Pedidos por Tienda (Meta: {metaPedidosPorTienda})</h3>
-                            <div className="chart-container">
-                                <ResponsiveContainer width="100%" height={300}>
-                                    <BarChart data={charts.metaPorTienda.map(item => ({
-                                        ...item,
-                                        restante: Math.max(0, item.meta - item.actual),
-                                        excedente: Math.max(0, item.actual - item.meta)
-                                    }))} margin={{ top: 20, right: 20, left: 10, bottom: 60 }}>
-                                        <defs>
-                                            <linearGradient id="actualStackGradient" x1="0" y1="0" x2="0" y2="1">
-                                                <stop offset="0%" stopColor="#10b981" stopOpacity={1} />
-                                                <stop offset="100%" stopColor="#34d399" stopOpacity={0.8} />
-                                            </linearGradient>
-                                            <linearGradient id="restanteGradient" x1="0" y1="0" x2="0" y2="1">
-                                                <stop offset="0%" stopColor="#f59e0b" stopOpacity={1} />
-                                                <stop offset="100%" stopColor="#fbbf24" stopOpacity={0.8} />
-                                            </linearGradient>
-                                        </defs>
-                                        <XAxis dataKey="name" tick={{ fontSize: 10, fill: '#666' }} angle={-45} textAnchor="end" interval={0} height={60} />
-                                        <YAxis tick={{ fontSize: 10, fill: '#666' }} />
-                                        <Tooltip content={<CustomTooltip />} />
-                                        <Legend
-                                            verticalAlign="top"
-                                            align="right"
-                                            wrapperStyle={{ top: -10, right: 0, paddingBottom: '10px' }}
-                                            formatter={(value) => <span style={{ color: '#666', fontSize: '12px' }}>{value}</span>}
-                                        />
-                                        <Bar dataKey="actual" stackId="a" fill="url(#actualStackGradient)" name="Actual">
-                                            <LabelList dataKey="actual" position="center" fill="#fff" fontWeight="bold" fontSize={10} />
-                                        </Bar>
-                                        <Bar dataKey="restante" stackId="a" fill="url(#restanteGradient)" radius={[6, 6, 0, 0]} name="Faltante">
-                                            <LabelList dataKey="restante" position="center" fill="#fff" fontWeight="bold" fontSize={10} formatter={(val) => val > 0 ? val : ''} />
-                                        </Bar>
-                                    </BarChart>
-                                </ResponsiveContainer>
-                            </div>
+                            <ChartZoomWrapper title="Meta de Pedidos por Tienda">
+                                <div className="chart-container">
+                                    <ResponsiveContainer width="100%" height={300}>
+                                        <BarChart data={charts.metaPorTienda.map(item => ({
+                                            ...item,
+                                            restante: Math.max(0, item.meta - item.actual),
+                                            excedente: Math.max(0, item.actual - item.meta)
+                                        }))} margin={{ top: 20, right: 20, left: 10, bottom: 60 }}>
+                                            <defs>
+                                                <linearGradient id="actualStackGradient" x1="0" y1="0" x2="0" y2="1">
+                                                    <stop offset="0%" stopColor="#10b981" stopOpacity={1} />
+                                                    <stop offset="100%" stopColor="#34d399" stopOpacity={0.8} />
+                                                </linearGradient>
+                                                <linearGradient id="restanteGradient" x1="0" y1="0" x2="0" y2="1">
+                                                    <stop offset="0%" stopColor="#f59e0b" stopOpacity={1} />
+                                                    <stop offset="100%" stopColor="#fbbf24" stopOpacity={0.8} />
+                                                </linearGradient>
+                                            </defs>
+                                            <XAxis dataKey="name" tick={{ fontSize: 10, fill: '#666' }} angle={-45} textAnchor="end" interval={0} height={60} />
+                                            <YAxis tick={{ fontSize: 10, fill: '#666' }} />
+                                            <Tooltip content={<CustomTooltip />} />
+                                            <Legend
+                                                verticalAlign="top"
+                                                align="right"
+                                                wrapperStyle={{ top: -10, right: 0, paddingBottom: '10px' }}
+                                                formatter={(value) => <span style={{ color: '#666', fontSize: '12px' }}>{value}</span>}
+                                            />
+                                            <Bar dataKey="actual" stackId="a" fill="url(#actualStackGradient)" name="Actual">
+                                                <LabelList dataKey="actual" position="center" fill="#fff" fontWeight="bold" fontSize={10} />
+                                            </Bar>
+                                            <Bar dataKey="restante" stackId="a" fill="url(#restanteGradient)" radius={[6, 6, 0, 0]} name="Faltante">
+                                                <LabelList dataKey="restante" position="center" fill="#fff" fontWeight="bold" fontSize={10} formatter={(val) => val > 0 ? val : ''} />
+                                            </Bar>
+                                        </BarChart>
+                                    </ResponsiveContainer>
+                                </div>
+                            </ChartZoomWrapper>
                         </div>
 
                         {/* Bottom: Daily Trend (area chart with toggle) */}

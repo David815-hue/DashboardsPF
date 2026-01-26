@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, PieChart, Pie, Legend } from 'recharts';
 import { ChevronRight, ChevronLeft, TrendingUp, TrendingDown, Minus } from 'lucide-react';
 import TiltedCard from './TiltedCard';
+import ChartZoomWrapper from './ChartZoomWrapper';
 
 import CustomTooltip from './CustomTooltip';
 
@@ -164,28 +165,30 @@ const WhatsAppDashboard = ({ metrics, trends, topProductsCount = 5, keywordCount
                         <div className="wa-bottom-row">
                             <div className="wa-bottom-chart" style={{ width: '100%', maxWidth: 'none', flex: 1 }}>
                                 <h3 className="chart-title-center">Top Productos</h3>
-                                <ResponsiveContainer width="100%" height="100%">
-                                    <BarChart data={topProductosData} margin={{ top: 20, right: 10, left: 10, bottom: 0 }}>
-                                        <defs>
-                                            <linearGradient id="whatsappBarGradient" x1="0" y1="0" x2="0" y2="1">
-                                                <stop offset="0%" stopColor="#22d3ee" stopOpacity={1} />
-                                                <stop offset="100%" stopColor="#0891b2" stopOpacity={1} />
-                                            </linearGradient>
-                                        </defs>
-                                        <XAxis
-                                            dataKey="name"
-                                            tick={{ fontSize: 9, fill: '#666' }}
-                                            interval={0}
-                                            tickFormatter={(val) => val.length > 10 ? val.substring(0, 10) + '...' : val}
-                                        />
-                                        <Tooltip content={<CustomTooltip />} cursor={{ fill: 'transparent' }} />
-                                        <Bar dataKey="value" fill="url(#whatsappBarGradient)" radius={[8, 8, 0, 0]}>
-                                            {topProductosData.map((entry, index) => (
-                                                <Cell key={`cell-${index}`} fill="url(#whatsappBarGradient)" />
-                                            ))}
-                                        </Bar>
-                                    </BarChart>
-                                </ResponsiveContainer>
+                                <ChartZoomWrapper title="Top Productos">
+                                    <ResponsiveContainer width="100%" height="100%">
+                                        <BarChart data={topProductosData} margin={{ top: 20, right: 10, left: 10, bottom: 0 }}>
+                                            <defs>
+                                                <linearGradient id="whatsappBarGradient" x1="0" y1="0" x2="0" y2="1">
+                                                    <stop offset="0%" stopColor="#22d3ee" stopOpacity={1} />
+                                                    <stop offset="100%" stopColor="#0891b2" stopOpacity={1} />
+                                                </linearGradient>
+                                            </defs>
+                                            <XAxis
+                                                dataKey="name"
+                                                tick={{ fontSize: 9, fill: '#666' }}
+                                                interval={0}
+                                                tickFormatter={(val) => val.length > 10 ? val.substring(0, 10) + '...' : val}
+                                            />
+                                            <Tooltip content={<CustomTooltip />} cursor={{ fill: 'transparent' }} />
+                                            <Bar dataKey="value" fill="url(#whatsappBarGradient)" radius={[8, 8, 0, 0]}>
+                                                {topProductosData.map((entry, index) => (
+                                                    <Cell key={`cell-${index}`} fill="url(#whatsappBarGradient)" />
+                                                ))}
+                                            </Bar>
+                                        </BarChart>
+                                    </ResponsiveContainer>
+                                </ChartZoomWrapper>
                             </div>
                         </div>
 
@@ -197,73 +200,77 @@ const WhatsAppDashboard = ({ metrics, trends, topProductsCount = 5, keywordCount
                         {/* Pie 1: Ciudad */}
                         <div className="wa-pie-wrapper">
                             <h3 className="chart-title-right">Venta por Ciudad</h3>
-                            <ResponsiveContainer width="100%" height="100%">
-                                <PieChart>
-                                    <defs>
-                                        <linearGradient id="grad-teal" x1="0" y1="0" x2="0" y2="1">
-                                            <stop offset="0%" stopColor="#22d3ee" stopOpacity={1} />
-                                            <stop offset="100%" stopColor="#0891b2" stopOpacity={1} />
-                                        </linearGradient>
-                                        <linearGradient id="grad-dark" x1="0" y1="0" x2="0" y2="1">
-                                            <stop offset="0%" stopColor="#374151" stopOpacity={1} />
-                                            <stop offset="100%" stopColor="#111827" stopOpacity={1} />
-                                        </linearGradient>
-                                    </defs>
-                                    <Pie
-                                        data={pieCiudad}
-                                        cx="50%"
-                                        cy="50%"
-                                        innerRadius={0}
-                                        outerRadius={65}
-                                        paddingAngle={0}
-                                        dataKey="value"
-                                        label={renderCustomizedLabel}
-                                        labelLine={true}
-                                    >
-                                        {pieCiudad.map((entry, index) => (
-                                            <Cell key={`cell-${index}`} fill={`url(#grad-${index % 2 === 0 ? 'teal' : 'dark'})`} stroke="none" />
-                                        ))}
-                                    </Pie>
-                                    <Tooltip content={<CustomTooltip />} />
-                                    <Legend verticalAlign="middle" align="right" layout="vertical" iconType="circle" wrapperStyle={{ fontSize: '0.7rem', right: 0 }} />
-                                </PieChart>
-                            </ResponsiveContainer>
+                            <ChartZoomWrapper title="Venta por Ciudad">
+                                <ResponsiveContainer width="100%" height="100%">
+                                    <PieChart>
+                                        <defs>
+                                            <linearGradient id="grad-teal" x1="0" y1="0" x2="0" y2="1">
+                                                <stop offset="0%" stopColor="#22d3ee" stopOpacity={1} />
+                                                <stop offset="100%" stopColor="#0891b2" stopOpacity={1} />
+                                            </linearGradient>
+                                            <linearGradient id="grad-dark" x1="0" y1="0" x2="0" y2="1">
+                                                <stop offset="0%" stopColor="#374151" stopOpacity={1} />
+                                                <stop offset="100%" stopColor="#111827" stopOpacity={1} />
+                                            </linearGradient>
+                                        </defs>
+                                        <Pie
+                                            data={pieCiudad}
+                                            cx="50%"
+                                            cy="50%"
+                                            innerRadius={0}
+                                            outerRadius="75%"
+                                            paddingAngle={0}
+                                            dataKey="value"
+                                            label={renderCustomizedLabel}
+                                            labelLine={true}
+                                        >
+                                            {pieCiudad.map((entry, index) => (
+                                                <Cell key={`cell-${index}`} fill={`url(#grad-${index % 2 === 0 ? 'teal' : 'dark'})`} stroke="none" />
+                                            ))}
+                                        </Pie>
+                                        <Tooltip content={<CustomTooltip />} />
+                                        <Legend verticalAlign="middle" align="right" layout="vertical" iconType="circle" wrapperStyle={{ fontSize: '0.7rem', right: 0 }} />
+                                    </PieChart>
+                                </ResponsiveContainer>
+                            </ChartZoomWrapper>
                         </div>
 
                         {/* Pie 2: Campaña */}
                         <div className="wa-pie-wrapper">
                             <h3 className="chart-title-right">Venta por Campaña</h3>
-                            <ResponsiveContainer width="100%" height="100%">
-                                <PieChart>
-                                    <defs>
-                                        <linearGradient id="grad-teal-2" x1="0" y1="0" x2="0" y2="1">
-                                            <stop offset="0%" stopColor="#22d3ee" stopOpacity={1} />
-                                            <stop offset="100%" stopColor="#0891b2" stopOpacity={1} />
-                                        </linearGradient>
-                                        <linearGradient id="grad-dark-2" x1="0" y1="0" x2="0" y2="1">
-                                            <stop offset="0%" stopColor="#374151" stopOpacity={1} />
-                                            <stop offset="100%" stopColor="#111827" stopOpacity={1} />
-                                        </linearGradient>
-                                    </defs>
-                                    <Pie
-                                        data={pieCampana}
-                                        cx="50%"
-                                        cy="50%"
-                                        innerRadius={0}
-                                        outerRadius={65}
-                                        paddingAngle={0}
-                                        dataKey="value"
-                                        label={renderCustomizedLabel}
-                                        labelLine={true}
-                                    >
-                                        {pieCampana.map((entry, index) => (
-                                            <Cell key={`cell-${index}`} fill={`url(#grad-${index % 2 === 0 ? 'teal-2' : 'dark-2'})`} stroke="none" />
-                                        ))}
-                                    </Pie>
-                                    <Tooltip content={<CustomTooltip />} />
-                                    <Legend verticalAlign="middle" align="right" layout="vertical" iconType="circle" wrapperStyle={{ fontSize: '0.7rem', right: 0 }} />
-                                </PieChart>
-                            </ResponsiveContainer>
+                            <ChartZoomWrapper title="Venta por Campaña">
+                                <ResponsiveContainer width="100%" height="100%">
+                                    <PieChart>
+                                        <defs>
+                                            <linearGradient id="grad-teal-2" x1="0" y1="0" x2="0" y2="1">
+                                                <stop offset="0%" stopColor="#22d3ee" stopOpacity={1} />
+                                                <stop offset="100%" stopColor="#0891b2" stopOpacity={1} />
+                                            </linearGradient>
+                                            <linearGradient id="grad-dark-2" x1="0" y1="0" x2="0" y2="1">
+                                                <stop offset="0%" stopColor="#374151" stopOpacity={1} />
+                                                <stop offset="100%" stopColor="#111827" stopOpacity={1} />
+                                            </linearGradient>
+                                        </defs>
+                                        <Pie
+                                            data={pieCampana}
+                                            cx="50%"
+                                            cy="50%"
+                                            innerRadius={0}
+                                            outerRadius="75%"
+                                            paddingAngle={0}
+                                            dataKey="value"
+                                            label={renderCustomizedLabel}
+                                            labelLine={true}
+                                        >
+                                            {pieCampana.map((entry, index) => (
+                                                <Cell key={`cell-${index}`} fill={`url(#grad-${index % 2 === 0 ? 'teal-2' : 'dark-2'})`} stroke="none" />
+                                            ))}
+                                        </Pie>
+                                        <Tooltip content={<CustomTooltip />} />
+                                        <Legend verticalAlign="middle" align="right" layout="vertical" iconType="circle" wrapperStyle={{ fontSize: '0.7rem', right: 0 }} />
+                                    </PieChart>
+                                </ResponsiveContainer>
+                            </ChartZoomWrapper>
                         </div>
 
                     </div>
@@ -303,26 +310,28 @@ const WhatsAppDashboard = ({ metrics, trends, topProductsCount = 5, keywordCount
                     {/* Venta por Palabra Clave */}
                     <div className="chart-wrapper palabra-clave-chart">
                         <h3 className="chart-title">Venta por Palabra Clave</h3>
-                        <div className="chart-container">
-                            <ResponsiveContainer width="100%" height={200}>
-                                <BarChart data={keywordData} margin={{ top: 10, right: 20, left: 10, bottom: 60 }}>
-                                    <XAxis
-                                        dataKey="name"
-                                        tick={{ fontSize: 8, fill: '#666' }}
-                                        angle={-35}
-                                        textAnchor="end"
-                                        interval={0}
-                                    />
-                                    <YAxis tick={{ fontSize: 10, fill: '#666' }} />
-                                    <Tooltip content={<CustomTooltip />} />
-                                    <Bar dataKey="value" radius={[8, 8, 0, 0]}>
-                                        {keywordData.map((entry, index) => (
-                                            <Cell key={`cell-${index}`} fill={['#0891b2', '#06b6d4', '#22d3ee', '#38bdf8', '#60a5fa', '#3b82f6', '#2563eb', '#1d4ed8', '#1e40af', '#1e3a8a'][index % 10]} />
-                                        ))}
-                                    </Bar>
-                                </BarChart>
-                            </ResponsiveContainer>
-                        </div>
+                        <ChartZoomWrapper title="Venta por Palabra Clave">
+                            <div className="chart-container">
+                                <ResponsiveContainer width="100%" height={200}>
+                                    <BarChart data={keywordData} margin={{ top: 10, right: 20, left: 10, bottom: 60 }}>
+                                        <XAxis
+                                            dataKey="name"
+                                            tick={{ fontSize: 8, fill: '#666' }}
+                                            angle={-35}
+                                            textAnchor="end"
+                                            interval={0}
+                                        />
+                                        <YAxis tick={{ fontSize: 10, fill: '#666' }} />
+                                        <Tooltip content={<CustomTooltip />} />
+                                        <Bar dataKey="value" radius={[8, 8, 0, 0]}>
+                                            {keywordData.map((entry, index) => (
+                                                <Cell key={`cell-${index}`} fill={['#0891b2', '#06b6d4', '#22d3ee', '#38bdf8', '#60a5fa', '#3b82f6', '#2563eb', '#1d4ed8', '#1e40af', '#1e3a8a'][index % 10]} />
+                                            ))}
+                                        </Bar>
+                                    </BarChart>
+                                </ResponsiveContainer>
+                            </div>
+                        </ChartZoomWrapper>
                     </div>
                 </div>
             )}

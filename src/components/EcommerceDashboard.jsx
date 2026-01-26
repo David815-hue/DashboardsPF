@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, PieChart, Pie, Legend } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, PieChart, Pie, Legend, Label } from 'recharts';
 import { ChevronRight, ChevronLeft } from 'lucide-react';
 import KPICard from './KPICard';
 import TiltedCard from './TiltedCard';
+import ChartZoomWrapper from './ChartZoomWrapper';
 
 const COLORS = ['#FE0000', '#0ea5e9', '#22c55e', '#f59e0b', '#8b5cf6', '#ec4899'];
 
@@ -110,41 +111,43 @@ const EcommerceDashboard = ({ metrics, trends, topProductsCount = 6 }) => {
                                     </button>
                                 </div>
                             </div>
-                            <div className="chart-container" style={{ padding: '20px' }}>
-                                <ResponsiveContainer width="100%" height="100%">
-                                    <BarChart data={topProductosData} margin={{ top: 10, right: 20, left: 10, bottom: 60 }}>
-                                        <defs>
-                                            <linearGradient id="ecommerceBarGradient" x1="0" y1="0" x2="0" y2="1">
-                                                <stop offset="0%" stopColor="#FE0000" stopOpacity={1} />
-                                                <stop offset="100%" stopColor="#990000" stopOpacity={1} />
-                                            </linearGradient>
-                                        </defs>
-                                        <XAxis
-                                            dataKey="name"
-                                            tick={{ fontSize: 9, fill: '#666' }}
-                                            angle={-45}
-                                            textAnchor="end"
-                                            interval={0}
-                                            height={80}
-                                            tickFormatter={(val) => val.length > 20 ? val.substring(0, 20) + '...' : val}
-                                        />
-                                        <YAxis
-                                            tick={{ fontSize: 10, fill: '#666' }}
-                                            tickFormatter={topProductsMode === 'venta' ? (val) => `L ${val.toLocaleString()}` : undefined}
-                                        />
-                                        <Tooltip content={<CustomTooltip />} />
-                                        <Bar dataKey="value" name={topProductsMode === 'pedidos' ? 'Cantidad' : 'Venta'} radius={[8, 8, 0, 0]} fill="url(#ecommerceBarGradient)">
-                                            {topProductosData.map((entry, index) => (
-                                                <Cell key={`cell-${index}`} fill="url(#ecommerceBarGradient)" />
-                                            ))}
-                                        </Bar>
-                                        {/* Hidden bar to include units in tooltip when in Venta mode */}
-                                        {topProductsMode === 'venta' && (
-                                            <Bar dataKey="cantidad" name="Unidades" hide={true} />
-                                        )}
-                                    </BarChart>
-                                </ResponsiveContainer>
-                            </div>
+                            <ChartZoomWrapper title="Top Productos">
+                                <div className="chart-container" style={{ padding: '20px' }}>
+                                    <ResponsiveContainer width="100%" height="100%">
+                                        <BarChart data={topProductosData} margin={{ top: 10, right: 20, left: 10, bottom: 60 }}>
+                                            <defs>
+                                                <linearGradient id="ecommerceBarGradient" x1="0" y1="0" x2="0" y2="1">
+                                                    <stop offset="0%" stopColor="#FE0000" stopOpacity={1} />
+                                                    <stop offset="100%" stopColor="#990000" stopOpacity={1} />
+                                                </linearGradient>
+                                            </defs>
+                                            <XAxis
+                                                dataKey="name"
+                                                tick={{ fontSize: 9, fill: '#666' }}
+                                                angle={-45}
+                                                textAnchor="end"
+                                                interval={0}
+                                                height={80}
+                                                tickFormatter={(val) => val.length > 20 ? val.substring(0, 20) + '...' : val}
+                                            />
+                                            <YAxis
+                                                tick={{ fontSize: 10, fill: '#666' }}
+                                                tickFormatter={topProductsMode === 'venta' ? (val) => `L ${val.toLocaleString()}` : undefined}
+                                            />
+                                            <Tooltip content={<CustomTooltip />} />
+                                            <Bar dataKey="value" name={topProductsMode === 'pedidos' ? 'Cantidad' : 'Venta'} radius={[8, 8, 0, 0]} fill="url(#ecommerceBarGradient)">
+                                                {topProductosData.map((entry, index) => (
+                                                    <Cell key={`cell-${index}`} fill="url(#ecommerceBarGradient)" />
+                                                ))}
+                                            </Bar>
+                                            {/* Hidden bar to include units in tooltip when in Venta mode */}
+                                            {topProductsMode === 'venta' && (
+                                                <Bar dataKey="cantidad" name="Unidades" hide={true} />
+                                            )}
+                                        </BarChart>
+                                    </ResponsiveContainer>
+                                </div>
+                            </ChartZoomWrapper>
                         </div>
                     </div>
 
@@ -152,33 +155,35 @@ const EcommerceDashboard = ({ metrics, trends, topProductsCount = 6 }) => {
                     <div className="ecommerce-quadrant" style={{ overflow: 'visible' }}>
                         <div className="chart-wrapper" style={{ maxHeight: '100%', overflow: 'visible' }}>
                             <h3 className="chart-title">Motivo de Cancelación</h3>
-                            <div className="chart-container">
-                                <ResponsiveContainer width="100%" height="100%">
-                                    <BarChart data={charts.motivosCancelacion} margin={{ top: 20, right: 20, left: 10, bottom: 20 }}>
-                                        <defs>
-                                            <linearGradient id="ecommerceBarGradient2" x1="0" y1="0" x2="0" y2="1">
-                                                <stop offset="0%" stopColor="#FE0000" stopOpacity={1} />
-                                                <stop offset="100%" stopColor="#990000" stopOpacity={1} />
-                                            </linearGradient>
-                                        </defs>
-                                        <XAxis
-                                            dataKey="name"
-                                            tick={{ fontSize: 9, fill: '#666' }}
-                                            angle={0}
-                                            textAnchor="middle"
-                                            interval={0}
-                                            tickFormatter={(val) => val.length > 10 ? val.substring(0, 10) + '...' : val}
-                                        />
-                                        <YAxis tick={{ fontSize: 10, fill: '#666' }} />
-                                        <Tooltip content={<CustomTooltip />} />
-                                        <Bar dataKey="value" name="Cantidad" radius={[8, 8, 0, 0]} fill="url(#ecommerceBarGradient2)">
-                                            {charts.motivosCancelacion.map((entry, index) => (
-                                                <Cell key={`cell-${index}`} fill="url(#ecommerceBarGradient2)" />
-                                            ))}
-                                        </Bar>
-                                    </BarChart>
-                                </ResponsiveContainer>
-                            </div>
+                            <ChartZoomWrapper title="Motivo de Cancelación">
+                                <div className="chart-container">
+                                    <ResponsiveContainer width="100%" height="100%">
+                                        <BarChart data={charts.motivosCancelacion} margin={{ top: 20, right: 20, left: 10, bottom: 20 }}>
+                                            <defs>
+                                                <linearGradient id="ecommerceBarGradient2" x1="0" y1="0" x2="0" y2="1">
+                                                    <stop offset="0%" stopColor="#FE0000" stopOpacity={1} />
+                                                    <stop offset="100%" stopColor="#990000" stopOpacity={1} />
+                                                </linearGradient>
+                                            </defs>
+                                            <XAxis
+                                                dataKey="name"
+                                                tick={{ fontSize: 9, fill: '#666' }}
+                                                angle={0}
+                                                textAnchor="middle"
+                                                interval={0}
+                                                tickFormatter={(val) => val.length > 10 ? val.substring(0, 10) + '...' : val}
+                                            />
+                                            <YAxis tick={{ fontSize: 10, fill: '#666' }} />
+                                            <Tooltip content={<CustomTooltip />} />
+                                            <Bar dataKey="value" name="Cantidad" radius={[8, 8, 0, 0]} fill="url(#ecommerceBarGradient2)">
+                                                {charts.motivosCancelacion.map((entry, index) => (
+                                                    <Cell key={`cell-${index}`} fill="url(#ecommerceBarGradient2)" />
+                                                ))}
+                                            </Bar>
+                                        </BarChart>
+                                    </ResponsiveContainer>
+                                </div>
+                            </ChartZoomWrapper>
                         </div>
                     </div>
 
@@ -186,131 +191,150 @@ const EcommerceDashboard = ({ metrics, trends, topProductsCount = 6 }) => {
                     <div className="ecommerce-quadrant">
                         <div className="chart-wrapper">
                             <h3 className="chart-title">Venta por Ciudad</h3>
-                            <div className="chart-container pie-container">
-                                <ResponsiveContainer width="100%" height="100%">
-                                    <PieChart>
-                                        <defs>
-                                            {/* Gradients for Pie Chart Slices */}
-                                            <linearGradient id="grad-0" x1="0" y1="0" x2="0" y2="1">
-                                                <stop offset="0%" stopColor="#ff4d4d" stopOpacity={1} />
-                                                <stop offset="100%" stopColor="#990000" stopOpacity={1} />
-                                            </linearGradient>
-                                            <linearGradient id="grad-1" x1="0" y1="0" x2="0" y2="1">
-                                                <stop offset="0%" stopColor="#38bdf8" stopOpacity={1} />
-                                                <stop offset="100%" stopColor="#0284c7" stopOpacity={1} />
-                                            </linearGradient>
-                                            <linearGradient id="grad-2" x1="0" y1="0" x2="0" y2="1">
-                                                <stop offset="0%" stopColor="#4ade80" stopOpacity={1} />
-                                                <stop offset="100%" stopColor="#16a34a" stopOpacity={1} />
-                                            </linearGradient>
-                                            <linearGradient id="grad-3" x1="0" y1="0" x2="0" y2="1">
-                                                <stop offset="0%" stopColor="#fbbf24" stopOpacity={1} />
-                                                <stop offset="100%" stopColor="#d97706" stopOpacity={1} />
-                                            </linearGradient>
-                                            <linearGradient id="grad-4" x1="0" y1="0" x2="0" y2="1">
-                                                <stop offset="0%" stopColor="#a78bfa" stopOpacity={1} />
-                                                <stop offset="100%" stopColor="#7c3aed" stopOpacity={1} />
-                                            </linearGradient>
-                                            <linearGradient id="grad-5" x1="0" y1="0" x2="0" y2="1">
-                                                <stop offset="0%" stopColor="#f472b6" stopOpacity={1} />
-                                                <stop offset="100%" stopColor="#db2777" stopOpacity={1} />
-                                            </linearGradient>
-                                        </defs>
-                                        <Pie
-                                            data={charts.ventaPorCiudad}
-                                            cx="50%"
-                                            cy="50%"
-                                            innerRadius={0}
-                                            outerRadius={65}
-                                            paddingAngle={2}
-                                            dataKey="value"
-                                            label={({ name, percent }) => `${(percent * 100).toFixed(1)}%`}
-                                            labelLine={false}
-                                        >
-                                            {charts.ventaPorCiudad.map((entry, index) => (
-                                                <Cell key={`cell-${index}`} fill={`url(#grad-${index % 6})`} stroke="none" />
-                                            ))}
-                                        </Pie>
-                                        <Legend
-                                            verticalAlign="middle"
-                                            align="right"
-                                            layout="vertical"
-                                            iconType="circle"
-                                            formatter={(value) => <span style={{ fontSize: '0.7rem', color: '#333' }}>{value}</span>}
-                                        />
-                                        <Tooltip content={<CustomTooltip />} />
-                                    </PieChart>
-                                </ResponsiveContainer>
-                            </div>
+                            <ChartZoomWrapper title="Venta por Ciudad">
+                                <div className="chart-container pie-container">
+                                    <ResponsiveContainer width="100%" height="100%">
+                                        <PieChart>
+                                            <defs>
+                                                {/* Gradients for Pie Chart Slices */}
+                                                <linearGradient id="grad-0" x1="0" y1="0" x2="0" y2="1">
+                                                    <stop offset="0%" stopColor="#ff4d4d" stopOpacity={1} />
+                                                    <stop offset="100%" stopColor="#990000" stopOpacity={1} />
+                                                </linearGradient>
+                                                <linearGradient id="grad-1" x1="0" y1="0" x2="0" y2="1">
+                                                    <stop offset="0%" stopColor="#38bdf8" stopOpacity={1} />
+                                                    <stop offset="100%" stopColor="#0284c7" stopOpacity={1} />
+                                                </linearGradient>
+                                                <linearGradient id="grad-2" x1="0" y1="0" x2="0" y2="1">
+                                                    <stop offset="0%" stopColor="#4ade80" stopOpacity={1} />
+                                                    <stop offset="100%" stopColor="#16a34a" stopOpacity={1} />
+                                                </linearGradient>
+                                                <linearGradient id="grad-3" x1="0" y1="0" x2="0" y2="1">
+                                                    <stop offset="0%" stopColor="#fbbf24" stopOpacity={1} />
+                                                    <stop offset="100%" stopColor="#d97706" stopOpacity={1} />
+                                                </linearGradient>
+                                                <linearGradient id="grad-4" x1="0" y1="0" x2="0" y2="1">
+                                                    <stop offset="0%" stopColor="#a78bfa" stopOpacity={1} />
+                                                    <stop offset="100%" stopColor="#7c3aed" stopOpacity={1} />
+                                                </linearGradient>
+                                                <linearGradient id="grad-5" x1="0" y1="0" x2="0" y2="1">
+                                                    <stop offset="0%" stopColor="#f472b6" stopOpacity={1} />
+                                                    <stop offset="100%" stopColor="#db2777" stopOpacity={1} />
+                                                </linearGradient>
+                                            </defs>
+                                            <Pie
+                                                data={charts.ventaPorCiudad}
+                                                cx="50%"
+                                                cy="50%"
+                                                innerRadius={0}
+                                                outerRadius="75%"
+                                                paddingAngle={2}
+                                                dataKey="value"
+                                                label={({ name, percent }) => `${(percent * 100).toFixed(1)}%`}
+                                                labelLine={false}
+                                            >
+                                                {charts.ventaPorCiudad.map((entry, index) => (
+                                                    <Cell key={`cell-${index}`} fill={`url(#grad-${index % 6})`} stroke="none" />
+                                                ))}
+                                            </Pie>
+                                            <Legend
+                                                verticalAlign="middle"
+                                                align="right"
+                                                layout="vertical"
+                                                iconType="circle"
+                                                formatter={(value) => <span style={{ fontSize: '0.7rem', color: '#333' }}>{value}</span>}
+                                            />
+                                            <Tooltip content={<CustomTooltip />} />
+                                        </PieChart>
+                                    </ResponsiveContainer>
+                                </div>
+                            </ChartZoomWrapper>
                         </div>
                     </div>
                 </div>
             ) : (
-                <div className="ecommerce-grid-layout">
-                    {/* Page 2: Client Analysis */}
+                <div className="ecommerce-page-2-layout" style={{ display: 'flex', flexDirection: 'column', height: '100%', gap: '20px', paddingBottom: '10px' }}>
+                    {/* Top Section: New vs Recurring Customers */}
+                    <div style={{ flex: 1, minHeight: 0 }}>
+                        <ChartZoomWrapper title="Clientes nuevos vs. clientes recurrentes">
+                            <div className="chart-container" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-around', width: '100%', height: '100%', padding: '0 20px', background: 'rgba(255,255,255,0.4)', borderRadius: '16px', backdropFilter: 'blur(10px)' }}>
+                                {(() => {
+                                    const totalClientes = (nuevosGlobalData || []).reduce((acc, curr) => acc + (curr.value || 0), 0);
+                                    const getColor = (index) => index === 0 ? "#ff0040" : "#ffe4e6";
 
-                    {/* Quadrant 1 (Top-Left): Distribución Clientes Nuevos */}
-                    <div className="ecommerce-quadrant">
-                        <div className="chart-wrapper">
-                            <h3 className="chart-title">Distribución Clientes Nuevos</h3>
-                            <div className="chart-container pie-container">
-                                <ResponsiveContainer width="100%" height="100%">
-                                    <PieChart>
-                                        <defs>
-                                            {/* Gradients matching Page 1 */}
-                                            <linearGradient id="grad-p2-0" x1="0" y1="0" x2="0" y2="1">
-                                                <stop offset="0%" stopColor="#ff4d4d" stopOpacity={1} />
-                                                <stop offset="100%" stopColor="#990000" stopOpacity={1} />
-                                            </linearGradient>
-                                            <linearGradient id="grad-p2-1" x1="0" y1="0" x2="0" y2="1">
-                                                <stop offset="0%" stopColor="#38bdf8" stopOpacity={1} />
-                                                <stop offset="100%" stopColor="#0284c7" stopOpacity={1} />
-                                            </linearGradient>
-                                        </defs>
-                                        <Pie
-                                            data={nuevosCiudadData}
-                                            cx="50%"
-                                            cy="50%"
-                                            innerRadius={0}
-                                            outerRadius={65}
-                                            paddingAngle={2}
-                                            dataKey="value"
-                                            label={({ name, percent }) => `${(percent * 100).toFixed(1)}%`}
-                                            labelLine={false}
-                                        >
-                                            {nuevosCiudadData.map((entry, index) => (
-                                                <Cell
-                                                    key={`cell-${index}`}
-                                                    // Map index 0 to Red, index 1 to Blue explicitly or by order
-                                                    fill={index === 0 ? 'url(#grad-p2-0)' : 'url(#grad-p2-1)'}
-                                                    stroke="none"
-                                                />
-                                            ))}
-                                        </Pie>
-                                        <Tooltip content={<CustomTooltip />} />
-                                        <Legend
-                                            verticalAlign="middle"
-                                            align="right"
-                                            layout="vertical"
-                                            iconType="circle"
-                                            formatter={(value) => <span style={{ fontSize: '0.7rem', color: '#333' }}>{value}</span>}
-                                        />
-                                    </PieChart>
-                                </ResponsiveContainer>
+                                    return (
+                                        <>
+                                            <div style={{ width: '40%', height: '100%', minHeight: '250px', position: 'relative' }}>
+                                                <ResponsiveContainer width="100%" height="100%">
+                                                    <PieChart>
+                                                        <Pie
+                                                            data={nuevosGlobalData}
+                                                            cx="50%"
+                                                            cy="50%"
+                                                            innerRadius="65%"
+                                                            outerRadius="85%"
+                                                            paddingAngle={0}
+                                                            dataKey="value"
+                                                            startAngle={90}
+                                                            endAngle={-270}
+                                                            stroke="none"
+                                                        >
+                                                            {nuevosGlobalData.map((entry, index) => (
+                                                                <Cell key={`cell-${index}`} fill={getColor(index)} />
+                                                            ))}
+                                                            <Label
+                                                                value={totalClientes.toLocaleString()}
+                                                                position="center"
+                                                                dy={-10}
+                                                                style={{ fontSize: '2rem', fontWeight: 'bold', fill: '#1e293b' }}
+                                                            />
+                                                            <Label
+                                                                value="Total de clientes"
+                                                                position="center"
+                                                                dy={20}
+                                                                style={{ fontSize: '0.8rem', fill: '#64748b' }}
+                                                            />
+                                                        </Pie>
+                                                        <Tooltip content={<CustomTooltip />} />
+                                                    </PieChart>
+                                                </ResponsiveContainer>
+                                            </div>
+
+                                            <div style={{ display: 'flex', flexDirection: 'row', gap: '20px', alignItems: 'center', flexWrap: 'wrap', justifyContent: 'center' }}>
+                                                {nuevosGlobalData.map((item, index) => (
+                                                    <div key={index} style={{
+                                                        background: 'white',
+                                                        borderRadius: '16px',
+                                                        padding: '20px',
+                                                        minWidth: '220px',
+                                                        boxShadow: '0 4px 20px rgba(0,0,0,0.04)',
+                                                        display: 'flex',
+                                                        flexDirection: 'column',
+                                                        gap: '8px',
+                                                        border: '1px solid rgba(255,255,255,0.8)'
+                                                    }}>
+                                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                            <div style={{ width: '14px', height: '14px', borderRadius: '4px', background: getColor(index) }}></div>
+                                                            <span style={{ fontSize: '0.9rem', fontWeight: '600', color: '#334155' }}>
+                                                                {item.name || (index === 0 ? 'Pedidos de nuevos clientes' : 'Ordenes de clientes recurrentes')}
+                                                            </span>
+                                                        </div>
+                                                        <div style={{ fontSize: '2rem', fontWeight: '800', color: '#0f172a' }}>
+                                                            {item.value.toLocaleString()}
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </>
+                                    );
+                                })()}
                             </div>
-                        </div>
+                        </ChartZoomWrapper>
                     </div>
 
-                    {/* Quadrant 2 (Top-Right): Empty */}
-                    <div className="ecommerce-quadrant">
-                    </div>
-
-                    {/* Quadrant 3 (Bottom-Left): Empty */}
-                    <div className="ecommerce-quadrant">
-                    </div>
-
-                    {/* Quadrant 4 (Bottom-Right): Empty */}
-                    <div className="ecommerce-quadrant">
+                    {/* Bottom Section (Empty Placeholder) */}
+                    <div style={{ flex: 1, minHeight: 0, background: 'rgba(255,255,255,0.05)', borderRadius: '16px', border: '2px dashed rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        {/* Future content */}
                     </div>
                 </div>
             )}
