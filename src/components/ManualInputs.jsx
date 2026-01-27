@@ -3,14 +3,20 @@ import { Settings } from 'lucide-react';
 
 const ManualInputs = ({ config, onConfigChange }) => {
     const handleChange = (key, value) => {
-        // Convert to number, but preserve previous value if input is empty during editing
-        const numValue = value === '' ? '' : Number(value);
+        // Parse the input value - if empty string, keep as empty; otherwise parse as number
+        const parsedValue = value === '' ? 0 : parseFloat(value);
 
-        // Only update if we have a valid number or if explicitly clearing (empty string during typing)
-        onConfigChange(prev => ({
-            ...prev,
-            [key]: numValue === '' ? (prev[key] || 0) : (isNaN(numValue) ? (prev[key] || 0) : numValue)
-        }));
+        console.log(`[ManualInputs] Updating ${key}: "${value}" -> ${parsedValue}`);
+
+        // Update config with the parsed value (NaN will be converted to 0)
+        onConfigChange(prev => {
+            const newConfig = {
+                ...prev,
+                [key]: isNaN(parsedValue) ? 0 : parsedValue
+            };
+            console.log('[ManualInputs] New config:', newConfig);
+            return newConfig;
+        });
     };
 
     return (
