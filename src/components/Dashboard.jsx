@@ -263,9 +263,23 @@ const Dashboard = () => {
 
 
 
-    // Auto-load configuration from current month when opening modal
+    // Auto-load configuration from current month when opening modal (ONLY if no fresh data exists)
     useEffect(() => {
         if (!isConfigOpen) return;
+
+        // Don't auto-load if user has fresh data (not from snapshot)
+        const hasFreshData = activeTab === 'ecommerce'
+            ? (ecommerceData && !ecommerceData._isSnapshot)
+            : activeTab === 'whatsapp'
+                ? (whatsappData && !whatsappData._isSnapshot)
+                : activeTab === 'agregadores'
+                    ? (agregadoresData && !agregadoresData._isSnapshot)
+                    : (data && !data._isSnapshot);
+
+        if (hasFreshData) {
+            console.log(`[Auto-load] Skipping config load - user has fresh ${activeTab} data`);
+            return;
+        }
 
         const now = new Date();
         const currentMonthKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
@@ -296,7 +310,7 @@ const Dashboard = () => {
                 console.log(`[Auto-load] Loaded ${activeTab} config from current month:`, firstSnapshot.config);
             }
         }
-    }, [isConfigOpen, activeTab, snapshotsByMonth, ecommerceSnapshotsByMonth, whatsappSnapshotsByMonth, agregadoresSnapshotsByMonth]);
+    }, [isConfigOpen, activeTab, snapshotsByMonth, ecommerceSnapshotsByMonth, whatsappSnapshotsByMonth, agregadoresSnapshotsByMonth, data, ecommerceData, whatsappData, agregadoresData]);
 
 
     const handleFileChange = (key, file) => {
