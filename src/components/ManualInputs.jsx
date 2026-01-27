@@ -3,9 +3,13 @@ import { Settings } from 'lucide-react';
 
 const ManualInputs = ({ config, onConfigChange }) => {
     const handleChange = (key, value) => {
+        // Convert to number, but preserve previous value if input is empty during editing
+        const numValue = value === '' ? '' : Number(value);
+
+        // Only update if we have a valid number or if explicitly clearing (empty string during typing)
         onConfigChange(prev => ({
             ...prev,
-            [key]: parseFloat(value) || 0
+            [key]: numValue === '' ? (prev[key] || 0) : (isNaN(numValue) ? (prev[key] || 0) : numValue)
         }));
     };
 

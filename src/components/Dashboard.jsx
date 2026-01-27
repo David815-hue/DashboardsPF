@@ -377,7 +377,7 @@ const Dashboard = () => {
                 // Save WhatsApp Marketing snapshot (both pages)
                 const snapshotData = {
                     config: {
-                        ...config,
+                        ...config, // Save the entire config object to preserve all manual inputs
                         totalConversaciones: whatsappData?.totalConversaciones || 0
                     },
                     kpis: whatsappMetrics.page1.kpis,
