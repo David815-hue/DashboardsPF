@@ -264,7 +264,7 @@ const EcommerceDashboard = ({ metrics, trends, topProductsCount = 6 }) => {
 
                                     return (
                                         <>
-                                            <div style={{ width: '40%', height: '100%', minHeight: '250px', position: 'relative' }}>
+                                            <div style={{ width: '50%', height: '100%', minHeight: '250px', position: 'relative' }}>
                                                 <ResponsiveContainer width="100%" height="100%">
                                                     <PieChart>
                                                         <Pie
@@ -300,7 +300,7 @@ const EcommerceDashboard = ({ metrics, trends, topProductsCount = 6 }) => {
                                                 </ResponsiveContainer>
                                             </div>
 
-                                            <div style={{ display: 'flex', flexDirection: 'row', gap: '20px', alignItems: 'center', flexWrap: 'wrap', justifyContent: 'center' }}>
+                                            <div style={{ width: '50%', display: 'flex', flexDirection: 'row', gap: '20px', alignItems: 'center', flexWrap: 'wrap', justifyContent: 'center' }}>
                                                 {nuevosGlobalData.map((item, index) => (
                                                     <div key={index} style={{
                                                         background: 'white',
@@ -351,7 +351,7 @@ const EcommerceDashboard = ({ metrics, trends, topProductsCount = 6 }) => {
                                             {insights && (
                                                 <div style={{
                                                     position: 'absolute',
-                                                    left: '30px',
+                                                    left: '10px',
                                                     top: '50%',
                                                     transform: 'translateY(-50%)',
                                                     width: '150px',
@@ -383,7 +383,7 @@ const EcommerceDashboard = ({ metrics, trends, topProductsCount = 6 }) => {
                                             )}
 
                                             {/* RIGHT: Chart & Metrics */}
-                                            <div style={{ width: '40%', height: '100%', minHeight: '250px', position: 'relative' }}>
+                                            <div style={{ width: '50%', height: '100%', minHeight: '250px', position: 'relative' }}>
                                                 <ResponsiveContainer width="100%" height="100%">
                                                     <PieChart>
                                                         <Pie
@@ -419,25 +419,26 @@ const EcommerceDashboard = ({ metrics, trends, topProductsCount = 6 }) => {
                                                 </ResponsiveContainer>
                                             </div>
 
-                                            <div style={{ display: 'flex', flexDirection: 'column', gap: '15px', justifyContent: 'center' }}>
+                                            <div style={{ width: '50%', display: 'flex', flexDirection: 'row', gap: '20px', alignItems: 'center', flexWrap: 'wrap', justifyContent: 'center' }}>
                                                 {errorPagoData.map((item, index) => (
                                                     <div key={index} style={{
                                                         background: 'white',
                                                         borderRadius: '16px',
-                                                        padding: '15px 20px',
+                                                        padding: '20px',
+                                                        minWidth: '220px',
                                                         boxShadow: '0 4px 20px rgba(0,0,0,0.04)',
                                                         display: 'flex',
                                                         flexDirection: 'column',
-                                                        gap: '4px',
+                                                        gap: '8px',
                                                         border: '1px solid rgba(255,255,255,0.8)'
                                                     }}>
                                                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                                            <div style={{ width: '12px', height: '12px', borderRadius: '4px', background: getColor(index) }}></div>
-                                                            <span style={{ fontSize: '0.85rem', fontWeight: '600', color: '#64748b' }}>
+                                                            <div style={{ width: '14px', height: '14px', borderRadius: '4px', background: getColor(index) }}></div>
+                                                            <span style={{ fontSize: '0.9rem', fontWeight: '600', color: '#334155' }}>
                                                                 {item.name.includes('completó') ? (item.name.includes('no') ? 'No Recuperados' : 'Recuperados') : item.name}
                                                             </span>
                                                         </div>
-                                                        <div style={{ fontSize: '1.8rem', fontWeight: '800', color: '#0f172a' }}>
+                                                        <div style={{ fontSize: '2rem', fontWeight: '800', color: '#0f172a' }}>
                                                             {item.value.toLocaleString()}
                                                         </div>
                                                     </div>
