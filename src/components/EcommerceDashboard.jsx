@@ -332,9 +332,122 @@ const EcommerceDashboard = ({ metrics, trends, topProductsCount = 6 }) => {
                         </ChartZoomWrapper>
                     </div>
 
-                    {/* Bottom Section (Empty Placeholder) */}
-                    <div style={{ flex: 1, minHeight: 0, background: 'rgba(255,255,255,0.05)', borderRadius: '16px', border: '2px dashed rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                        {/* Future content */}
+                    {/* Bottom Section: Payment Error Recovery */}
+                    <div style={{ flex: 1, minHeight: 0 }}>
+                        <ChartZoomWrapper title="Pedidos cancelados por Error de Pago - Recuperación">
+                            <div className="chart-container" style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'space-around', width: '100%', height: '100%', padding: '0 20px', background: 'rgba(255,255,255,0.4)', borderRadius: '16px', backdropFilter: 'blur(10px)' }}>
+                                {(() => {
+                                    const dataPkg = charts.errorPagoRecovery || {};
+                                    // Handle both new object format and old array format for backward compatibility
+                                    const errorPagoData = Array.isArray(dataPkg) ? dataPkg : (dataPkg.chartData || []);
+                                    const insights = !Array.isArray(dataPkg) ? dataPkg.insights : null;
+
+                                    const totalPedidos = errorPagoData.reduce((acc, curr) => acc + (curr.value || 0), 0);
+                                    const getColor = (index) => index === 0 ? "#22c55e" : "#ef4444";
+
+                                    return (
+                                        <>
+                                            {/* LEFT: Customer Insights */}
+                                            {insights && (
+                                                <div style={{
+                                                    position: 'absolute',
+                                                    left: '30px',
+                                                    top: '50%',
+                                                    transform: 'translateY(-50%)',
+                                                    width: '150px',
+                                                    display: 'flex',
+                                                    flexDirection: 'column',
+                                                    gap: '8px',
+                                                    justifyContent: 'center',
+                                                    zIndex: 10,
+                                                    pointerEvents: 'none'
+                                                }}>
+                                                    <div style={{ fontSize: '0.7rem', fontWeight: 'bold', color: '#64748b', marginBottom: '0px' }}>
+                                                        ANÁLISIS
+                                                    </div>
+
+                                                    {/* Unique Customers */}
+                                                    <div>
+                                                        <div style={{ fontSize: '1rem', fontWeight: '800', color: '#0f172a', lineHeight: '1.1' }}>
+                                                            {insights.totalClientesUnicos} <span style={{ fontSize: '0.7rem', fontWeight: 'normal', color: '#64748b' }}>clientes</span>
+                                                        </div>
+                                                    </div>
+
+                                                    {/* Multiple Attempts */}
+                                                    <div>
+                                                        <div style={{ fontSize: '1rem', fontWeight: '800', color: '#0f172a', lineHeight: '1.1' }}>
+                                                            {insights.clientesMultiplesIntentos} <span style={{ fontSize: '0.7rem', fontWeight: 'normal', color: '#64748b' }}>reintentaron</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            {/* RIGHT: Chart & Metrics */}
+                                            <div style={{ width: '40%', height: '100%', minHeight: '250px', position: 'relative' }}>
+                                                <ResponsiveContainer width="100%" height="100%">
+                                                    <PieChart>
+                                                        <Pie
+                                                            data={errorPagoData}
+                                                            cx="50%"
+                                                            cy="50%"
+                                                            innerRadius="65%"
+                                                            outerRadius="85%"
+                                                            paddingAngle={0}
+                                                            dataKey="value"
+                                                            startAngle={90}
+                                                            endAngle={-270}
+                                                            stroke="none"
+                                                        >
+                                                            {errorPagoData.map((entry, index) => (
+                                                                <Cell key={`cell-${index}`} fill={getColor(index)} />
+                                                            ))}
+                                                            <Label
+                                                                value={totalPedidos.toLocaleString()}
+                                                                position="center"
+                                                                dy={-10}
+                                                                style={{ fontSize: '2rem', fontWeight: 'bold', fill: '#1e293b' }}
+                                                            />
+                                                            <Label
+                                                                value="Total pedidos"
+                                                                position="center"
+                                                                dy={20}
+                                                                style={{ fontSize: '0.8rem', fill: '#64748b' }}
+                                                            />
+                                                        </Pie>
+                                                        <Tooltip content={<CustomTooltip />} />
+                                                    </PieChart>
+                                                </ResponsiveContainer>
+                                            </div>
+
+                                            <div style={{ display: 'flex', flexDirection: 'column', gap: '15px', justifyContent: 'center' }}>
+                                                {errorPagoData.map((item, index) => (
+                                                    <div key={index} style={{
+                                                        background: 'white',
+                                                        borderRadius: '16px',
+                                                        padding: '15px 20px',
+                                                        boxShadow: '0 4px 20px rgba(0,0,0,0.04)',
+                                                        display: 'flex',
+                                                        flexDirection: 'column',
+                                                        gap: '4px',
+                                                        border: '1px solid rgba(255,255,255,0.8)'
+                                                    }}>
+                                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                            <div style={{ width: '12px', height: '12px', borderRadius: '4px', background: getColor(index) }}></div>
+                                                            <span style={{ fontSize: '0.85rem', fontWeight: '600', color: '#64748b' }}>
+                                                                {item.name.includes('completó') ? (item.name.includes('no') ? 'No Recuperados' : 'Recuperados') : item.name}
+                                                            </span>
+                                                        </div>
+                                                        <div style={{ fontSize: '1.8rem', fontWeight: '800', color: '#0f172a' }}>
+                                                            {item.value.toLocaleString()}
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </>
+                                    );
+                                })()}
+                            </div>
+                        </ChartZoomWrapper>
                     </div>
                 </div>
             )}

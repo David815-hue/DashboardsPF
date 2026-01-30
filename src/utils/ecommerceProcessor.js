@@ -173,6 +173,7 @@ export const processEcommerceData = async (files) => {
     console.log(`[Ecommerce Debug] Top 3 Productos:`, topProductos.slice(0, 3));
 
     return {
+        albatross: albatrossData, // Full albatross data for payment error recovery analysis
         pedidosConsolidado,
         pedidosNoEnRMS,
         canceladosUnicos,
