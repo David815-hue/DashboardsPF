@@ -610,6 +610,55 @@ const Dashboard = () => {
         }
     };
 
+    const handleCleanupMonthSnapshots = async () => {
+        if (!selectedMonth) {
+            alert('Por favor selecciona un mes en el tablero principal primero.');
+            return;
+        }
+
+        const monthSnapshots = currentSnapshotsByMonth[selectedMonth];
+        if (!monthSnapshots || monthSnapshots.length <= 1) {
+            alert('No hay suficientes snapshots para limpiar en este mes.');
+            return;
+        }
+
+        // Sort snapshots by date (newest first)
+        const sortedSnapshots = [...monthSnapshots].sort((a, b) => {
+            const dateA = new Date(a.savedAt || a.weekId);
+            const dateB = new Date(b.savedAt || b.weekId);
+            return dateB - dateA;
+        });
+
+        const snapshotToKeep = sortedSnapshots[0];
+        const snapshotsToDelete = sortedSnapshots.slice(1);
+
+        if (confirm(`⚠️ ¿Estás seguro?\n\nSe eliminarán ${snapshotsToDelete.length} snapshots semanales del mes ${formatMonthLabel(selectedMonth)}.\n\n✅ SOLO se conservará el cierre del: ${snapshotToKeep.weekId || new Date(snapshotToKeep.savedAt).toLocaleDateString()}\n\nEsta acción NO se puede deshacer.`)) {
+            setIsProcessing(true);
+            try {
+                // Get delete function
+                let deleteFn;
+                if (activeTab === 'ecommerce') deleteFn = deleteEcommerceSnapshot;
+                else if (activeTab === 'whatsapp') deleteFn = deleteWhatsAppSnapshot;
+                else if (activeTab === 'agregadores') deleteFn = deleteAgregadoresSnapshot;
+                else deleteFn = deleteSnapshot;
+
+                // Delete all except the first one
+                for (const snap of snapshotsToDelete) {
+                    await deleteFn(snap.weekId || snap.id); // Ensure we use the correct ID field
+                }
+
+                setSuccessMessage(`Limpieza completada. Se conservó el snapshot del ${snapshotToKeep.weekId || new Date(snapshotToKeep.savedAt).toLocaleDateString()}`);
+                setTimeout(() => setSuccessMessage(null), 4000);
+                await loadAvailableSnapshots();
+                setSelectedWeek(null); // Return to aggregate view
+            } catch (err) {
+                setError('Error durante la limpieza: ' + err.message);
+            } finally {
+                setIsProcessing(false);
+            }
+        }
+    };
+
     // --- Metric Calculation Helper ---
     const getMetricsForPeriod = (d, mSelected, wSelected, snapshotsMap) => {
         // Current data (freshly processed)
@@ -1077,6 +1126,28 @@ const Dashboard = () => {
                                         {isSaving ? 'Guardando...' : 'Guardar'}
                                     </button>
                                 </div>
+                            </div>
+
+                            {/* Cleanup Snapshots Section */}
+                            <div className="divider"></div>
+                            <div className="snapshot-section" style={{ marginTop: '0px' }}>
+                                <h3 className="inputs-title" style={{ color: '#ef4444' }}>
+                                    <Trash2 size={20} />
+                                    Zona de Peligro
+                                </h3>
+                                <p style={{ fontSize: '0.85rem', color: '#64748b', marginBottom: '12px' }}>
+                                    Estas acciones son destructivas y no se pueden deshacer.
+                                </p>
+                                <button
+                                    className="delete-btn"
+                                    style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', padding: '10px' }}
+                                    onClick={handleCleanupMonthSnapshots}
+                                    disabled={!selectedMonth || Object.keys(currentSnapshotsByMonth[selectedMonth] || {}).length <= 1}
+                                    title={!selectedMonth ? "Selecciona un mes en el tablero principal primero" : "Mantiene solo el último snapshot del mes"}
+                                >
+                                    <Sparkles size={16} />
+                                    Limpiar Semanales (Conservar Cierre de Mes)
+                                </button>
                             </div>
                         </div>
                         {error && <div className="error-message">{error}</div>}
