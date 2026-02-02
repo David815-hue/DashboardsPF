@@ -263,26 +263,15 @@ const Dashboard = () => {
 
 
 
-    // Auto-load configuration from current month when opening modal (ONLY if no fresh data exists)
+    // Auto-load configuration from current month when opening modal
     useEffect(() => {
         if (!isConfigOpen) return;
 
-        // Don't auto-load if user has fresh data (not from snapshot)
-        const hasFreshData = activeTab === 'ecommerce'
-            ? (ecommerceData && !ecommerceData._isSnapshot)
-            : activeTab === 'whatsapp'
-                ? (whatsappData && !whatsappData._isSnapshot)
-                : activeTab === 'agregadores'
-                    ? (agregadoresData && !agregadoresData._isSnapshot)
-                    : (data && !data._isSnapshot);
-
-        if (hasFreshData) {
-            console.log(`[Auto-load] Skipping config load - user has fresh ${activeTab} data`);
-            return;
-        }
-
         const now = new Date();
-        const currentMonthKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+        // Use selectedMonth if available, otherwise default to current system month
+        const currentMonthKey = selectedMonth || `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+
+        console.log(`[Auto-load] Attempting to load config for month: ${currentMonthKey} (Active Tab: ${activeTab})`);
 
         // Get the appropriate snapshots based on active tab
         let monthSnapshots = null;
@@ -297,20 +286,28 @@ const Dashboard = () => {
         }
 
         if (monthSnapshots && monthSnapshots.length > 0) {
-            // Get the first snapshot to extract config
-            const firstSnapshot = monthSnapshots[0];
+            // Find the most recent snapshot in the current month
+            const sortedSnapshots = [...monthSnapshots].sort((a, b) => {
+                const dateA = new Date(a.savedAt || a.weekId);
+                const dateB = new Date(b.savedAt || b.weekId);
+                return dateB - dateA; // Most recent first
+            });
 
-            if (activeTab === 'agregadores' && firstSnapshot.config) {
-                // Load agregadores config
-                setAgregadoresConfig(firstSnapshot.config);
-                console.log('[Auto-load] Loaded agregadores config from current month:', firstSnapshot.config);
-            } else if (firstSnapshot.config && activeTab !== 'agregadores') {
+            const mostRecentSnapshot = sortedSnapshots[0];
+
+            if (activeTab === 'agregadores' && mostRecentSnapshot.config) {
+                // Load agregadores config from most recent snapshot
+                setAgregadoresConfig(mostRecentSnapshot.config);
+                console.log('[Auto-load] Loaded agregadores config from most recent snapshot:', mostRecentSnapshot.config);
+            } else if (mostRecentSnapshot.config && activeTab !== 'agregadores') {
                 // Load regular config for venta-meta, ecommerce, whatsapp
-                setConfig(firstSnapshot.config);
-                console.log(`[Auto-load] Loaded ${activeTab} config from current month:`, firstSnapshot.config);
+                setConfig(mostRecentSnapshot.config);
+                console.log(`[Auto-load] Loaded ${activeTab} config from most recent snapshot:`, mostRecentSnapshot.config);
             }
+        } else {
+            console.log(`[Auto-load] No snapshots found for ${activeTab} in ${currentMonthKey}`);
         }
-    }, [isConfigOpen, activeTab, snapshotsByMonth, ecommerceSnapshotsByMonth, whatsappSnapshotsByMonth, agregadoresSnapshotsByMonth, data, ecommerceData, whatsappData, agregadoresData]);
+    }, [isConfigOpen, activeTab, snapshotsByMonth, ecommerceSnapshotsByMonth, whatsappSnapshotsByMonth, agregadoresSnapshotsByMonth, selectedMonth]);
 
 
     const handleFileChange = (key, file) => {
@@ -898,61 +895,68 @@ const Dashboard = () => {
                         </div>
                         <div className="config-modal-content">
                             <FileUploader files={files} onFileChange={handleFileChange} onProcess={handleProcess} isProcessing={isProcessing} dashboardType={activeTab} />
-                            <div className="divider"></div>
-                            <ManualInputs config={config} onConfigChange={setConfig} />
-                            <div className="divider"></div>
 
-                            {/* Top Products Config */}
-                            <div className="snapshot-section">
-                                <h3 className="inputs-title">📊 Top Productos</h3>
-                                <div className="input-row" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-                                    <div className="input-group">
-                                        <label>Venta Meta</label>
-                                        <input
-                                            type="number"
-                                            min="1"
-                                            max="20"
-                                            value={topProductsConfig.ventaMetaTopProductos}
-                                            onChange={(e) => setTopProductsConfig({ ...topProductsConfig, ventaMetaTopProductos: parseInt(e.target.value) || 5 })}
-                                        />
-                                    </div>
-                                    <div className="input-group">
-                                        <label>E-commerce</label>
-                                        <input
-                                            type="number"
-                                            min="1"
-                                            max="20"
-                                            value={topProductsConfig.ecommerceTopProductos}
-                                            onChange={(e) => setTopProductsConfig({ ...topProductsConfig, ecommerceTopProductos: parseInt(e.target.value) || 6 })}
-                                        />
-                                    </div>
-                                    <div className="input-group">
-                                        <label>WhatsApp - Productos</label>
-                                        <input
-                                            type="number"
-                                            min="1"
-                                            max="20"
-                                            value={topProductsConfig.whatsappTopProductos}
-                                            onChange={(e) => setTopProductsConfig({ ...topProductsConfig, whatsappTopProductos: parseInt(e.target.value) || 5 })}
-                                        />
-                                    </div>
-                                    <div className="input-group">
-                                        <label>WhatsApp - Palabras</label>
-                                        <input
-                                            type="number"
-                                            min="1"
-                                            max="20"
-                                            value={topProductsConfig.whatsappPalabraClave}
-                                            onChange={(e) => setTopProductsConfig({ ...topProductsConfig, whatsappPalabraClave: parseInt(e.target.value) || 5 })}
-                                        />
-                                    </div>
-                                </div>
-                            </div>
-                            <div className="divider"></div>
+                            {/* Venta Meta - Only show Manual Inputs (Meta section) */}
+                            {activeTab === 'venta-meta' && (
+                                <>
+                                    <div className="divider"></div>
+                                    <ManualInputs config={config} onConfigChange={setConfig} dashboardType={activeTab} />
+                                    <div className="divider"></div>
+                                </>
+                            )}
 
-                            {/* Agregadores Config - only show when agregadores tab is active */}
+                            {/* WhatsApp - Show WhatsApp Manual Inputs and Top Products Config */}
+                            {activeTab === 'whatsapp' && (
+                                <>
+                                    <div className="divider"></div>
+                                    <ManualInputs config={config} onConfigChange={setConfig} dashboardType={activeTab} />
+                                    <div className="divider"></div>
+                                    <div className="snapshot-section">
+                                        <h3 className="inputs-title">📊 Configuración WhatsApp</h3>
+                                        <div className="input-row" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                                            <div className="input-group">
+                                                <label>WhatsApp - Top Productos</label>
+                                                <input
+                                                    type="number"
+                                                    min="1"
+                                                    max="20"
+                                                    value={topProductsConfig.whatsappTopProductos}
+                                                    onChange={(e) => setTopProductsConfig({ ...topProductsConfig, whatsappTopProductos: parseInt(e.target.value) || 5 })}
+                                                />
+                                            </div>
+                                            <div className="input-group">
+                                                <label>WhatsApp - Palabras Clave</label>
+                                                <input
+                                                    type="number"
+                                                    min="1"
+                                                    max="20"
+                                                    value={topProductsConfig.whatsappPalabraClave}
+                                                    onChange={(e) => setTopProductsConfig({ ...topProductsConfig, whatsappPalabraClave: parseInt(e.target.value) || 5 })}
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="divider"></div>
+                                </>
+                            )}
+
+                            {/* E-commerce - No configuration fields (empty) */}
+                            {activeTab === 'ecommerce' && (
+                                <>
+                                    <div className="divider"></div>
+                                    <div className="snapshot-section">
+                                        <p style={{ textAlign: 'center', color: 'var(--text-secondary)', padding: '20px' }}>
+                                            No hay configuración adicional para E-commerce
+                                        </p>
+                                    </div>
+                                    <div className="divider"></div>
+                                </>
+                            )}
+
+                            {/* Agregadores - Only show Agregadores Config */}
                             {activeTab === 'agregadores' && (
                                 <>
+                                    <div className="divider"></div>
                                     <div className="snapshot-section">
                                         <h3 className="inputs-title">🚀 Configuración Agregadores</h3>
                                         <div className="input-row" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
