@@ -402,13 +402,13 @@ const EcommerceDashboard = ({ metrics, trends, topProductsCount = 6 }) => {
                                                                 <Cell key={`cell-${index}`} fill={getColor(index)} />
                                                             ))}
                                                             <Label
-                                                                value={totalPedidos.toLocaleString()}
+                                                                value={insights ? insights.totalClientesUnicos.toLocaleString() : totalPedidos.toLocaleString()}
                                                                 position="center"
                                                                 dy={-10}
                                                                 style={{ fontSize: '2rem', fontWeight: 'bold', fill: '#1e293b' }}
                                                             />
                                                             <Label
-                                                                value="Total pedidos"
+                                                                value={insights ? "Clientes únicos" : "Total pedidos"}
                                                                 position="center"
                                                                 dy={20}
                                                                 style={{ fontSize: '0.8rem', fill: '#64748b' }}
