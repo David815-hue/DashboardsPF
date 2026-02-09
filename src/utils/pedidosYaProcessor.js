@@ -17,7 +17,7 @@ const TIENDAS_PEDIDOSYA = {
     'punto farma (uniplaza la ceiba)': { name: 'UNIPLAZA CEIBA', city: 'LA CEIBA', storeId: 133 },
     'punto farma aeroplaza': { name: 'AEROPLAZA', city: 'TEGUCIGALPA D.C.', storeId: 21 },
     'punto farma blv. kennedy': { name: 'TEXACO KENNEDY', city: 'TEGUCIGALPA D.C.', storeId: 9 },
-    'punto farma comayagua': { name: 'CMC COLONIAL', city: 'COMAYAGUA', storeId: 18 },
+    'punto farma comayagua': { name: 'PLAZA OSCAR', city: 'COMAYAGUA', storeId: 157 },
     'punto farma jardines del valle': { name: 'JARDINES DEL VALLE', city: 'SAN PEDRO SULA', storeId: 25 },
     'punto farma maxi progreso': { name: 'MAXI DESPENSA PROGRESO', city: 'EL PROGRESO', storeId: 23 },
     'punto farma monumento a la madre': { name: 'MONUMENTO LA MADRE', city: 'SAN PEDRO SULA', storeId: 15 },
@@ -30,6 +30,12 @@ const TIENDAS_PEDIDOSYA = {
     // Variantes con guión
     'punto farma - guamilito': { name: 'GUAMILITO', city: 'SAN PEDRO SULA', storeId: 92 },
     'punto farma - morazan': { name: 'BLVD. MORAZAN', city: 'TEGUCIGALPA D.C.', storeId: 4 },
+    // Nuevas aperturas
+    'punto farma  loma verde': { name: 'LOMA VERDE', city: 'TEGUCIGALPA D.C.', storeId: 39 },
+    'punto farma hospimed': { name: 'HOSPIMED', city: 'TEGUCIGALPA D.C.', storeId: 8 },
+    'punto farma san ignacio': { name: 'SAN IGNACIO', city: 'TEGUCIGALPA D.C.', storeId: 24 },
+    'punto farma plaza tec': { name: 'PLAZA TEC', city: 'TEGUCIGALPA D.C.', storeId: 82 },
+    'punto farma lomas de toncontin': { name: 'LOMAS DE TONCONTIN', city: 'TEGUCIGALPA D.C.', storeId: 60 }
 };
 
 // Export for use in metrics calculations

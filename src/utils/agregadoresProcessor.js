@@ -21,7 +21,7 @@ export const TIENDAS_AGREGADORES = {
     103: { name: "TEXACO MATEO", city: "TEGUCIGALPA D.C." },
     133: { name: "UNIPLAZA CEIBA", city: "LA CEIBA" },
     141: { name: "PLAZA LOS OLIVOS", city: "CHOLUTECA" },
-    147: { name: "TROCHES MONTALVAN", city: "JUTICALPA" },
+    147: { name: "TROCHES MONTALVAN", city: "JUTICALPA" }
 };
 
 /**
