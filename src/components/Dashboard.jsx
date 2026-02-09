@@ -1250,6 +1250,21 @@ const Dashboard = () => {
                         config={agregadoresConfig}
                         zoneFilter={agregadoresZoneFilter}
                         setZoneFilter={setAgregadoresZoneFilter}
+                        historicalData={
+                            Object.entries(agregadoresSnapshotsByMonth)
+                                .map(([monthKey, snapshots]) => {
+                                    // Get latest snapshot for the month
+                                    const sorted = [...snapshots].sort((a, b) => (b.dateId || '').localeCompare(a.dateId || ''));
+                                    const latest = sorted[0];
+                                    return {
+                                        dateId: latest.dateId,
+                                        monthKey: monthKey,
+                                        venta: latest.kpis?.ventaTotal || 0,
+                                        pedidos: latest.kpis?.cantidadTx || 0
+                                    };
+                                })
+                                .sort((a, b) => a.monthKey.localeCompare(b.monthKey))
+                        }
                     />
                 ) : (
                     <div className="empty-state">

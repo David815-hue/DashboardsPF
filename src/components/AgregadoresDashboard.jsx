@@ -121,13 +121,14 @@ const CircularProgress = ({ percentage, size = 120, strokeWidth = 10, minimal = 
     );
 };
 
-const AgregadoresDashboard = ({ metrics, trends, config = {}, zoneFilter = 'all', setZoneFilter }) => {
+const AgregadoresDashboard = ({ metrics, trends, config = {}, zoneFilter = 'all', setZoneFilter, historicalData = [] }) => {
     const [currentPage, setCurrentPage] = useState(1);
-    const [trendMetric, setTrendMetric] = useState('venta');
-    const [cityMetric, setCityMetric] = useState('venta'); // 'venta' | 'pedidos'
+    const [trendMetric, setTrendMetric] = useState('venta'); // 'venta' | 'pedidos'
     const [isFlipped, setIsFlipped] = useState(false); // Flip card state for compliance
     const [isProductsFlipped, setIsProductsFlipped] = useState(false); // Flip card state for products
     const [isTreeMapFullscreen, setIsTreeMapFullscreen] = useState(false); // Fullscreen modal for TreeMap
+    const [cityMetric, setCityMetric] = useState('venta'); // 'venta' | 'pedidos'
+    const [trendView, setTrendView] = useState('daily'); // 'daily' | 'historical'
 
     if (!metrics) {
         return (
@@ -139,6 +140,18 @@ const AgregadoresDashboard = ({ metrics, trends, config = {}, zoneFilter = 'all'
 
     const { kpis, charts } = metrics;
     const metaPedidosPorTienda = config.metaPedidosPorTienda || 30;
+
+    // Format historical data for chart
+    const historicalChartData = historicalData.map(item => {
+        const [year, month] = item.monthKey.split('-');
+        const monthName = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'][parseInt(month) - 1];
+        return {
+            name: `${monthName} ${year}`,
+            originalName: item.monthKey,
+            venta: item.venta,
+            pedidos: item.pedidos
+        };
+    });
 
     return (
         <div className="dashboard-content agregadores-dashboard">
@@ -515,28 +528,52 @@ const AgregadoresDashboard = ({ metrics, trends, config = {}, zoneFilter = 'all'
                             </ChartZoomWrapper>
                         </div>
 
-                        {/* Bottom: Daily Trend (area chart with toggle) */}
+                        {/* Bottom: Trend Chart (Daily/Historical with toggle) */}
                         <div className="chart-card">
                             <div className="chart-header-with-toggle">
-                                <h3 className="chart-title">Tendencia Diaria del Mes</h3>
-                                <div className="chart-toggle">
-                                    <button
-                                        className={`toggle-btn ${trendMetric === 'pedidos' ? 'active' : ''}`}
-                                        onClick={() => setTrendMetric('pedidos')}
-                                    >
-                                        Pedidos
-                                    </button>
-                                    <button
-                                        className={`toggle-btn ${trendMetric === 'venta' ? 'active' : ''}`}
-                                        onClick={() => setTrendMetric('venta')}
-                                    >
-                                        Venta
-                                    </button>
+                                <h3 className="chart-title">
+                                    {trendView === 'daily' ? 'Tendencia Diaria del Mes' : 'Tendencia Histórica'}
+                                </h3>
+                                <div style={{ display: 'flex', gap: '8px' }}>
+                                    {/* Trend View Toggle */}
+                                    <div className="chart-toggle" style={{ marginRight: '16px' }}>
+                                        <button
+                                            className={`toggle-btn ${trendView === 'daily' ? 'active' : ''}`}
+                                            onClick={() => setTrendView('daily')}
+                                        >
+                                            Diaria
+                                        </button>
+                                        <button
+                                            className={`toggle-btn ${trendView === 'historical' ? 'active' : ''}`}
+                                            onClick={() => setTrendView('historical')}
+                                        >
+                                            Histórica
+                                        </button>
+                                    </div>
+
+                                    {/* Metric Toggle */}
+                                    <div className="chart-toggle">
+                                        <button
+                                            className={`toggle-btn ${trendMetric === 'pedidos' ? 'active' : ''}`}
+                                            onClick={() => setTrendMetric('pedidos')}
+                                        >
+                                            Pedidos
+                                        </button>
+                                        <button
+                                            className={`toggle-btn ${trendMetric === 'venta' ? 'active' : ''}`}
+                                            onClick={() => setTrendMetric('venta')}
+                                        >
+                                            Venta
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                             <div className="chart-container">
                                 <ResponsiveContainer width="100%" height={350}>
-                                    <AreaChart data={charts.ventaPorDia} margin={{ top: 20, right: 20, left: 10, bottom: 20 }}>
+                                    <AreaChart
+                                        data={trendView === 'daily' ? charts.ventaPorDia : historicalChartData}
+                                        margin={{ top: 20, right: 20, left: 10, bottom: 20 }}
+                                    >
                                         <defs>
                                             <linearGradient id="trendGradient" x1="0" y1="0" x2="0" y2="1">
                                                 <stop offset="0%" stopColor={trendMetric === 'venta' ? '#0ea5e9' : '#8b5cf6'} stopOpacity={0.8} />
@@ -564,107 +601,107 @@ const AgregadoresDashboard = ({ metrics, trends, config = {}, zoneFilter = 'all'
                             </div>
                         </div>
                     </div>
-                </div>
-            )}
 
-            {/* Fullscreen TreeMap Modal */}
-            {isTreeMapFullscreen && (
-                <div
-                    className="treemap-fullscreen-overlay"
-                    onClick={() => setIsTreeMapFullscreen(false)}
-                    style={{
-                        position: 'fixed',
-                        top: 0,
-                        left: 0,
-                        right: 0,
-                        bottom: 0,
-                        background: 'rgba(0, 0, 0, 0.85)',
-                        backdropFilter: 'blur(10px)',
-                        zIndex: 1000,
-                        display: 'flex',
-                        flexDirection: 'column',
-                        padding: '20px'
-                    }}
-                >
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-                        <h2 style={{ color: '#fff', margin: 0, fontSize: '1.5rem' }}>Todos los Productos - TreeMap</h2>
-                        <button
+                    {/* Fullscreen TreeMap Modal */}
+                    {isTreeMapFullscreen && (
+                        <div
+                            className="treemap-fullscreen-overlay"
                             onClick={() => setIsTreeMapFullscreen(false)}
                             style={{
-                                background: 'rgba(255,255,255,0.2)',
-                                border: 'none',
-                                borderRadius: '50%',
-                                width: '40px',
-                                height: '40px',
-                                cursor: 'pointer',
+                                position: 'fixed',
+                                top: 0,
+                                left: 0,
+                                right: 0,
+                                bottom: 0,
+                                background: 'rgba(0, 0, 0, 0.85)',
+                                backdropFilter: 'blur(10px)',
+                                zIndex: 1000,
                                 display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                color: '#fff'
+                                flexDirection: 'column',
+                                padding: '20px'
                             }}
                         >
-                            <X size={24} />
-                        </button>
-                    </div>
-                    <div style={{ flex: 1, background: 'rgba(255,255,255,0.05)', borderRadius: '16px', padding: '16px' }} onClick={(e) => e.stopPropagation()}>
-                        <ResponsiveContainer width="100%" height="100%">
-                            <Treemap
-                                data={charts.allProductos}
-                                dataKey="value"
-                                aspectRatio={16 / 9}
-                                stroke="#fff"
-                                content={({ root, depth, x, y, width, height, index, name, value }) => {
-                                    const COLORS = ['#FE0000', '#0ea5e9', '#22c55e', '#f59e0b', '#8b5cf6', '#ec4899', '#06b6d4', '#f97316'];
-                                    return (
-                                        <g>
-                                            <rect
-                                                x={x}
-                                                y={y}
-                                                width={width}
-                                                height={height}
-                                                style={{
-                                                    fill: COLORS[index % COLORS.length],
-                                                    stroke: '#fff',
-                                                    strokeWidth: 2,
-                                                }}
-                                            />
-                                            {width > 60 && height > 35 && (
-                                                <>
-                                                    <text
-                                                        x={x + width / 2}
-                                                        y={y + height / 2 - 8}
-                                                        textAnchor="middle"
-                                                        dominantBaseline="middle"
-                                                        fill="#fff"
-                                                        fontSize={width < 100 ? 10 : 13}
-                                                        fontWeight="600"
-                                                        fontFamily="system-ui, -apple-system, sans-serif"
-                                                        style={{ textShadow: '0 1px 3px rgba(0,0,0,0.5)' }}
-                                                    >
-                                                        {name?.substring(0, Math.floor(width / 8))}{name?.length > Math.floor(width / 8) ? '..' : ''}
-                                                    </text>
-                                                    <text
-                                                        x={x + width / 2}
-                                                        y={y + height / 2 + 10}
-                                                        textAnchor="middle"
-                                                        dominantBaseline="middle"
-                                                        fill="rgba(255,255,255,0.9)"
-                                                        fontSize={width < 100 ? 9 : 11}
-                                                        fontFamily="system-ui, -apple-system, sans-serif"
-                                                        style={{ textShadow: '0 1px 2px rgba(0,0,0,0.4)' }}
-                                                    >
-                                                        {value} pedidos
-                                                    </text>
-                                                </>
-                                            )}
-                                        </g>
-                                    );
-                                }}
-                            >
-                                <Tooltip content={<CustomTooltip />} />
-                            </Treemap>
-                        </ResponsiveContainer>
-                    </div>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                                <h2 style={{ color: '#fff', margin: 0, fontSize: '1.5rem' }}>Todos los Productos - TreeMap</h2>
+                                <button
+                                    onClick={() => setIsTreeMapFullscreen(false)}
+                                    style={{
+                                        background: 'rgba(255,255,255,0.2)',
+                                        border: 'none',
+                                        borderRadius: '50%',
+                                        width: '40px',
+                                        height: '40px',
+                                        cursor: 'pointer',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        color: '#fff'
+                                    }}
+                                >
+                                    <X size={24} />
+                                </button>
+                            </div>
+                            <div style={{ flex: 1, background: 'rgba(255,255,255,0.05)', borderRadius: '16px', padding: '16px' }} onClick={(e) => e.stopPropagation()}>
+                                <ResponsiveContainer width="100%" height="100%">
+                                    <Treemap
+                                        data={charts.allProductos}
+                                        dataKey="value"
+                                        aspectRatio={16 / 9}
+                                        stroke="#fff"
+                                        content={({ root, depth, x, y, width, height, index, name, value }) => {
+                                            const COLORS = ['#FE0000', '#0ea5e9', '#22c55e', '#f59e0b', '#8b5cf6', '#ec4899', '#06b6d4', '#f97316'];
+                                            return (
+                                                <g>
+                                                    <rect
+                                                        x={x}
+                                                        y={y}
+                                                        width={width}
+                                                        height={height}
+                                                        style={{
+                                                            fill: COLORS[index % COLORS.length],
+                                                            stroke: '#fff',
+                                                            strokeWidth: 2,
+                                                        }}
+                                                    />
+                                                    {width > 60 && height > 35 && (
+                                                        <>
+                                                            <text
+                                                                x={x + width / 2}
+                                                                y={y + height / 2 - 8}
+                                                                textAnchor="middle"
+                                                                dominantBaseline="middle"
+                                                                fill="#fff"
+                                                                fontSize={width < 100 ? 10 : 13}
+                                                                fontWeight="600"
+                                                                fontFamily="system-ui, -apple-system, sans-serif"
+                                                                style={{ textShadow: '0 1px 3px rgba(0,0,0,0.5)' }}
+                                                            >
+                                                                {name?.substring(0, Math.floor(width / 8))}{name?.length > Math.floor(width / 8) ? '..' : ''}
+                                                            </text>
+                                                            <text
+                                                                x={x + width / 2}
+                                                                y={y + height / 2 + 10}
+                                                                textAnchor="middle"
+                                                                dominantBaseline="middle"
+                                                                fill="rgba(255,255,255,0.9)"
+                                                                fontSize={width < 100 ? 9 : 11}
+                                                                fontFamily="system-ui, -apple-system, sans-serif"
+                                                                style={{ textShadow: '0 1px 2px rgba(0,0,0,0.4)' }}
+                                                            >
+                                                                {value} pedidos
+                                                            </text>
+                                                        </>
+                                                    )}
+                                                </g>
+                                            );
+                                        }}
+                                    >
+                                        <Tooltip content={<CustomTooltip />} />
+                                    </Treemap>
+                                </ResponsiveContainer>
+                            </div>
+                        </div>
+                    )}
                 </div>
             )}
         </div>
