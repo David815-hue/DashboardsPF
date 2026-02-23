@@ -45,10 +45,19 @@ export const calculateAgregadoresMetrics = (processedData, config = {}, zoneFilt
         allowedCities = ZONA_NORTE;
     }
 
+    // Total values are derived from Centro + Norte for "all" view.
+    // Fallback to legacy total fields for backward compatibility with old snapshots.
+    const presupuestoTotal = (presupuestoCentro + presupuestoNorte) > 0
+        ? (presupuestoCentro + presupuestoNorte)
+        : presupuesto;
+    const metaTxTotal = (metaTxCentro + metaTxNorte) > 0
+        ? (metaTxCentro + metaTxNorte)
+        : metaTx;
+
     // Select the appropriate budget based on zone filter
     const activePresupuesto = zoneFilter === 'centro' ? presupuestoCentro
         : zoneFilter === 'norte' ? presupuestoNorte
-            : presupuesto;
+            : presupuestoTotal;
 
     // Filter stores by zone
     const topTiendas = allowedCities
@@ -132,7 +141,7 @@ export const calculateAgregadoresMetrics = (processedData, config = {}, zoneFilt
     // Select the appropriate Tx target based on zone filter
     const activeMetaTx = zoneFilter === 'centro' ? metaTxCentro
         : zoneFilter === 'norte' ? metaTxNorte
-            : metaTx;
+            : metaTxTotal;
 
     // Calculate prorated Tx target
     const metaTxProrrateada = activeMetaTx > 0 ? (activeMetaTx / daysInMonth) * dayOfMonth : 0;

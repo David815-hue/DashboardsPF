@@ -9,9 +9,9 @@ export const calculateWhatsAppMetrics = (data, config = {}) => {
     // Config defaults
     const tipoCambio = config.tipoCambio || 26.41;
     const costoEnvioLps = config.costoEnvioLps || 2.11;
-    const totalEnvios = config.totalEnvios || totalConversaciones;
-    const enviosTGU = config.enviosTGU || 74;
-    const enviosSPS = config.enviosSPS || 20;
+    const enviosTGU = Number(config.enviosTGU ?? 74) || 0;
+    const enviosSPS = Number(config.enviosSPS ?? 20) || 0;
+    const totalEnvios = enviosTGU + enviosSPS;
 
     // === PAGE 1 KPIs ===
 

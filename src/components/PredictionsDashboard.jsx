@@ -25,12 +25,13 @@ const PredictionsDashboard = ({
     const { ventaPorDia, presupuesto, topProductos, dataSource } = useMemo(() => {
         // Try Agregadores first (usually has most complete daily data)
         if (agregadoresData && !agregadoresData._isSnapshot && agregadoresData.ventaPorDia && agregadoresData.ventaPorDia.length >= 3) {
+            const presupuestoTotal = (agregadoresConfig?.presupuestoCentro || 0) + (agregadoresConfig?.presupuestoNorte || 0);
             return {
                 ventaPorDia: agregadoresData.ventaPorDia.map(d => ({
                     day: d.day,
                     venta: d.venta || 0
                 })),
-                presupuesto: agregadoresConfig?.presupuesto || 0,
+                presupuesto: presupuestoTotal > 0 ? presupuestoTotal : (agregadoresConfig?.presupuesto || 0),
                 topProductos: agregadoresData.topProductos || [],
                 dataSource: 'Agregadores'
             };

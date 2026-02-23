@@ -67,15 +67,6 @@ const ManualInputs = ({ config, onConfigChange, dashboardType = 'venta-meta' }) 
                         <div className="config-section-header" style={{ gridColumn: '1 / -1', fontSize: '0.75rem', fontWeight: '600', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '-4px', marginTop: '4px' }}>WhatsApp</div>
 
                         <div className="input-group">
-                            <label>Total Envíos</label>
-                            <input
-                                type="number"
-                                value={config.totalEnvios}
-                                onChange={(e) => handleChange('totalEnvios', e.target.value)}
-                            />
-                        </div>
-
-                        <div className="input-group">
                             <label>Envíos TGU</label>
                             <input
                                 type="number"

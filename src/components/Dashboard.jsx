@@ -94,8 +94,8 @@ const Dashboard = () => {
     const [whatsappData, setWhatsappData] = useState(null);
     const [agregadoresData, setAgregadoresData] = useState(null);
     const [agregadoresZoneFilter, setAgregadoresZoneFilter] = useState('all'); // 'all', 'centro', 'norte'
-    const [config, setConfig] = useState({ inversionUSD: 25.52, tipoCambio: 26.42, clics: 7796, topProductsCount: 5, totalEnvios: 94, enviosTGU: 74, enviosSPS: 20, costoEnvioLps: 2.11 });
-    const [agregadoresConfig, setAgregadoresConfig] = useState({ presupuesto: 0, presupuestoCentro: 0, presupuestoNorte: 0, metaTx: 0, metaTxCentro: 0, metaTxNorte: 0, cumplimientoTx: 0, metaPedidosPorTienda: 30 });
+    const [config, setConfig] = useState({ inversionUSD: 25.52, tipoCambio: 26.42, clics: 7796, topProductsCount: 5, enviosTGU: 74, enviosSPS: 20, costoEnvioLps: 2.11 });
+    const [agregadoresConfig, setAgregadoresConfig] = useState({ presupuestoCentro: 0, presupuestoNorte: 0, metaTxCentro: 0, metaTxNorte: 0, cumplimientoTx: 0, metaPedidosPorTienda: 30 });
     const [topProductsConfig, setTopProductsConfig] = useState({
         ventaMetaTopProductos: 5,
         ecommerceTopProductos: 6,
@@ -267,6 +267,20 @@ const Dashboard = () => {
     useEffect(() => {
         if (!isConfigOpen) return;
 
+        // Preserve current manual inputs when user is working with fresh data.
+        const currentTabData = activeTab === 'ecommerce'
+            ? ecommerceData
+            : activeTab === 'whatsapp'
+                ? whatsappData
+                : activeTab === 'agregadores'
+                    ? agregadoresData
+                    : data;
+        const hasFreshCurrentData = currentTabData && !currentTabData._isSnapshot;
+        if (hasFreshCurrentData && !selectedMonth && !selectedWeek) {
+            console.log(`[Auto-load] Skipped for ${activeTab}: keeping fresh in-memory config.`);
+            return;
+        }
+
         const now = new Date();
         // Use selectedMonth if available, otherwise default to current system month
         const currentMonthKey = selectedMonth || `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
@@ -297,17 +311,17 @@ const Dashboard = () => {
 
             if (activeTab === 'agregadores' && mostRecentSnapshot.config) {
                 // Load agregadores config from most recent snapshot
-                setAgregadoresConfig(mostRecentSnapshot.config);
+                setAgregadoresConfig(prev => ({ ...prev, ...mostRecentSnapshot.config }));
                 console.log('[Auto-load] Loaded agregadores config from most recent snapshot:', mostRecentSnapshot.config);
             } else if (mostRecentSnapshot.config && activeTab !== 'agregadores') {
                 // Load regular config for venta-meta, ecommerce, whatsapp
-                setConfig(mostRecentSnapshot.config);
+                setConfig(prev => ({ ...prev, ...mostRecentSnapshot.config }));
                 console.log(`[Auto-load] Loaded ${activeTab} config from most recent snapshot:`, mostRecentSnapshot.config);
             }
         } else {
             console.log(`[Auto-load] No snapshots found for ${activeTab} in ${currentMonthKey}`);
         }
-    }, [isConfigOpen, activeTab, snapshotsByMonth, ecommerceSnapshotsByMonth, whatsappSnapshotsByMonth, agregadoresSnapshotsByMonth, selectedMonth]);
+    }, [isConfigOpen, activeTab, snapshotsByMonth, ecommerceSnapshotsByMonth, whatsappSnapshotsByMonth, agregadoresSnapshotsByMonth, selectedMonth, selectedWeek, data, ecommerceData, whatsappData, agregadoresData]);
 
 
     const handleFileChange = (key, file) => {
@@ -1010,19 +1024,6 @@ const Dashboard = () => {
                                         <h3 className="inputs-title">🚀 Configuración Agregadores</h3>
                                         <div className="input-row" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                                             <div className="input-group">
-                                                <label>Presupuesto Total (L)</label>
-                                                <input
-                                                    type="text"
-                                                    inputMode="numeric"
-                                                    value={agregadoresConfig.presupuesto}
-                                                    onChange={(e) => {
-                                                        const val = e.target.value.replace(/[^\d.]/g, '');
-                                                        setAgregadoresConfig({ ...agregadoresConfig, presupuesto: parseFloat(val) || 0 });
-                                                    }}
-                                                    placeholder="Ej: 150000"
-                                                />
-                                            </div>
-                                            <div className="input-group">
                                                 <label>Presupuesto Centro (L)</label>
                                                 <input
                                                     type="text"
@@ -1046,16 +1047,6 @@ const Dashboard = () => {
                                                         setAgregadoresConfig({ ...agregadoresConfig, presupuestoNorte: parseFloat(val) || 0 });
                                                     }}
                                                     placeholder="SPS + otros"
-                                                />
-                                            </div>
-                                            <div className="input-group">
-                                                <label>Meta Tx Total</label>
-                                                <input
-                                                    type="number"
-                                                    min="0"
-                                                    value={agregadoresConfig.metaTx}
-                                                    onChange={(e) => setAgregadoresConfig({ ...agregadoresConfig, metaTx: parseInt(e.target.value) || 0 })}
-                                                    placeholder="Meta Total"
                                                 />
                                             </div>
                                             <div className="input-group">
