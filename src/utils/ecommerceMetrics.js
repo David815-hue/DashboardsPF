@@ -160,32 +160,39 @@ export const calculateEcommerceMetrics = (data) => {
             }
         });
 
-        // Track ALL orders (not just unique customers)
+        // Track unique customers (phone-based), not individual orders
         let recuperados = 0;
         let noRecuperados = 0;
         let sinCelular = 0;
         let sinFecha = 0;
+        const customerMap = new Map(); // phone -> count of attempts
+        const customerRecoveryMap = new Map(); // phone -> recovered (true/false)
 
         uniqueErrorPagoOrders.forEach(canceledOrder => {
             const celular = String(canceledOrder['Celular del cliente'] || '').trim();
             if (!celular) {
                 sinCelular++;
-                noRecuperados++; // Count as not recovered if no phone
                 return;
             }
+
+            customerMap.set(celular, (customerMap.get(celular) || 0) + 1);
 
             // Parse the cancellation date
             const cancelDateStr = canceledOrder['Pedido Generado'];
             if (!cancelDateStr) {
                 sinFecha++;
-                noRecuperados++; // Count as not recovered if no date
+                if (!customerRecoveryMap.has(celular)) {
+                    customerRecoveryMap.set(celular, false);
+                }
                 return;
             }
 
             const cancelDate = new Date(cancelDateStr);
             if (isNaN(cancelDate.getTime())) {
                 sinFecha++;
-                noRecuperados++; // Count as not recovered if invalid date
+                if (!customerRecoveryMap.has(celular)) {
+                    customerRecoveryMap.set(celular, false);
+                }
                 return;
             }
 
@@ -210,8 +217,16 @@ export const calculateEcommerceMetrics = (data) => {
                 return diffDays > 0 && diffDays <= 2;
             });
 
-            // Count each order individually (not unique customers)
+            // Classify each customer only once; recovery has priority if any attempt succeeded
             if (hasRecovery) {
+                customerRecoveryMap.set(celular, true);
+            } else if (!customerRecoveryMap.has(celular)) {
+                customerRecoveryMap.set(celular, false);
+            }
+        });
+
+        customerRecoveryMap.forEach((wasRecovered) => {
+            if (wasRecovered) {
                 recuperados++;
             } else {
                 noRecuperados++;
@@ -219,15 +234,6 @@ export const calculateEcommerceMetrics = (data) => {
         });
 
         // Calculate Customer Insights
-        const customerMap = new Map(); // phone -> count of attempts
-
-        uniqueErrorPagoOrders.forEach(order => {
-            const celular = String(order['Celular del cliente'] || '').trim();
-            if (celular) {
-                customerMap.set(celular, (customerMap.get(celular) || 0) + 1);
-            }
-        });
-
         const totalClientesUnicos = customerMap.size;
         let clientesMultiplesIntentos = 0;
         let maxIntentos = 0;
@@ -243,8 +249,8 @@ export const calculateEcommerceMetrics = (data) => {
 
         return {
             chartData: [
-                { name: 'Pedidos cancelados - Cliente completó pedido', value: recuperados },
-                { name: 'Pedidos cancelados - Cliente no completó pedido', value: noRecuperados }
+                { name: 'Clientes recuperados', value: recuperados },
+                { name: 'Clientes no recuperados', value: noRecuperados }
             ],
             insights: {
                 totalClientesUnicos,
@@ -276,3 +282,6 @@ export const calculateEcommerceMetrics = (data) => {
         }
     };
 };
+
+
+
