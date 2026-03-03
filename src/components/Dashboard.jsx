@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
-import { Settings, X, Save, Calendar, ChevronDown, Trash2, Maximize2, Minimize2, Menu, Sparkles } from 'lucide-react';
+import { Settings, X, Save, Calendar, ChevronDown, Trash2, Maximize2, Minimize2, Menu, Sparkles, Download } from 'lucide-react';
+import * as XLSX from 'xlsx';
 import AIInsightsModal from './AIInsightsModal';
 import PeriodSelector from './PeriodSelector';
 import KPICard from './KPICard';
@@ -805,6 +806,40 @@ const Dashboard = () => {
         return `${day}/${month}/${year} ${hours}:${minutes}`;
     };
 
+    const ecommerceNoModuleOrders = useMemo(() => {
+        if (!ecommerceData || ecommerceData._isSnapshot) return [];
+        return Array.isArray(ecommerceData.pedidosNoEnRMS) ? ecommerceData.pedidosNoEnRMS : [];
+    }, [ecommerceData]);
+
+    const getPedidoId = (row) =>
+        String(
+            row?.['NumeroPedidoLimpio'] ||
+            row?.['Número de Pedido'] ||
+            row?.['NÃºmero de Pedido'] ||
+            ''
+        );
+
+    const handleExportNoModuleOrders = () => {
+        if (!ecommerceData || ecommerceData._isSnapshot) {
+            setError('Para exportar pedidos no pasados por modulo, primero procesa archivos de E-commerce.');
+            return;
+        }
+
+        if (ecommerceNoModuleOrders.length === 0) {
+            setError('No hay pedidos no pasados por modulo para exportar.');
+            return;
+        }
+
+        const workbook = XLSX.utils.book_new();
+        const sheet = XLSX.utils.json_to_sheet(ecommerceNoModuleOrders);
+        XLSX.utils.book_append_sheet(workbook, sheet, 'Pedidos No Modulo');
+
+        const today = new Date().toISOString().slice(0, 10);
+        XLSX.writeFile(workbook, `pedidos_no_pasados_modulo_${today}.xlsx`);
+        setSuccessMessage(`Archivo generado: pedidos_no_pasados_modulo_${today}.xlsx`);
+        setTimeout(() => setSuccessMessage(null), 3000);
+    };
+
 
     // Get available months from correct collection based on activeTab
     const currentSnapshotsByMonth = activeTab === 'ecommerce'
@@ -1003,14 +1038,64 @@ const Dashboard = () => {
                                 </>
                             )}
 
-                            {/* E-commerce - No configuration fields (empty) */}
+                            {/* E-commerce - Pedidos no pasados por modulo */}
                             {activeTab === 'ecommerce' && (
                                 <>
                                     <div className="divider"></div>
                                     <div className="snapshot-section">
-                                        <p style={{ textAlign: 'center', color: 'var(--text-secondary)', padding: '20px' }}>
-                                            No hay configuración adicional para E-commerce
-                                        </p>
+                                        <h3 className="inputs-title">Pedidos No Pasados Por Modulo</h3>
+                                        <div className="ecommerce-no-module-head">
+                                            <p className="ecommerce-no-module-count">
+                                                Total detectado: <strong>{ecommerceNoModuleOrders.length}</strong>
+                                            </p>
+                                            <button
+                                                className="ecommerce-no-module-export-btn"
+                                                onClick={handleExportNoModuleOrders}
+                                                disabled={ecommerceNoModuleOrders.length === 0 || !!ecommerceData?._isSnapshot}
+                                                title={ecommerceData?._isSnapshot ? 'No disponible en snapshots' : 'Descargar Excel'}
+                                            >
+                                                <Download size={16} />
+                                                Descargar Excel
+                                            </button>
+                                        </div>
+
+                                        {ecommerceData?._isSnapshot ? (
+                                            <p className="ecommerce-no-module-note">
+                                                Estas viendo un snapshot. Carga y procesa archivos para ver/descargar el detalle.
+                                            </p>
+                                        ) : ecommerceNoModuleOrders.length > 0 ? (
+                                            <div className="ecommerce-no-module-table-wrap">
+                                                <table className="ecommerce-no-module-table">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>Pedido</th>
+                                                            <th>Canal</th>
+                                                            <th>Estado</th>
+                                                            <th>Ciudad</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        {ecommerceNoModuleOrders.slice(0, 10).map((row, index) => (
+                                                            <tr key={`${getPedidoId(row)}-${index}`}>
+                                                                <td>{getPedidoId(row) || '-'}</td>
+                                                                <td>{String(row?.['Canal'] || '-')}</td>
+                                                                <td>{String(row?.['Estado'] || '-')}</td>
+                                                                <td>{String(row?.['Ciudad'] || '-')}</td>
+                                                            </tr>
+                                                        ))}
+                                                    </tbody>
+                                                </table>
+                                                {ecommerceNoModuleOrders.length > 10 && (
+                                                    <p className="ecommerce-no-module-note">
+                                                        Mostrando 10 de {ecommerceNoModuleOrders.length}. Descarga el Excel para ver todo.
+                                                    </p>
+                                                )}
+                                            </div>
+                                        ) : (
+                                            <p className="ecommerce-no-module-note">
+                                                No se encontraron pedidos no pasados por modulo con los archivos actuales.
+                                            </p>
+                                        )}
                                     </div>
                                     <div className="divider"></div>
                                 </>

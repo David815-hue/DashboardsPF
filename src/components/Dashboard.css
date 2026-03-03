@@ -1148,6 +1148,76 @@ body {
   border: 1px solid #eee;
 }
 
+.ecommerce-no-module-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.ecommerce-no-module-count {
+  font-size: 0.9rem;
+  color: #374151;
+}
+
+.ecommerce-no-module-export-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: none;
+  border-radius: 10px;
+  padding: 10px 14px;
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  color: #fff;
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.ecommerce-no-module-export-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.ecommerce-no-module-table-wrap {
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  overflow: hidden;
+  background: #fff;
+}
+
+.ecommerce-no-module-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.8rem;
+}
+
+.ecommerce-no-module-table th {
+  text-align: left;
+  background: #f8fafc;
+  color: #334155;
+  padding: 8px 10px;
+  font-weight: 700;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.ecommerce-no-module-table td {
+  padding: 8px 10px;
+  color: #475569;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.ecommerce-no-module-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.ecommerce-no-module-note {
+  margin-top: 10px;
+  font-size: 0.8rem;
+  color: #6b7280;
+}
+
 .snapshot-save-row {
   display: flex;
   gap: 12px;
